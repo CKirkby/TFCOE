@@ -84,7 +84,6 @@ void APlayerCharacter::SprintTrigger()
 	{
 		// Sets the movement speed to be the sprint speed on sprint start
 		MovementComponent->MaxWalkSpeed = SprintSpeed;
-		UE_LOG(LogTemp, Warning, TEXT("The new speed is: %1.0f"), MovementComponent->MaxWalkSpeed)
 	}
 }
 
@@ -92,9 +91,8 @@ void APlayerCharacter::SprintEnd()
 {
 	if (MovementComponent)
 	{
-		// Sets the movement speed to be the walk speed on sprint end
+		// Sets the movement speed to be the walk speed on the sprint end
 		MovementComponent->MaxWalkSpeed = WalkSpeed;
-		UE_LOG(LogTemp, Warning, TEXT("The new speed is: %1.0f"), MovementComponent->MaxWalkSpeed)
 	}
 }
 

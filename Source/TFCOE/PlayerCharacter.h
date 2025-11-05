@@ -28,9 +28,9 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	UInputAction* InteractAction = nullptr;
 
 	// Settings
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings|Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float WalkSpeed = 400.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings|Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
 
 	// Components
