@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Created by Snow Paw Games
 
 #pragma once
 
@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PlayerCharacter.generated.h"
 
+class UCharacter_Inventory;
 /**
  * 
  */
@@ -14,6 +15,8 @@ UCLASS()
 class TFCOE_API APlayerCharacter : public APaperZDCharacter
 {
 	GENERATED_BODY()
+
+	APlayerCharacter();
 
 	protected:
 
@@ -36,6 +39,8 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	// Components
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCharacter_Inventory* CharacterInventory = nullptr;
 	
 	// Functions
 	virtual void BeginPlay() override;
@@ -48,4 +53,10 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	void SprintTrigger();
 	void SprintEnd();
 	void InteractTrigger();
+
+	// Getter & Setter
+	UCharacter_Inventory* GetInventory() const
+	{
+		return CharacterInventory;
+	}
 };
