@@ -17,13 +17,24 @@ public:
 	UCharacter_Inventory();
 
 protected:
+	// A map that contains the regular items and their amount.
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TMap<FName, int> GeneralItems = {};
 
+	// A map that contains any key items. 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TMap<FName, int> KeyItems = {};
 
 public:
+	
+	// Adds to the regular inventory
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddToGeneralItems(const FName KeyID, const int ItemCount);
+
+	// Adds to the key items inventory
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddToKeyItems(const FName KeyID, const int ItemCount);
+	
 	// Getters and Setters // 
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -36,14 +47,5 @@ public:
 	TMap<FName, int> GetKeyItemList() const
 	{
 		return KeyItems;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddToGeneralItems(const FName KeyID, const int ItemCount);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void AddToKeyItems(const FName KeyID, const int ItemCount)
-	{
-		KeyItems.Add(KeyID, ItemCount);
 	}
 };

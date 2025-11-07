@@ -25,4 +25,18 @@ void UCharacter_Inventory::AddToGeneralItems(const FName KeyID, const int ItemCo
 	}
 }
 
-// DO KEY ITEMS HERE TOO
+void UCharacter_Inventory::AddToKeyItems(const FName KeyID, const int ItemCount)
+{
+	 if (KeyItems.Contains(KeyID))
+	 {
+		 if (const int* CurrentItemCount = KeyItems.Find(KeyID))
+		 {
+			const int NewItemCount = *CurrentItemCount + ItemCount;
+			KeyItems[KeyID] = NewItemCount;
+		 }
+	 }
+	 else
+	 {
+	 	KeyItems.Add(KeyID, ItemCount);
+	 }
+}
