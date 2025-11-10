@@ -46,6 +46,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		if (MoveAction)
 		{
 			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::MoveTrigger);
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &APlayerCharacter::ResetMovement);
+			EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APlayerCharacter::ResetMovement);
 		}
 
 		// Binds the interact action to the triggered function
@@ -78,11 +80,22 @@ void APlayerCharacter::MoveTrigger(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	
+	if (!MovementEnabled)
+	{
+		ResetMovement();
+		return;
+	}
+	
 	// Movement for X vector
 	AddMovementInput(FVector(1, 0, 0), MovementVector.X);
 
 	// Movement for Y vector
 	AddMovementInput(FVector(0, 1, 0), MovementVector.Y);
+}
+
+void APlayerCharacter::ResetMovement()
+{
+	MovementComponent->StopMovementImmediately();
 }
 
 void APlayerCharacter::SprintTrigger()

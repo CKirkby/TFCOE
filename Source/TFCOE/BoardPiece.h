@@ -27,7 +27,7 @@ public:
 protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	TEnumAsByte<EPieceState> CurrentPieceState;
+	TEnumAsByte<EPieceState> CurrentPieceState = Enabled;
 
 	
 	virtual void BeginPlay() override;

@@ -32,6 +32,10 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 
 	// Settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
+	bool MovementEnabled = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
+	bool CameraMovementEnabled = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float WalkSpeed = 400.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
@@ -50,6 +54,7 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	
 	// Input Functions
 	void MoveTrigger(const FInputActionValue& Value);
+	void ResetMovement();
 	void SprintTrigger();
 	void SprintEnd();
 	void InteractTrigger();
@@ -58,5 +63,12 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	UCharacter_Inventory* GetInventory() const
 	{
 		return CharacterInventory;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SetLocomotion(const bool EntityMovement, const bool CameraMovement)
+	{
+		MovementEnabled = EntityMovement;
+		CameraMovementEnabled = CameraMovement;
 	}
 };
