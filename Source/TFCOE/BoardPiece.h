@@ -8,7 +8,7 @@
 
 class UBoxComponent;
 
-UENUM(BlueprintType )
+UENUM(BlueprintType)
 enum EPieceState
 {
 	Enabled UMETA(DisplayName = "Enabled"),
@@ -28,7 +28,6 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	TEnumAsByte<EPieceState> CurrentPieceState = Enabled;
-
 	
 	virtual void BeginPlay() override;
 

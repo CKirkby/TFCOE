@@ -19,18 +19,22 @@ void UCombatManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 	//Tick turned off
 }
 
-void UCombatManager::SetCombatState(const ECombatState NewState)
+void UCombatManager::SetCombatState(const int CombatState)
 {
-	switch (NewState)
+	// Tracks the current state of the game
+	CurrentCombatState = CombatState;
+
+	// 0 -> Disengaged
+	// 1 -> Engaged
+	switch (CombatState)
 	{
-	case Engaged:
-		CurrentCombatState = Engaged;
-		OnCombatBegin.Broadcast();
-		break;
-	case Disengaged:
-		CurrentCombatState = Disengaged;
+	case 0:
 		OnCombatEnd.Broadcast();
 		break;
+	case 1:
+		OnCombatBegin.Broadcast();
+		break;
+	default:
+		OnCombatEnd.Broadcast();
 	}
 }
-

@@ -6,13 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "CombatManager.generated.h"
 
-UENUM(BlueprintType)
-enum ECombatState
-{
-	Engaged UMETA(DisplayName = "Engaged"),
-	Disengaged UMETA(DisplayName = "Disengaged")
-};
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TFCOE_API UCombatManager : public UActorComponent
 {
@@ -30,14 +23,26 @@ public:
 	FOnCombatEnd OnCombatEnd;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	TEnumAsByte<ECombatState> CurrentCombatState = Disengaged;
-	
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
+	int CurrentCombatState = 0;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	
+	/**
+	 * 0 -> Disengaged
+	 * 1 -> Engaged
+	 * @param CombatState The state to set the combat into. 
+	 */
 	UFUNCTION(BlueprintCallable, Category="Combat")
-	void SetCombatState(ECombatState NewState);
+	void SetCombatState(int CombatState);
+
+	UFUNCTION(BlueprintCallable, Category="Combat")
+	int GetCombatState() const
+	{
+		return CurrentCombatState;
+	}
 };
