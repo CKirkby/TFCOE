@@ -18,6 +18,10 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 
 	APlayerCharacter();
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBoardPieceClicked, AActor*, BoardPiece);
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FOnBoardPieceClicked OnBoardPieceClicked;
+
 	protected:
 
 	// Input Mapping & Actions // 
@@ -29,6 +33,8 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	UInputAction* SprintAction = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|Actions")
 	UInputAction* InteractAction = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|Actions")
+	UInputAction* CombatClickAction = nullptr;
 
 	// Settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
@@ -39,6 +45,9 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	float WalkSpeed = 400.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
+	bool CombatModeActivated = false;
 
 	// Components
 	UPROPERTY()
@@ -51,6 +60,9 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	void InitialiseMovementComponent();
+
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void UpdatePlayerCombatState(bool CombatEnabled);
 	
 	// Input Functions
 	void MoveTrigger(const FInputActionValue& Value);
@@ -58,6 +70,8 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	void SprintTrigger();
 	void SprintEnd();
 	void InteractTrigger();
+
+	void CombatClickTrigger();
 
 	// Getter & Setter
 	UCharacter_Inventory* GetInventory() const

@@ -63,6 +63,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &APlayerCharacter::SprintEnd);
 			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Canceled, this, &APlayerCharacter::SprintEnd);
 		}
+
+		if (CombatClickAction)
+		{
+			EnhancedInputComponent->BindAction(CombatClickAction, ETriggerEvent::Started, this, &APlayerCharacter::CombatClickTrigger);
+		}
 		
 	} 
 }
@@ -73,6 +78,27 @@ void APlayerCharacter::InitialiseMovementComponent()
 	if (UCharacterMovementComponent* CharacterMovementComp = GetCharacterMovement())
 	{
 		MovementComponent = CharacterMovementComp;
+	}
+}
+
+void APlayerCharacter::UpdatePlayerCombatState(const bool CombatEnabled)
+{
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (CombatEnabled)
+		{
+			// The combat mode is enabled, the player will no longer be visible and the dummy player will activate
+			CombatModeActivated = true;
+			SetLocomotion(false, true);
+			PlayerController->bShowMouseCursor = true;
+		}
+		else
+		{
+			// Combat is over or not activated, the player will return to visibility and control restored. 
+			CombatModeActivated = false;
+			SetLocomotion(true, false);
+			PlayerController->bShowMouseCursor = false;
+		}
 	}
 }
 
@@ -124,3 +150,24 @@ void APlayerCharacter::InteractTrigger()
 	const int* Amount = CharacterInventory->GetGeneralItemList().Find("Scrap");
 	UE_LOG(LogTemp, Error, TEXT("You now have %i Scrap metal"), *Amount)
 }
+
+void APlayerCharacter::CombatClickTrigger()
+{
+	if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		// Creates an array of types to search for. Only want world dynamic to be triggered
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+
+		// Checks what the mouse is clicking on, the aim is to detect board pieces only
+		FHitResult HitResult;
+		PlayerController->GetHitResultUnderCursorForObjects(ObjectTypes, false, HitResult);
+
+		if (HitResult.bBlockingHit)
+		{
+			// Broadcasts back to blueprints which was hit, where then I can do checks etc...
+			OnBoardPieceClicked.Broadcast(HitResult.GetActor());
+		}
+	}
+}
+9
