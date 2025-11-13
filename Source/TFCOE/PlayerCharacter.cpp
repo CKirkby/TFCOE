@@ -5,6 +5,7 @@
 
 #include "Character_Inventory.h"
 #include "EnhancedInputComponent.h"
+#include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 
@@ -91,6 +92,25 @@ void APlayerCharacter::UpdatePlayerCombatState(const bool CombatEnabled)
 			CombatModeActivated = true;
 			SetLocomotion(false, true);
 			PlayerController->bShowMouseCursor = true;
+			
+			UAssetManager::GetStreamableManager().RequestAsyncLoad(CombatPlayer.ToSoftObjectPath(), FStreamableDelegate::CreateLambda([this]
+			{
+				if (UClass* LoadedClass = Cast<UClass>(CombatPlayer.Get()))
+				{
+					if (AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(LoadedClass, GetActorLocation(), GetActorRotation()))
+					{
+						UE_LOG(LogTemp, Error, TEXT("Successfully Spawned AI Actor"))
+					}
+					else
+					{
+						UE_LOG(LogTemp, Error, TEXT("Failed to spawn ai actor"))
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Player Character: Attempt to load AI player, Loaded Class failure"))
+				}
+			}));
 		}
 		else
 		{
@@ -170,4 +190,3 @@ void APlayerCharacter::CombatClickTrigger()
 		}
 	}
 }
-9

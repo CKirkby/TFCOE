@@ -18,6 +18,8 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 
 	APlayerCharacter();
 
+public:
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBoardPieceClicked, AActor*, BoardPiece);
 	UPROPERTY(BlueprintAssignable, Category="Events")
 	FOnBoardPieceClicked OnBoardPieceClicked;
@@ -46,6 +48,8 @@ class TFCOE_API APlayerCharacter : public APaperZDCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
+	TSoftClassPtr<AActor> CombatPlayer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
 	bool CombatModeActivated = false;
 
