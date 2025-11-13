@@ -52,6 +52,8 @@ public:
 	TSoftClassPtr<AActor> CombatPlayer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
 	bool CombatModeActivated = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
+	AActor* AIPlayerDummy = nullptr;
 
 	// Components
 	UPROPERTY()
@@ -88,5 +90,11 @@ public:
 	{
 		MovementEnabled = EntityMovement;
 		CameraMovementEnabled = CameraMovement;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	AActor* GetPlayerAIDummy() const
+	{
+		return AIPlayerDummy;
 	}
 };

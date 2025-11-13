@@ -92,25 +92,22 @@ void APlayerCharacter::UpdatePlayerCombatState(const bool CombatEnabled)
 			CombatModeActivated = true;
 			SetLocomotion(false, true);
 			PlayerController->bShowMouseCursor = true;
-			
+
+			// Async loads the dummy player character for use with the combat systems. 
 			UAssetManager::GetStreamableManager().RequestAsyncLoad(CombatPlayer.ToSoftObjectPath(), FStreamableDelegate::CreateLambda([this]
 			{
 				if (UClass* LoadedClass = Cast<UClass>(CombatPlayer.Get()))
 				{
-					if (AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(LoadedClass, GetActorLocation(), GetActorRotation()))
-					{
-						UE_LOG(LogTemp, Error, TEXT("Successfully Spawned AI Actor"))
-					}
-					else
-					{
-						UE_LOG(LogTemp, Error, TEXT("Failed to spawn ai actor"))
-					}
+					AIPlayerDummy = GetWorld()->SpawnActor<AActor>(LoadedClass, GetActorLocation(), GetActorRotation());
 				}
 				else
 				{
 					UE_LOG(LogTemp, Error, TEXT("Player Character: Attempt to load AI player, Loaded Class failure"))
 				}
 			}));
+
+			// Sets the main player to be hidden in the game so that it cannot interfere
+			SetActorHiddenInGame(true);
 		}
 		else
 		{
@@ -118,6 +115,17 @@ void APlayerCharacter::UpdatePlayerCombatState(const bool CombatEnabled)
 			CombatModeActivated = false;
 			SetLocomotion(true, false);
 			PlayerController->bShowMouseCursor = false;
+
+			// Places the hidden player in the exact spot as the AI dummy so that it can resume control seemlessly
+			if (AIPlayerDummy)
+			{
+				SetActorLocation(AIPlayerDummy->GetActorLocation());
+				SetActorRotation(AIPlayerDummy->GetActorRotation());
+
+				AIPlayerDummy->Destroy();
+			}
+			
+			SetActorHiddenInGame(false);
 		}
 	}
 }
