@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "PlayerCharacter.generated.h"
 
+class ACombatCameraOperator;
 class UCharacter_Inventory;
 /**
  * 
@@ -48,35 +49,51 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
 
+	// Combat References 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
-	TSoftClassPtr<AActor> CombatPlayer;
+	TSoftClassPtr<AActor> AIPlayerDummyClass = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
+	TSoftClassPtr<ACombatCameraOperator> CameraOperatorClass = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
 	bool CombatModeActivated = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	AActor* AIPlayerDummy = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
+	ACombatCameraOperator* CameraOperator = nullptr;
 
 	// Components
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCharacter_Inventory* CharacterInventory = nullptr;
+	UPROPERTY()
+	APlayerController* PlayerController = nullptr;
 	
 	// Functions
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
+	
 	void InitialiseMovementComponent();
+
+	// Combat Functions
+	void EnterCombatMode();
+	void ExitCombatMode();
+	void AsyncLoadDummy();
+	void SetMainActorHidden(bool SetHidden);
+	void DestroyDummy();
+	void SpawnAndSetCameraOperator();
+	void ReturnAndDestroyCameraOperator();
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void UpdatePlayerCombatState(bool CombatEnabled);
 	
 	// Input Functions
 	void MoveTrigger(const FInputActionValue& Value);
+	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void ResetMovement();
 	void SprintTrigger();
 	void SprintEnd();
 	void InteractTrigger();
-
 	void CombatClickTrigger();
 
 	// Getter & Setter
@@ -96,5 +113,11 @@ public:
 	AActor* GetPlayerAIDummy() const
 	{
 		return AIPlayerDummy;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	ACombatCameraOperator* GetCameraOperator() const
+	{
+		return CameraOperator;
 	}
 };
