@@ -6,6 +6,14 @@
 #include "Components/ActorComponent.h"
 #include "CombatManager.generated.h"
 
+UENUM()
+enum ETurnOrder
+{
+	Player UMETA(DisplayName = "Player"),
+	Enemy UMETA(DisplayName = "Enemy"),
+	Companion UMETA(DisplayName = "Companion")
+};
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TFCOE_API UCombatManager : public UActorComponent
 {
@@ -27,6 +35,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
 	int CurrentCombatState = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	TMap<TEnumAsByte<ETurnOrder>, int> TurnOrder;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

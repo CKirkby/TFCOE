@@ -2,8 +2,9 @@
 
 #include "CombatManager.h"
 
+
 UCombatManager::UCombatManager()
-{
+{ 
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
