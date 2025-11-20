@@ -58,7 +58,10 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Board Piece")
-	TArray<FHitResult> ActivateCombatTrace(UPARAM(meta = (Bitmask, BitmaskEnum = "ETraceDirections")) int Directions);
+	TArray<FHitResult> ActivateCombatTrace(UPARAM(meta = (Bitmask, BitmaskEnum = "ETraceDirections")) int Directions, float CardinalTraceSize, float
+	                                       OrdinalTraceSize);
+
+	TArray<FHitResult> PerformDirectionalTrace(TArray<FVector> DirectionArray, float TraceSize);
 
 
 	// Getter and Setter
