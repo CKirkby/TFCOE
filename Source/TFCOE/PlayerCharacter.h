@@ -60,7 +60,6 @@ public:
 	AActor* AIPlayerDummy = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	ACombatCameraOperator* CameraOperator = nullptr;
-	FVector2D CurrentGridCoordinates = FVector2D::ZeroVector;
 
 	// Components
 	UPROPERTY()
@@ -130,17 +129,5 @@ public:
 	ACombatCameraOperator* GetCameraOperator() const
 	{
 		return CameraOperator;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Player")
-	FVector2D GetCurrentGridCoordinates() const
-	{
-		return CurrentGridCoordinates;
-	}
-
-	UFUNCTION(BlueprintCallable, Category = "Player")
-	void SetCurrentGridCoordinates(const FVector2D Coordinates)
-	{
-		CurrentGridCoordinates = Coordinates;
 	}
 };
