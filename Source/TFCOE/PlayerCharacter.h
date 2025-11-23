@@ -60,6 +60,7 @@ public:
 	AActor* AIPlayerDummy = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	ACombatCameraOperator* CameraOperator = nullptr;
+	FVector2D CurrentGridCoordinates = FVector2D::ZeroVector;
 
 	// Components
 	UPROPERTY()
@@ -102,22 +103,44 @@ public:
 		return CharacterInventory;
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "Settings")
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	void SetLocomotion(const bool EntityMovement, const bool CameraMovement)
 	{
 		MovementEnabled = EntityMovement;
 		CameraMovementEnabled = CameraMovement;
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "Settings")
-	AActor* GetPlayerAIDummy() const
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	AActor* GetPlayerAI_Dummy() const
 	{
 		return AIPlayerDummy;
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "Settings")
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	FVector GetAI_DummyLocation() const
+	{
+		if (AIPlayerDummy)
+		{
+			return AIPlayerDummy->GetActorLocation();
+		}
+		return FVector::ZeroVector;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	ACombatCameraOperator* GetCameraOperator() const
 	{
 		return CameraOperator;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	FVector2D GetCurrentGridCoordinates() const
+	{
+		return CurrentGridCoordinates;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetCurrentGridCoordinates(const FVector2D Coordinates)
+	{
+		CurrentGridCoordinates = Coordinates;
 	}
 };

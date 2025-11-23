@@ -16,27 +16,6 @@ enum EPieceState
 	Occupied UMETA(DisplayName = "Occupied"),
 };
 
-UENUM(BlueprintType, meta = (Bitflags, BitmaskEnum="ETraceDirections", UseEnumValuesAsMaskValuesInEditor="true"))
-enum class ETraceDirections : uint8
-{
-	None = 0 UMETA(Hidden),
-	Up = 1 << 0,
-	Down = 1 << 1,
-	Left = 1 << 2,
-	Right = 1 << 3,
-	UpperLeft = 1 << 4,
-	UpperRight = 1 << 5,
-	LowerLeft = 1 << 6,
-	LowerRight = 1 << 7
-};
-ENUM_CLASS_FLAGS(ETraceDirections)
-
-struct FDirectionBinding
-{
-	ETraceDirections Direction;
-	TFunction<void()> BindAction;
-};
-
 UCLASS()
 class TFCOE_API ABoardPiece : public AActor
 {
@@ -46,6 +25,8 @@ public:
 	ABoardPiece();
 
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	FVector2D GridPosition;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	TEnumAsByte<EPieceState> CurrentPieceState = Enabled;
@@ -56,14 +37,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-
-	UFUNCTION(BlueprintCallable, Category = "Board Piece")
-	TArray<FHitResult> ActivateCombatTrace(UPARAM(meta = (Bitmask, BitmaskEnum = "ETraceDirections")) int Directions, float CardinalTraceSize, float
-	                                       OrdinalTraceSize);
-
-	TArray<FHitResult> PerformDirectionalTrace(TArray<FVector> DirectionArray, float TraceSize);
-
-
+	
 	// Getter and Setter
 
 	UFUNCTION(BlueprintCallable, Category = "Board Piece")
@@ -93,6 +67,15 @@ public:
 		}
 	}
 
-	
+	UFUNCTION(BlueprintCallable, Category = "Board Piece")
+	void ClearCurrentOccupier()
+	{
+		CurrentOccupier = nullptr;
+	}
 
+	UFUNCTION(BlueprintCallable, Category = "Board Piece")
+	FVector2D GetGridPosition() const
+	{
+		return GridPosition;
+	}
 };
