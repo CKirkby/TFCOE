@@ -18,7 +18,6 @@ protected:
 
 	// Movement
 	FVector2D CurrentGridCoordinates = FVector2D::ZeroVector;
-
 	
 	// Called when the game starts
 	virtual void BeginPlay() override;
