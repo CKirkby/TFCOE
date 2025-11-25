@@ -28,6 +28,15 @@ public:
 	ABoardPiece();
 
 protected:
+
+	// Components
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UStaticMeshComponent* StaticMesh = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UBoxComponent* BoxCollision = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	USceneComponent* CharacterPosition = nullptr;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	FVector2D GridPosition;
 	
@@ -84,8 +93,8 @@ public:
 
 	// Interface Implementations
 	virtual void NotifyPieceClicked() override {}
-	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
-	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
+	virtual FVector GetBoardPieceLocation() override {return CharacterPosition->GetComponentLocation();}
+	virtual EPieceState GetCurrentPieceState() override {return CurrentPieceState;}
 	virtual FVector2D GetGridCoordinates() override;
 
 	// Unneeded Interface Implementations

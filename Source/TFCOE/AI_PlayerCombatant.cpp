@@ -10,7 +10,7 @@
 // Sets default values
 AAI_PlayerCombatant::AAI_PlayerCombatant()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
 }
