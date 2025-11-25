@@ -3,11 +3,17 @@
 
 #include "PlayerCharacter.h"
 
+#include "BoardPiece.h"
 #include "Character_Inventory.h"
 #include "CombatCameraOperator.h"
+#include "CombatInterface.h"
+#include "CombatManager.h"
 #include "EnhancedInputComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 
 APlayerCharacter::APlayerCharacter()
@@ -71,6 +77,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		if (CombatClickAction)
 		{
 			EnhancedInputComponent->BindAction(CombatClickAction, ETriggerEvent::Started, this, &APlayerCharacter::CombatClickTrigger);
+		}
+
+		if (EndTurnAction)
+		{
+			EnhancedInputComponent->BindAction(EndTurnAction, ETriggerEvent::Triggered, this, &APlayerCharacter::EndTurnTrigger);
 		}
 		
 	} 
@@ -170,7 +181,37 @@ void APlayerCharacter::CombatClickTrigger()
 		if (HitResult.bBlockingHit)
 		{
 			// Broadcasts back to blueprints which was hit, where then I can do checks etc...
-			OnBoardPieceClicked.Broadcast(HitResult.GetActor());
+			OnBoardPieceClicked(HitResult.GetActor());
+		}
+	}
+}
+
+void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
+{
+	if (!BoardPiece)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player Character: On Board Piece Clicked: Board piece reference failure"))
+		return;
+	}
+
+	// Checking if the player can initiate movement
+	if (CombatModeActivated && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
+		{
+			// If it can, tells the AI player so that it can initiate movement.
+			CombatInterface->NotifyMovementRequirementsMet(BoardPiece);
+		}
+	}
+}
+
+void APlayerCharacter::EndTurnTrigger()
+{
+	if (CombatModeActivated)
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			CombatInterface->NotifyEndTurnTriggered();
 		}
 	}
 }
@@ -249,7 +290,7 @@ void APlayerCharacter::SetMainActorHidden(const bool SetHidden)
 
 void APlayerCharacter::DestroyDummy()
 {
-	// Places the hidden player in the exact spot as the AI dummy so that it can resume control seemlessly
+	// Places the hidden player in the exact spot as the AI dummy so that it can resume control seamlessly
 	if (AIPlayerDummy)
 	{
 		SetActorLocation(AIPlayerDummy->GetActorLocation());
@@ -300,3 +341,44 @@ void APlayerCharacter::ReturnAndDestroyCameraOperator()
 	}, 1.5f, false);
 }
 
+// Function to send an interface request to check if it is currently the players turn.
+bool APlayerCharacter::CheckIsPlayersTurn() const
+{
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		return CombatInterface->GetCurrentTurnOrder() == Player;
+	}
+	return false;
+}
+
+// Function to send an interface request to check if the grid slot is currently not occupied or disabled
+bool APlayerCharacter::CheckGridSlotAvailable(AActor* BoardPieceActor)
+{
+	if (BoardPieceActor)
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(BoardPieceActor))
+		{
+			return CombatInterface->GetCurrentPieceState() == EPieceState::Enabled;
+		}
+		return false;
+	}
+	UE_LOG(LogTemp, Error, TEXT("Player Character: Check Grid Slot Available - board piece actor reference failed"))
+	return false;
+}
+
+// An interface call to either start or end combat for the player
+void APlayerCharacter::NotifyCombatStatus(int CombatState)
+{
+	switch (CombatState)
+	{
+		case 0:
+		UpdatePlayerCombatState(false);
+		break;
+		case 1:
+		UpdatePlayerCombatState(true);
+		break;
+		
+		default:
+		UpdatePlayerCombatState(false);
+	}
+}

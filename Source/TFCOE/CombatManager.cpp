@@ -1,6 +1,9 @@
 // Created by Snow Paw Games
 
 #include "CombatManager.h"
+#include "CombatInterface.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 
 UCombatManager::UCombatManager()
@@ -30,19 +33,24 @@ void UCombatManager::SetCombatState(const int CombatState)
 	switch (CombatState)
 	{
 	case 0:
-		OnCombatEnd.Broadcast();
+		// Notifies the player character of combat end
+		NotifyPlayerOfCombatStatus(0);
+		
+		// Ends the combat resetting the values
 		EndCombat();
 		
 		break;
+		
 	case 1:
-		OnCombatBegin.Broadcast();
+		// Notifies the player character of combat start
+		NotifyPlayerOfCombatStatus(1);
 		
 		// Starts the combat and sets the turn order to the first. 
 		SetTurnOrder(1);
 		
 		break;
 	default:
-		OnCombatEnd.Broadcast();
+		NotifyPlayerOfCombatStatus(0);
 	}
 }
 
@@ -97,4 +105,13 @@ void UCombatManager::EndCombat()
 {
 	CurrentTurnIndex = -1;
 	CurrentTurnOrder = None;
+}
+
+// Function to send an interface message to the player stating what the combat status is.
+void UCombatManager::NotifyPlayerOfCombatStatus(const int CombatState) const
+{
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+	{
+		CombatInterface->NotifyCombatStatus(CombatState);
+	}
 }

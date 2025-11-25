@@ -13,3 +13,9 @@ void ABoardPiece::BeginPlay()
 {
 	Super::BeginPlay();
 }
+
+// An interface function to return the coordinates that were set
+FVector2D ABoardPiece::GetGridCoordinates()
+{
+	return GridPosition;
+}

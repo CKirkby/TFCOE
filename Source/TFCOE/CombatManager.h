@@ -2,9 +2,13 @@
 
 #pragma once
 
+#include "CombatInterface.h"
+
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "CombatManager.generated.h"
+
+class ABoardPiece;
 
 UENUM(BlueprintType)
 enum ETurnOrder
@@ -16,7 +20,7 @@ enum ETurnOrder
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class TFCOE_API UCombatManager : public UActorComponent
+class TFCOE_API UCombatManager : public UActorComponent, public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -45,7 +49,6 @@ protected:
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	
 	/**
 	 * 0 -> Disengaged
@@ -82,4 +85,26 @@ public:
 	{
 		return CurrentTurnIndex;
 	}
+
+	// Interface Implementation
+	void NotifyPlayerOfCombatStatus(int CombatState) const;
+	virtual ETurnOrder GetCurrentTurnOrder() override {return CurrentTurnOrder;}
+
+	// Unneeded Interface Implementations
+	// Player
+	virtual void NotifyEndTurn() override {}
+	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
+	virtual AActor* GetPlayerCombatant() override {return nullptr;}
+	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
+	virtual void NotifyCombatStatus(int CombatState) override {}
+	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
+
+	// Gamemode
+	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
+	virtual void NotifyEndTurnTriggered() override {}
+
+	// Board Piece
+	virtual void NotifyPieceClicked() override {}
+	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
+	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 };

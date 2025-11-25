@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "CombatInterface.h"
+
 #include "CoreMinimal.h"
+#include "CombatManager.h"
 #include "GameFramework/Actor.h"
 #include "BoardPiece.generated.h"
 
@@ -17,7 +20,7 @@ enum EPieceState
 };
 
 UCLASS()
-class TFCOE_API ABoardPiece : public AActor
+class TFCOE_API ABoardPiece : public AActor, public ICombatInterface
 {
 	GENERATED_BODY()
 	
@@ -31,7 +34,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	TEnumAsByte<EPieceState> CurrentPieceState = Enabled;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY()
 	AActor* CurrentOccupier = nullptr;
 	
 	virtual void BeginPlay() override;
@@ -78,4 +81,23 @@ public:
 	{
 		return GridPosition;
 	}
+
+	// Interface Implementations
+	virtual void NotifyPieceClicked() override {}
+	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
+	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
+	virtual FVector2D GetGridCoordinates() override;
+
+	// Unneeded Interface Implementations
+	// Player
+	virtual void NotifyEndTurn() override {}
+	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
+	virtual AActor* GetPlayerCombatant() override {return nullptr;}
+	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
+	virtual void NotifyCombatStatus(int CombatState) override {}
+	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
+
+	// Gamemode
+	virtual void NotifyEndTurnTriggered() override {}
+	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 };
