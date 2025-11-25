@@ -257,7 +257,9 @@ void APlayerCharacter::AsyncLoadDummy()
 	{
 		if (UClass* LoadedClass = Cast<UClass>(AIPlayerDummyClass.Get()))
 		{
-			AIPlayerDummy = GetWorld()->SpawnActor<AActor>(LoadedClass, GetActorLocation(), GetActorRotation());
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			AIPlayerDummy = GetWorld()->SpawnActor<AActor>(LoadedClass, GetActorLocation(), GetActorRotation(), SpawnParams);
 		}
 		else
 		{

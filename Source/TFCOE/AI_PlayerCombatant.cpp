@@ -13,26 +13,11 @@ AAI_PlayerCombatant::AAI_PlayerCombatant()
 	PrimaryActorTick.bCanEverTick = false;
 
 	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
-
-	AActor::SetActorHiddenInGame(true);
 }
 
 void AAI_PlayerCombatant::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
-	FTimerHandle DelayBeforeVisible;
-	TWeakObjectPtr SafeThis = this;
-	GetWorld()->GetTimerManager().SetTimer(DelayBeforeVisible, [SafeThis]
-	{
-		if (SafeThis.IsValid())
-		{
-			SafeThis->SetActorHiddenInGame(false);
-				
-		}
-	}, 0.05f, false);
-	
 }
 
 void AAI_PlayerCombatant::Tick(float DeltaTime)
