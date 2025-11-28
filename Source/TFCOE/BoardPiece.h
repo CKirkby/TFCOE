@@ -47,8 +47,14 @@ protected:
 	AActor* CurrentOccupier = nullptr;
 	
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	// Getter and Setter
 
@@ -91,9 +97,18 @@ public:
 		return GridPosition;
 	}
 
+	UFUNCTION(BlueprintCallable, Category = "Board Piece")
+	void SetBoxCollider(UBoxComponent* NewBox)
+	{
+		if (NewBox)
+		{
+			BoxCollision = NewBox;
+		}
+	}
+
 	// Interface Implementations
 	virtual void NotifyPieceClicked() override {}
-	virtual FVector GetBoardPieceLocation() override {return CharacterPosition->GetComponentLocation();}
+	virtual FVector GetBoardPieceLocation() override;
 	virtual EPieceState GetCurrentPieceState() override {return CurrentPieceState;}
 	virtual FVector2D GetGridCoordinates() override;
 

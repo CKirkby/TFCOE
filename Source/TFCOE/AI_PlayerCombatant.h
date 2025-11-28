@@ -5,6 +5,7 @@
 #include "CombatInterface.h"
 
 #include "CoreMinimal.h"
+#include "CharacterCombatData.h"
 #include "CombatManager.h"
 #include "PaperZDCharacter.h"
 #include "AI_PlayerCombatant.generated.h"
@@ -34,6 +35,7 @@ public:
 	// Interface Implementation
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override;
 	virtual void SetCombatantCoordinates(FVector2D Coordinates) override;
+	virtual FVector2D GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
 
 	// Unneeded Interface Implementations
 	// Player
@@ -43,7 +45,6 @@ public:
 	virtual void NotifyCombatStatus(int CombatState) override {}
 
 	// Gamemode
-	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 
