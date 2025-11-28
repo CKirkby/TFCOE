@@ -37,14 +37,10 @@ void ABoardPiece::BeginPlay()
 void ABoardPiece::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Error, TEXT("Something overlapped"))
-	
 	if (!OtherActor) return;
 
 	if (OtherActor->ActorHasTag("Combatant"))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Actor Overlapped: " + OtherActor->GetName()));
-		
 		// Registers a combatant has entered the zone
 		SetPieceState(Occupied);
 
@@ -60,14 +56,10 @@ void ABoardPiece::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 void ABoardPiece::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
-	UE_LOG(LogTemp, Error, TEXT("Something ended overlap"))
-
 	if (!OtherActor) return;
 
 	if (OtherActor->ActorHasTag("Combatant"))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Green, TEXT("Actor Left overlap: " + OtherActor->GetName()));
-		
+	{		
 		// Returns the piece state to 
 		SetPieceState(Enabled);
 		ClearCurrentOccupier();

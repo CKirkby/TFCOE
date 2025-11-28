@@ -25,11 +25,6 @@ void AAI_PlayerCombatant::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	GEngine->AddOnScreenDebugMessage(-1, 0.005f,FColor::Orange, TEXT("Current Time Points: " + FString::FromInt(CombatData->GetTimePoints())));
-
-	GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("Current Grid Coordinates: " + FString::FromInt(CombatData->GetCurrentGridCoordinates().X) + " " +
-		FString::FromInt(CombatData->GetCurrentGridCoordinates().Y)));
-	
-
 }
 
 // An interface function to initiate movement 
@@ -41,9 +36,6 @@ void AAI_PlayerCombatant::NotifyMovementRequirementsMet(AActor* BoardPiece)
 	{
 		// Gets the target grid coordinates
 		const FVector2D GridCoordinates = CombatInterface->GetGridCoordinates();
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target Grid Coordinates: " + FString::FromInt(GridCoordinates.X) + " " +
-		FString::FromInt(GridCoordinates.Y)));
 
 		// Performs a check to see if the player has sufficient time points to be able to move. Reducing the time points in the process
 		if (CombatData->CheckCanAffordMovement(CombatData->GetCurrentGridCoordinates(), GridCoordinates))
