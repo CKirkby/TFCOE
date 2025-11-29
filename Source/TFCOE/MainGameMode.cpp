@@ -36,9 +36,8 @@ void AMainGameMode::BeginPlay()
 void AMainGameMode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	FString StringEnum = UEnum::GetValueAsString(CombatManager->GetCurrentTurnOrder());
-	GEngine->AddOnScreenDebugMessage(-1, 0.005f,FColor::Red, TEXT("Current Turn: " + StringEnum));
+	
+	GEngine->AddOnScreenDebugMessage(-1, 0.005f,FColor::Red, TEXT("Current Turn: " + UEnum::GetValueAsString(CombatManager->GetCurrentTurnOrder())));
 }
 
 // Interface function to initialise the combat state

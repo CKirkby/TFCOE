@@ -43,11 +43,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	TEnumAsByte<EPieceState> CurrentPieceState = Enabled;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Materials")
+	UMaterialInterface* OriginalMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Materials")
+	UMaterialInterface* MovementClickMaterial = nullptr;
+
 	UPROPERTY()
 	AActor* CurrentOccupier = nullptr;
 	
 	virtual void BeginPlay() override;
-	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
 
@@ -55,6 +59,8 @@ public:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	void ResetMaterial();
 	
 	// Getter and Setter
 
@@ -107,7 +113,7 @@ public:
 	}
 
 	// Interface Implementations
-	virtual void NotifyPieceClicked() override {}
+	virtual void NotifyPieceClicked() override;
 	virtual FVector GetBoardPieceLocation() override;
 	virtual EPieceState GetCurrentPieceState() override {return CurrentPieceState;}
 	virtual FVector2D GetGridCoordinates() override;
@@ -117,7 +123,7 @@ public:
 	virtual void NotifyEndTurn() override {}
 	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
-	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
+	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {};
 	virtual void NotifyCombatStatus(int CombatState) override {}
 	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
 

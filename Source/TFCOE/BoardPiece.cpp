@@ -17,21 +17,16 @@ ABoardPiece::ABoardPiece()
 	CharacterPosition->SetupAttachment(StaticMesh);		
 }
 
-void ABoardPiece::OnConstruction(const FTransform& Transform)
+void ABoardPiece::BeginPlay()
 {
-	Super::OnConstruction(Transform);
+	Super::BeginPlay();
 
 	// Binds the on overlap function
 	if (BoxCollision)
 	{
 		BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ABoardPiece::OnOverlapBegin);
-        BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ABoardPiece::OnOverlapEnd);
+		BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ABoardPiece::OnOverlapEnd);
 	}
-}
-
-void ABoardPiece::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void ABoardPiece::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -66,6 +61,22 @@ void ABoardPiece::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	}
 }
 
+void ABoardPiece::NotifyPieceClicked()
+{
+	if (!OriginalMaterial || !MovementClickMaterial)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Board Piece: Piece clicked - One or more materials not set"))
+		return;
+	}
+
+	UMaterialInstanceDynamic* NewMaterial = UMaterialInstanceDynamic::Create(MovementClickMaterial, this);
+	StaticMesh->SetMaterial(0, NewMaterial);
+
+	// Sets a timer to reset the material
+	FTimerHandle DelayBeforeResetMaterialHandle;
+	GetWorld()->GetTimerManager().SetTimer(DelayBeforeResetMaterialHandle,this, &ABoardPiece::ResetMaterial, 1.0f, false);
+}
+
 FVector ABoardPiece::GetBoardPieceLocation()
 {
 	if (CharacterPosition)
@@ -80,4 +91,11 @@ FVector ABoardPiece::GetBoardPieceLocation()
 FVector2D ABoardPiece::GetGridCoordinates()
 {
 	return GridPosition;
+}
+
+void ABoardPiece::ResetMaterial()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Green, TEXT("This fired"));
+	UMaterialInstanceDynamic* OrginalMat = UMaterialInstanceDynamic::Create(OriginalMaterial, this);
+	StaticMesh->SetMaterial(0, OrginalMat);
 }

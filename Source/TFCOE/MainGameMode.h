@@ -30,14 +30,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UBoardManager* BoardManager = nullptr;
 
-	// Functions
-	UFUNCTION(BlueprintCallable, Category = "Gamemode")
-	void InitialiseCombatState(int CombatState) const;
 
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
 
+	// Functions
+	UFUNCTION(BlueprintCallable, Category = "Gamemode")
+	void InitialiseCombatState(int CombatState) const;
 	
 	// Interface Implementations
 	virtual void NotifyEndTurnTriggered() override;

@@ -13,6 +13,7 @@
 #include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "CollisionQueryParams.h"
 #include "GameFramework/Character.h"
 
 
@@ -170,13 +171,9 @@ void APlayerCharacter::CombatClickTrigger()
 {
 	if (PlayerController)
 	{
-		// Creates an array of types to search for. Only want world dynamic to be triggered
-		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
-
 		// Checks what the mouse is clicking on, the aim is to detect board pieces only
 		FHitResult HitResult;
-		PlayerController->GetHitResultUnderCursorForObjects(ObjectTypes, false, HitResult);
+		PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
 
 		if (HitResult.bBlockingHit)
 		{
