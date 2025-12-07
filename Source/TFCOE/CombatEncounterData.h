@@ -36,6 +36,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	ABoardPiece* StartingBoardPiece = nullptr;
 
+	bool CombatTriggered = false;
+
 public:
 	virtual void BeginPlay() override;
 

@@ -28,8 +28,16 @@ void ACombatEncounterData::BeginPlay()
 void ACombatEncounterData::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                           UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Starts the combat and sends the board and combatants. 
-	SendEncounterInformation();
+	if (OtherActor && OtherActor->ActorHasTag("Player"))
+	{
+		// Starts the combat and sends the board and combatants.
+		if (!CombatTriggered)
+		{
+			SendEncounterInformation();
+			SetActorEnableCollision(false);
+			CombatTriggered = true;
+		}
+	}
 }
 
 void ACombatEncounterData::CollectEncounterPieces()

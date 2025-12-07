@@ -1,8 +1,6 @@
 // Created by Snow Paw Games
 
 #include "BoardPiece.h"
-
-#include "Components/BoxComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Engine/World.h"
 
@@ -20,21 +18,9 @@ ABoardPiece::ABoardPiece()
 void ABoardPiece::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Binds the on overlap function
-	if (BoxCollision)
-	{
-		// Since the box collision is created in blueprints, begin play will fire twice, so I use this to safety sort it out.
-		BoxCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ABoardPiece::OnOverlapBegin);
-		BoxCollision->OnComponentEndOverlap.RemoveDynamic(this, &ABoardPiece::OnOverlapEnd);
-		
-		BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ABoardPiece::OnOverlapBegin);
-		BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ABoardPiece::OnOverlapEnd);
-	}
 }
 
-void ABoardPiece::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ABoardPiece::TriggerOverlapFunctionality(AActor* OtherActor)
 {
 	if (!OtherActor) return;
 
@@ -52,8 +38,7 @@ void ABoardPiece::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	}
 }
 
-void ABoardPiece::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex)
+void ABoardPiece::TriggerOverlapEndFunctionality(AActor* OtherActor)
 {
 	if (!OtherActor) return;
 
