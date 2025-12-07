@@ -187,7 +187,6 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 {
 	if (!BoardPiece)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Player Character: On Board Piece Clicked: Board piece reference failure"))
 		return;
 	}
 

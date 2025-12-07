@@ -24,6 +24,10 @@ void ABoardPiece::BeginPlay()
 	// Binds the on overlap function
 	if (BoxCollision)
 	{
+		// Since the box collision is created in blueprints, begin play will fire twice, so I use this to safety sort it out.
+		BoxCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ABoardPiece::OnOverlapBegin);
+		BoxCollision->OnComponentEndOverlap.RemoveDynamic(this, &ABoardPiece::OnOverlapEnd);
+		
 		BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ABoardPiece::OnOverlapBegin);
 		BoxCollision->OnComponentEndOverlap.AddDynamic(this, &ABoardPiece::OnOverlapEnd);
 	}
@@ -85,12 +89,6 @@ FVector ABoardPiece::GetBoardPieceLocation()
 	}
 
 	return FVector::ZeroVector;
-}
-
-// An interface function to return the coordinates that were set
-FVector2D ABoardPiece::GetGridCoordinates()
-{
-	return GridPosition;
 }
 
 void ABoardPiece::ResetMaterial()

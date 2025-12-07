@@ -16,13 +16,6 @@ void UCombatManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UCombatManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	//Tick turned off
-}
-
 void UCombatManager::SetCombatState(const int CombatState)
 {
 	// Tracks the current state of the game
@@ -105,6 +98,16 @@ void UCombatManager::EndCombat()
 {
 	CurrentTurnIndex = -1;
 	CurrentTurnOrder = None;
+}
+
+void UCombatManager::SetActiveCombatants(const TArray<AActor*>& NewCombatants)
+{
+	ActiveCombatants = NewCombatants;
+}
+
+void UCombatManager::ClearActiveCombatants()
+{
+	ActiveCombatants.Empty();
 }
 
 // Function to send an interface message to the player stating what the combat status is.

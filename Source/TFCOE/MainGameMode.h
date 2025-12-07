@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CombatInterface.h"
+#include "EncounterInterface.h"
 
 #include "CoreMinimal.h"
 #include "CombatManager.h"
@@ -15,14 +16,15 @@ class UCombatManager;
  * 
  */
 UCLASS()
-class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface
+class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface
 {
+	
 	GENERATED_BODY()
 
 public:
 	AMainGameMode();
 
-	protected:
+protected:
 	
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
@@ -40,6 +42,13 @@ public:
 	void InitialiseCombatState(int CombatState) const;
 	
 	// Interface Implementations
+
+	// Encounter Interface
+	virtual void BeginCombat() override;
+	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces) override;
+	virtual void InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants) override;
+
+	// Combat Interface 
 	virtual void NotifyEndTurnTriggered() override;
 	virtual ETurnOrder GetCurrentTurnOrder() override;
 

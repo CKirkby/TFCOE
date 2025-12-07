@@ -20,15 +20,17 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
-	TMap<FVector2D, ABoardPiece*> GridPairing;
+	TMap<FVector2D, AActor*> GridPairing;
 	
 	virtual void BeginPlay() override;
 
 public:	
 	
 	UFUNCTION(BlueprintCallable)
-	void AddGridPairing(FVector2D GridCoordinates, ABoardPiece* BoardPiece);
+	void AddGridPairing(FVector2D GridCoordinates, AActor* BoardPiece);
 
 	UFUNCTION(BlueprintCallable)
-	ABoardPiece* GetGridPiece(FVector2D GridCoordinates) const;
+	AActor* GetGridPiece(FVector2D GridCoordinates) const;
+
+	void ClearActiveBoard();
 };

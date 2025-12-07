@@ -27,14 +27,6 @@ class TFCOE_API UCombatManager : public UActorComponent, public ICombatInterface
 public:	
 	UCombatManager();
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCombatBegin);
-	UPROPERTY(BlueprintAssignable, Category="Events")
-	FOnCombatBegin OnCombatBegin;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCombatEnd);
-	UPROPERTY(BlueprintAssignable, Category="Events")
-	FOnCombatEnd OnCombatEnd;
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -44,11 +36,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn Order")
 	TMap<int, TEnumAsByte<ETurnOrder>> TurnOrder;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combatants")
+	TArray<AActor*> ActiveCombatants;
+
 	ETurnOrder CurrentTurnOrder = None;
 	int CurrentTurnIndex = 1;
 
 public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	/**
 	 * 0 -> Disengaged
@@ -63,6 +57,9 @@ public:
 	void EndCurrentTurn();
 	UFUNCTION(BlueprintCallable, Category="CombatManager")
 	void EndCombat();
+
+	void SetActiveCombatants(const TArray<AActor*>& NewCombatants);
+	void ClearActiveCombatants();
 
 	/**
 	 * 0 -> Disengaged

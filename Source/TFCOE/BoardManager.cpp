@@ -12,7 +12,7 @@ void UBoardManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UBoardManager::AddGridPairing(const FVector2D GridCoordinates, ABoardPiece* BoardPiece)
+void UBoardManager::AddGridPairing(const FVector2D GridCoordinates, AActor* BoardPiece)
 {
 	if (BoardPiece)
 	{
@@ -24,12 +24,17 @@ void UBoardManager::AddGridPairing(const FVector2D GridCoordinates, ABoardPiece*
 	}
 }
 
-ABoardPiece* UBoardManager::GetGridPiece(const FVector2D GridCoordinates) const
+AActor* UBoardManager::GetGridPiece(const FVector2D GridCoordinates) const
 {
-	if (ABoardPiece* FoundPiece = GridPairing.FindRef(GridCoordinates))
+	if (AActor* FoundPiece = GridPairing.FindRef(GridCoordinates))
 	{
 		return FoundPiece;
 	}
 	UE_LOG(LogTemp, Error, TEXT("Board Manager: Get Board Piece - Cannot find pairing"))
 	return nullptr;
+}
+
+void UBoardManager::ClearActiveBoard()
+{
+	GridPairing.Empty();
 }

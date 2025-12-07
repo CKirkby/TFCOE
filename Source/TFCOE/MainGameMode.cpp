@@ -5,7 +5,6 @@
 #include "BoardManager.h"
 #include "BoardPiece.h"
 #include "CombatManager.h"
-#include "Kismet/GameplayStatics.h"
 
 AMainGameMode::AMainGameMode()
 {
@@ -18,19 +17,6 @@ AMainGameMode::AMainGameMode()
 void AMainGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Testing for getting board actors
-	TArray<AActor*> BoardActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABoardPiece::StaticClass(), BoardActors);
-
-	for (AActor* BoardActor : BoardActors)
-	{
-		if (ABoardPiece* Piece = Cast<ABoardPiece>(BoardActor))
-		{
-			FVector2D Pos = Piece->GetGridPosition();
-			BoardManager->AddGridPairing(Pos, Piece);
-		}
-	}
 }
 
 void AMainGameMode::Tick(float DeltaTime)
@@ -57,3 +43,33 @@ ETurnOrder AMainGameMode::GetCurrentTurnOrder()
 {
 	return CombatManager->GetCurrentTurnOrder();
 }
+
+// Interface call to trigger combat
+void AMainGameMode::BeginCombat()
+{
+	InitialiseCombatState(1);
+}
+
+// Interface call to receive the board pieces to be stored for combat use
+void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces)
+{
+	for (AActor* BoardActor : ActivePieces)
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(BoardActor))
+		{
+			const FVector2D Pos = CombatInterface->GetGridCoordinates();
+			BoardManager->AddGridPairing(Pos, BoardActor);
+		}
+	}
+}
+
+// Interface call to receive the active combatants for combat use. 
+void AMainGameMode::InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants)
+{
+	if (!ActiveCombatants.IsEmpty())
+	{
+		CombatManager->SetActiveCombatants(ActiveCombatants);	
+	}
+}
+
+
