@@ -54,9 +54,9 @@ void ACombatEncounterData::SendEncounterInformation() const
 		EncounterInterface->BeginCombat();
 
 		// Sends the combat pieces to the board manager in the gamemode
-		if (!CombatBoard.IsEmpty())
+		if (!CombatBoard.IsEmpty() && StartingBoardPiece)
 		{
-			EncounterInterface->InitialiseActiveBoard(CombatBoard);
+			EncounterInterface->InitialiseActiveBoard(CombatBoard, StartingBoardPiece);
 		}
 
 		// Sends the active combatants for this combat instance to the combat manager

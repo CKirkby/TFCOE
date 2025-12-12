@@ -57,3 +57,13 @@ void AAI_PlayerCombatant::SetCombatantCoordinates(const FVector2D Coordinates)
 {
 	CombatData->SetCurrentGridCoordinates(Coordinates);
 }
+
+void AAI_PlayerCombatant::MoveAI_Character(const FVector Location)
+{
+	if (AAIController* AI_Controller = Cast<AAIController>(GetController()))
+	{
+		// Moves the character. 
+		AI_Controller->MoveToLocation(Location, 5.0f, false);
+	}
+}
+

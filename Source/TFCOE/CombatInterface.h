@@ -38,4 +38,7 @@ class TFCOE_API ICombatInterface
 	virtual void NotifyPieceClicked() = 0;
 	virtual FVector GetBoardPieceLocation() = 0;
 	virtual EPieceState GetCurrentPieceState() = 0;
+
+	// General
+	virtual void MoveAI_Character(FVector Location) = 0;
 };

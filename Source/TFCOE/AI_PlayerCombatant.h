@@ -36,6 +36,7 @@ public:
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override;
 	virtual void SetCombatantCoordinates(FVector2D Coordinates) override;
 	virtual FVector2D GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
+	virtual void MoveAI_Character(FVector Location) override;
 
 	// Unneeded Interface Implementations
 	// Player

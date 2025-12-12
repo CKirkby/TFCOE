@@ -5,6 +5,8 @@
 #include "BoardManager.h"
 #include "BoardPiece.h"
 #include "CombatManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
 
 AMainGameMode::AMainGameMode()
 {
@@ -27,9 +29,33 @@ void AMainGameMode::Tick(float DeltaTime)
 }
 
 // Interface function to initialise the combat state
-void AMainGameMode::InitialiseCombatState(const int CombatState) const
+void AMainGameMode::InitialiseCombatState(const int CombatState)
 {
 	CombatManager->SetCombatState(CombatState);
+
+	MovePlayerToStartingPos();
+}
+
+void AMainGameMode::MovePlayerToStartingPos()
+{
+	// Sets a timer to delay the movement slightly, this gives everything time to be setup properly. 
+	FTimerHandle DelayBeforeMoveHandle;
+	TWeakObjectPtr<AMainGameMode> SafeThis = this;
+	GetWorld()->GetTimerManager().SetTimer(DelayBeforeMoveHandle, [SafeThis]
+	{
+		if (!SafeThis.IsValid()) return;
+
+		// Gets the relevant interfaces I need for this function.
+		ICombatInterface* CombatInterfaceBoardPiece = Cast<ICombatInterface>(SafeThis->BoardManager->GetCurrentStartingPiece());
+		if (!CombatInterfaceBoardPiece) return;
+		ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(SafeThis->GetWorld(), 0));
+		if (!CombatInterfacePlayer) return;
+
+		// Gets the location of the starting piece and then moves the player to that spot.
+		const FVector LocationToMoveTo = CombatInterfaceBoardPiece->GetBoardPieceLocation();
+		CombatInterfacePlayer->MoveAI_Character(LocationToMoveTo);
+		
+	}, 1.0f, false);
 }
 
 // Interface function to receive input on the players turn having ended.
@@ -51,7 +77,7 @@ void AMainGameMode::BeginCombat()
 }
 
 // Interface call to receive the board pieces to be stored for combat use
-void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces)
+void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* StartingPiece)
 {
 	for (AActor* BoardActor : ActivePieces)
 	{
@@ -59,6 +85,11 @@ void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces)
 		{
 			const FVector2D Pos = CombatInterface->GetGridCoordinates();
 			BoardManager->AddGridPairing(Pos, BoardActor);
+
+			if (StartingPiece)
+			{
+				BoardManager->SetCurrentStartingPiece(StartingPiece);
+			}
 		}
 	}
 }

@@ -21,6 +21,9 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
 	TMap<FVector2D, AActor*> GridPairing;
+
+	UPROPERTY()
+	AActor* CurrentStartingPiece = nullptr;
 	
 	virtual void BeginPlay() override;
 
@@ -33,4 +36,15 @@ public:
 	AActor* GetGridPiece(FVector2D GridCoordinates) const;
 
 	void ClearActiveBoard();
+	
+	AActor* GetCurrentStartingPiece() const
+	{
+		return CurrentStartingPiece;
+	}
+
+	void SetCurrentStartingPiece(AActor* NewCurrentStartingPiece)
+	{
+		CurrentStartingPiece = NewCurrentStartingPiece;
+	}
+	
 };

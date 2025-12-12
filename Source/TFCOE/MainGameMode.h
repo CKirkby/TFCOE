@@ -19,6 +19,7 @@ UCLASS()
 class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface
 {
 	
+private:
 	GENERATED_BODY()
 
 public:
@@ -39,13 +40,15 @@ public:
 
 	// Functions
 	UFUNCTION(BlueprintCallable, Category = "Gamemode")
-	void InitialiseCombatState(int CombatState) const;
+	void InitialiseCombatState(int CombatState);
+
+	void MovePlayerToStartingPos();
 	
 	// Interface Implementations
 
 	// Encounter Interface
 	virtual void BeginCombat() override;
-	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces) override;
+	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* StartingPiece) override;
 	virtual void InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants) override;
 
 	// Combat Interface 
@@ -63,6 +66,7 @@ public:
 
 	// Gamemode
 	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
+	virtual void MoveAI_Character(FVector Location) override {}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

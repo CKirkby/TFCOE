@@ -22,6 +22,8 @@ enum ETurnOrder
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TFCOE_API UCombatManager : public UActorComponent, public ICombatInterface
 {
+	
+private:
 	GENERATED_BODY()
 
 public:	
@@ -99,6 +101,7 @@ public:
 	// Gamemode
 	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
 	virtual void NotifyEndTurnTriggered() override {}
+	virtual void MoveAI_Character(FVector Location) override {}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

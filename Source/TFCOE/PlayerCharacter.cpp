@@ -326,7 +326,7 @@ void APlayerCharacter::ReturnAndDestroyCameraOperator()
 		
 	// This timer is to allow the camera blend time before the destroy actor happens.
 	FTimerHandle BlendDelayTimerHandle;
-	TWeakObjectPtr SafeThis = this; // Captures a reference to the player
+	TWeakObjectPtr<APlayerCharacter> SafeThis = this; // Captures a reference to the player
 	TWeakObjectPtr SafeCameraOperator = CameraOperator; // Captures a reference to the camera operator
 	GetWorld()->GetTimerManager().SetTimer(BlendDelayTimerHandle, [SafeThis, SafeCameraOperator]()
 	{
@@ -378,5 +378,20 @@ void APlayerCharacter::NotifyCombatStatus(int CombatState)
 		
 		default:
 		UpdatePlayerCombatState(false);
+	}
+}
+
+void APlayerCharacter::MoveAI_Character(FVector Location)
+{
+	if (AIPlayerDummy)
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
+		{
+			CombatInterface->MoveAI_Character(Location);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player Character: AI Move Character - AI Actor ref fail"))
 	}
 }

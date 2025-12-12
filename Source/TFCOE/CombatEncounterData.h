@@ -34,7 +34,7 @@ protected:
 	TArray<AActor*> EnemyCombatants = {};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	ABoardPiece* StartingBoardPiece = nullptr;
+	AActor* StartingBoardPiece = nullptr;
 
 	bool CombatTriggered = false;
 
@@ -51,7 +51,7 @@ public:
 
 	// Encounter Interface
 	virtual void BeginCombat() override {};
-	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces) override {};
+	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* StartingPiece) override {};
 	virtual void InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants) override{};
 	
 };

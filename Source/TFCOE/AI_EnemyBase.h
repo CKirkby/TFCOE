@@ -15,6 +15,8 @@ class UCharacterCombatData;
 UCLASS()
 class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface
 {
+
+private:
 	GENERATED_BODY()
 
 public:
@@ -41,6 +43,7 @@ protected:
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
+	virtual void MoveAI_Character(FVector Location) override {}
 	
 	
 };

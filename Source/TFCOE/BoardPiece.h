@@ -22,8 +22,10 @@ enum EPieceState
 UCLASS()
 class TFCOE_API ABoardPiece : public AActor, public ICombatInterface
 {
+
+private:
 	GENERATED_BODY()
-	
+
 public:	
 	ABoardPiece();
 
@@ -130,4 +132,5 @@ public:
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
+	virtual void MoveAI_Character(FVector Location) override {}
 };

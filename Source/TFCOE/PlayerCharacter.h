@@ -18,6 +18,8 @@ class UCharacter_Inventory;
 UCLASS()
 class TFCOE_API APlayerCharacter : public APaperZDCharacter, public ICombatInterface
 {
+
+private:
 	GENERATED_BODY()
 
 	APlayerCharacter();
@@ -146,6 +148,7 @@ public:
 	virtual void NotifyCombatStatus(int CombatState) override;
 	virtual AActor* GetPlayerCombatant() override {return GetPlayerAI_Dummy();}
 	virtual FVector GetCombatPlayerLocation() override {return AIPlayerDummy->GetActorLocation();}
+	virtual void MoveAI_Character(FVector Location) override;
 
 	// Unneeded Interface Implementations
 	// Player

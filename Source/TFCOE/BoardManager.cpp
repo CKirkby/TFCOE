@@ -37,4 +37,6 @@ AActor* UBoardManager::GetGridPiece(const FVector2D GridCoordinates) const
 void UBoardManager::ClearActiveBoard()
 {
 	GridPairing.Empty();
+
+	CurrentStartingPiece = nullptr;
 }
