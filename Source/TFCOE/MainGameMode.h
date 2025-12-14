@@ -43,13 +43,14 @@ public:
 	void InitialiseCombatState(int CombatState);
 
 	void MovePlayerToStartingPos();
+	void MoveEnemiesToStartingPos(TMap<AActor*, ABoardPiece*> NewCombatants);
 	
 	// Interface Implementations
 
 	// Encounter Interface
 	virtual void BeginCombat() override;
 	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* StartingPiece) override;
-	virtual void InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants) override;
+	virtual void InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> ActiveCombatants) override;
 
 	// Combat Interface 
 	virtual void NotifyEndTurnTriggered() override;

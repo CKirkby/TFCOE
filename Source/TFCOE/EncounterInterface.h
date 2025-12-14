@@ -6,6 +6,8 @@
 #include "UObject/Interface.h"
 #include "EncounterInterface.generated.h"
 
+class ABoardPiece;
+
 UINTERFACE(Blueprintable)
 class TFCOE_API UEncounterInterface : public UInterface
 {
@@ -20,5 +22,5 @@ public:
 	
 	virtual void BeginCombat() = 0;
 	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* StartingPiece) = 0;
-	virtual void InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants) = 0; 
+	virtual void InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> ActiveCombatants) = 0; 
 };

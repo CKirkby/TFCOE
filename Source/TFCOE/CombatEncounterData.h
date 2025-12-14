@@ -26,15 +26,15 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	FName EncounterTag = FName("EncounterX");
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Board")
+	AActor* StartingBoardPiece = nullptr;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Board")
 	TArray<AActor*> CombatBoard = {};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	TArray<AActor*> EnemyCombatants = {};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	AActor* StartingBoardPiece = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combatants")
+	TMap<AActor*, ABoardPiece*> EnemyCombatantsAndStartingPositions = {};
 
 	bool CombatTriggered = false;
 
@@ -52,6 +52,6 @@ public:
 	// Encounter Interface
 	virtual void BeginCombat() override {};
 	virtual void InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* StartingPiece) override {};
-	virtual void InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants) override{};
+	virtual void InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> ActiveCombatants) override{};
 	
 };

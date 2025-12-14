@@ -105,6 +105,12 @@ void UCombatManager::SetActiveCombatants(const TArray<AActor*>& NewCombatants)
 	ActiveCombatants = NewCombatants;
 }
 
+void UCombatManager::AddActiveCombatant(AActor* NewCombatant)
+{
+	if (!NewCombatant) return;
+	ActiveCombatants.Add(NewCombatant);
+}
+
 void UCombatManager::ClearActiveCombatants()
 {
 	ActiveCombatants.Empty();

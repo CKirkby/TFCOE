@@ -185,10 +185,7 @@ void APlayerCharacter::CombatClickTrigger()
 
 void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 {
-	if (!BoardPiece)
-	{
-		return;
-	}
+	if (!BoardPiece) return;
 
 	// Checking if the player can initiate movement
 	if (CombatModeActivated && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))

@@ -31,9 +31,8 @@ void AMainGameMode::Tick(float DeltaTime)
 // Interface function to initialise the combat state
 void AMainGameMode::InitialiseCombatState(const int CombatState)
 {
+	// Sets the current state to be active combat
 	CombatManager->SetCombatState(CombatState);
-
-	MovePlayerToStartingPos();
 }
 
 void AMainGameMode::MovePlayerToStartingPos()
@@ -55,6 +54,35 @@ void AMainGameMode::MovePlayerToStartingPos()
 		const FVector LocationToMoveTo = CombatInterfaceBoardPiece->GetBoardPieceLocation();
 		CombatInterfacePlayer->MoveAI_Character(LocationToMoveTo);
 		
+	}, 1.0f, false);
+}
+
+void AMainGameMode::MoveEnemiesToStartingPos(TMap<AActor*, ABoardPiece*> NewCombatants)
+{
+	if (NewCombatants.IsEmpty()) return;
+	
+	// Sets a timer to delay the movement slightly, this gives everything time to be setup properly. 
+	FTimerHandle DelayBeforeMoveHandle;
+	TWeakObjectPtr<AMainGameMode> SafeThis = this;
+	GetWorld()->GetTimerManager().SetTimer(DelayBeforeMoveHandle, [SafeThis, NewCombatants]
+	{
+		if (!SafeThis.IsValid()) return;
+		
+		for (const auto CombatantPair : NewCombatants)
+		{
+			ABoardPiece* NewPiece = CombatantPair.Value;
+			AActor* NewEnemy = CombatantPair.Key;
+			if (!NewPiece || !NewEnemy) continue;
+			
+			// Gets the relevant interfaces I need for this function.
+			ICombatInterface* CombatInterfaceBoardPiece = Cast<ICombatInterface>(NewPiece);
+			ICombatInterface* CombatInterfaceEnemy = Cast<ICombatInterface>(NewEnemy);
+			if (!CombatInterfaceEnemy || !CombatInterfaceBoardPiece) continue;
+
+			// Gets the location of the starting piece and then moves the enemy to that spot.
+			const FVector LocationToMoveTo = CombatInterfaceBoardPiece->GetBoardPieceLocation();
+			CombatInterfaceEnemy->MoveAI_Character(LocationToMoveTo);
+		}
 	}, 1.0f, false);
 }
 
@@ -92,15 +120,26 @@ void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* 
 			}
 		}
 	}
+
+	// Commands the player to move to the registered starting position.
+	MovePlayerToStartingPos();
 }
 
 // Interface call to receive the active combatants for combat use. 
-void AMainGameMode::InitialiseActiveCombatants(TArray<AActor*> ActiveCombatants)
+void AMainGameMode::InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> ActiveCombatants)
 {
-	if (!ActiveCombatants.IsEmpty())
+	if (ActiveCombatants.IsEmpty()) return;
+
+
+	// Adds the active combatant to the combat manager for tracking
+	for (const auto CombatantPair : ActiveCombatants)
 	{
-		CombatManager->SetActiveCombatants(ActiveCombatants);	
-	}
+		AActor* NewActor = CombatantPair.Key;
+		CombatManager->AddActiveCombatant(NewActor);
+	}	
+
+	// Commands the enemies to move to their starting positions.
+	MoveEnemiesToStartingPos(ActiveCombatants);
 }
 
 

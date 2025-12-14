@@ -50,9 +50,6 @@ void ACombatEncounterData::SendEncounterInformation() const
 	// Accesses the gamemode's interface
 	if (IEncounterInterface* EncounterInterface = Cast<IEncounterInterface>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		// Tells the gamemode to start combat 
-		EncounterInterface->BeginCombat();
-
 		// Sends the combat pieces to the board manager in the gamemode
 		if (!CombatBoard.IsEmpty() && StartingBoardPiece)
 		{
@@ -60,9 +57,12 @@ void ACombatEncounterData::SendEncounterInformation() const
 		}
 
 		// Sends the active combatants for this combat instance to the combat manager
-		if (!EnemyCombatants.IsEmpty())
+		if (!EnemyCombatantsAndStartingPositions.IsEmpty())
 		{
-			EncounterInterface->InitialiseActiveCombatants(EnemyCombatants);
+			EncounterInterface->InitialiseActiveCombatants(EnemyCombatantsAndStartingPositions);
 		}
+
+		// Tells the gamemode to start combat 
+		EncounterInterface->BeginCombat();
 	}
 }

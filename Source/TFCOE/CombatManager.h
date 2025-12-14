@@ -61,6 +61,7 @@ public:
 	void EndCombat();
 
 	void SetActiveCombatants(const TArray<AActor*>& NewCombatants);
+	void AddActiveCombatant(AActor* NewCombatant);
 	void ClearActiveCombatants();
 
 	/**
