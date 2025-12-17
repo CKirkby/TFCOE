@@ -48,6 +48,7 @@ public:
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
+	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

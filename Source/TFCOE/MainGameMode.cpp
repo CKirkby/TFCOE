@@ -98,6 +98,12 @@ ETurnOrder AMainGameMode::GetCurrentTurnOrder()
 	return CombatManager->GetCurrentTurnOrder();
 }
 
+// Interface call to get a grid peice in the board pairing from the coordinates.x
+AActor* AMainGameMode::GetGridPieceFromCoordinates(const FVector2D Coordinates)
+{
+	return BoardManager->GetGridPiece(Coordinates);
+}
+
 // Interface call to trigger combat
 void AMainGameMode::BeginCombat()
 {

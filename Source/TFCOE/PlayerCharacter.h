@@ -149,6 +149,7 @@ public:
 	virtual AActor* GetPlayerCombatant() override {return GetPlayerAI_Dummy();}
 	virtual FVector GetCombatPlayerLocation() override {return AIPlayerDummy->GetActorLocation();}
 	virtual void MoveAI_Character(FVector Location) override;
+	virtual FVector2D GetGridCoordinates() override;
 
 	// Unneeded Interface Implementations
 	// Player
@@ -157,9 +158,9 @@ public:
 	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
 
 	// Gamemode
-	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
+	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

@@ -133,4 +133,5 @@ public:
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual void MoveAI_Character(FVector Location) override {}
+	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
 };

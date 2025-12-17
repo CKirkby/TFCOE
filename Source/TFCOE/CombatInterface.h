@@ -33,6 +33,7 @@ class TFCOE_API ICombatInterface
 	virtual FVector2D GetGridCoordinates() = 0;
 	virtual ETurnOrder GetCurrentTurnOrder() = 0;
 	virtual void NotifyEndTurnTriggered() = 0;
+	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) = 0;
 	
 	// Board Piece
 	virtual void NotifyPieceClicked() = 0;

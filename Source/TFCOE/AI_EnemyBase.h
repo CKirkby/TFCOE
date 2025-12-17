@@ -44,6 +44,7 @@ protected:
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
+	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
 	
 	
 };

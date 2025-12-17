@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnemyBehaviour.h"
 #include "Components/ActorComponent.h"
 #include "CharacterCombatData.generated.h"
+
+class UEnemyBehaviour;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TFCOE_API UCharacterCombatData : public UActorComponent
@@ -16,6 +19,9 @@ public:
 
 protected:
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	UEnemyBehaviour* EntityCombatConfiguration;
+	
 	// Action Points
 	int TimePoints = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
@@ -32,6 +38,9 @@ public:
 	bool CheckCanAffordMovement(FVector2D CurrentCoordinates, FVector2D TargetCoordinates);
 
 	int CalculateMovementCost(FVector2D CurrentCoordinates, const FVector2D TargetCoordinates);
+
+	bool CheckShouldMove(FVector2D PlayerCoordinates);
+	FVector2D CalculateTargetMovementPiece() const;
 	
 	// Getter and Setter //
 	

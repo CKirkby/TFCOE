@@ -55,6 +55,7 @@ public:
 	// Combat Interface 
 	virtual void NotifyEndTurnTriggered() override;
 	virtual ETurnOrder GetCurrentTurnOrder() override;
+	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override;
 
 	// Unneeded Interface Implementations
 	// Player

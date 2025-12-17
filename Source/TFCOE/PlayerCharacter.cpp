@@ -382,6 +382,7 @@ void APlayerCharacter::MoveAI_Character(FVector Location)
 {
 	if (AIPlayerDummy)
 	{
+		// Commands the player AI to move from here for ease of access.
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
 		{
 			CombatInterface->MoveAI_Character(Location);
@@ -391,4 +392,20 @@ void APlayerCharacter::MoveAI_Character(FVector Location)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Player Character: AI Move Character - AI Actor ref fail"))
 	}
+}
+
+FVector2D APlayerCharacter::GetGridCoordinates()
+{
+	if (AIPlayerDummy)
+	{
+		// Gets the AI Dummies grid coordinates for ease of access through the player 
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
+		{
+			return CombatInterface->GetGridCoordinates();
+		}
+		return FVector2D::ZeroVector;
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Player Character: Get Grid Coords - AI Actor ref fail"))
+	return FVector2D::ZeroVector;
 }
