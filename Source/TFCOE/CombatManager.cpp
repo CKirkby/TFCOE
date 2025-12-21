@@ -245,7 +245,7 @@ void UCombatManager::ExecuteEnemyTurn()
 }
 
 void UCombatManager::ExecuteIndividualEnemyTurn()
-{
+          {
 	// If no more enemies in the faction list then enemy turn will be complete.
 	if (CurrentFactionTurnIndex >= FactionTurnOrder.Num())
 	{

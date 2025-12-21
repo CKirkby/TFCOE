@@ -26,11 +26,11 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	// Step 1: Select Target for this turn.
 	AActor* Target = SelectTargetForTurn();
 	if (!Target) return;
-
+	
 	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *Target->GetName());
 	// Step 2: Check if the actor should move
 
-	
+	// End Current Turn
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
@@ -49,9 +49,13 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	// Gets the current combats combatants from the gamemode
 	const TArray<AActor*> CachedActiveCombatants = CombatInterfaceGamemode->GetActiveCombatantRoster();
 	if (CachedActiveCombatants.IsEmpty()) return CombatInterfacePlayer->GetPlayerCombatant();
+
+	// TODO - Remove Owner from the active combatants, to not risk it choosing itself as a target
 	
 	// Creates an array of potential targets to choose from. 
 	TArray<AActor*> PotentialTargets = {};
+
+	// Logic Begin //
 	
 	// The Actor was attacked last turn
 	if (AttackedLastTurn)
@@ -69,15 +73,18 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			return CombatInterfacePlayer->GetPlayerCombatant();
 		}
 
-		// Chance to keep attacking target
-		bool bShouldChangeTarget = FMath::FRand() < 0.25f;
+		// Chance to keep attacking target, If the entity has focused aggression, very little chance to change target, otherwise normal chance
+		const float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.30f;
+		const bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 		if (CurrentTarget && !bShouldChangeTarget)
 		{
 			// Target Current Target
 			return CurrentTarget;
 		}
 
-		// Makes sure this entity actually has a preferred faction to target and if not it will prioritise others. 
+		// Makes sure this entity actually has a preferred faction to target and if not it will prioritise others.
+
+		// TODO - Make a call to gamemode to check current factions in play to make sure the faction is actually on the board.
 		if (PreferredFaction != EFactionID::None)
 		{
 			// Gets the targets of these actors preferred target faction.
@@ -93,7 +100,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			return CombatInterfacePlayer->GetPlayerCombatant();
 		}
 
-		// The Preferred Faction is none
+		// The Preferred Faction is none //
 		
 		// Target Player or Players party with weight 80/20 depending on the last attacker.
 		if (FMath::FRand() < 0.80f)
@@ -102,7 +109,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			return CombatInterfacePlayer->GetPlayerCombatant();
 		}
 
-		// Target Party
+		// Target Party //
 		// Gets the party members from the active combatants.
 		PotentialTargets = GetCombatantsByFaction(CachedActiveCombatants, EFactionID::PlayerParty);
 		if (!PotentialTargets.IsEmpty())
@@ -113,14 +120,15 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	}
 	
 	// Was not attacked last turn, choose a target.
-	bool bShouldChangeTarget = FMath::FRand() < 0.15f;
+	const float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
+	bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 	if (CurrentTarget && !bShouldChangeTarget)
 	{
 		// Target Current Target
 		return CurrentTarget;
 	}
 
-	// Else should either change target / select new target
+	// Else should either change target / select new target //
 
 	if (PreferredFaction != EFactionID::None)
 	{

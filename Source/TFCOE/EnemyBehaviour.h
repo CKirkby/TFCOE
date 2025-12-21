@@ -26,6 +26,7 @@ class TFCOE_API UEnemyBehaviour : public UDataAsset
 	EEntityID EntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|ID")
 	EFactionID FactionID;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|ID")
 	EEnemyTier FactionRank = EEnemyTier::Grunt; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Configuration")
