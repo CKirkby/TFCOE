@@ -35,7 +35,8 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
 {
-	// TODO - Create aggressive config to add different weight to targeting current target
+
+	// TODO - Chance to change target based on aggression is returning 0? 
 	
 	// Gets preferred target faction from config
 	const EFactionID PreferredFaction = EntityCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
@@ -74,8 +75,8 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		}
 
 		// Chance to keep attacking target, If the entity has focused aggression, very little chance to change target, otherwise normal chance
-		const float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.30f;
-		const bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
+		float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.30f;
+		bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 		if (CurrentTarget && !bShouldChangeTarget)
 		{
 			// Target Current Target
@@ -120,7 +121,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	}
 	
 	// Was not attacked last turn, choose a target.
-	const float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
+	float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
 	bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 	if (CurrentTarget && !bShouldChangeTarget)
 	{
