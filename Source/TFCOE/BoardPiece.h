@@ -22,7 +22,7 @@ enum EPieceState
 UCLASS()
 class TFCOE_API ABoardPiece : public AActor, public ICombatInterface
 {
-
+	
 private:
 	GENERATED_BODY()
 
@@ -134,4 +134,8 @@ public:
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual void MoveAI_Character(FVector Location) override {}
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual void BeginTurnPhase() override {}
+	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
+	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
+	virtual EEnemyTier GetActorFactionRank() override { return EEnemyTier::Grunt; }
 };

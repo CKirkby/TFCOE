@@ -31,6 +31,9 @@ struct FCombatConfiguration
 	int AttackRange = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	bool bAttackerTakesTargetPriority = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	bool bWillRetreatOnLowHealth = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")

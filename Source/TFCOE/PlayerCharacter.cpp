@@ -367,14 +367,14 @@ void APlayerCharacter::NotifyCombatStatus(int CombatState)
 	switch (CombatState)
 	{
 		case 0:
-		UpdatePlayerCombatState(false);
+		UpdatePlayerCombatState(false); // Exit combat
 		break;
 		case 1:
-		UpdatePlayerCombatState(true);
+		UpdatePlayerCombatState(true); // Enter combat
 		break;
 		
 		default:
-		UpdatePlayerCombatState(false);
+		UpdatePlayerCombatState(false); // Failsafe exit combat.
 	}
 }
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CombatConfiguration.h"
+#include "EnemyTier.h"
 #include "Engine/DataAsset.h"
 #include "EnemyBehaviour.generated.h"
 
@@ -25,6 +26,7 @@ class TFCOE_API UEnemyBehaviour : public UDataAsset
 	EEntityID EntityID;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|ID")
 	EFactionID FactionID;
+	EEnemyTier FactionRank = EEnemyTier::Grunt; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Configuration")
 	FCombatConfiguration CombatConfiguration;

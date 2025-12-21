@@ -104,6 +104,19 @@ AActor* AMainGameMode::GetGridPieceFromCoordinates(const FVector2D Coordinates)
 	return BoardManager->GetGridPiece(Coordinates);
 }
 
+// Interface call to get the current active combatants from the combat manager.
+TArray<AActor*> AMainGameMode::GetActiveCombatantRoster()
+{
+	// Gets the active combatants from the combat manager and sends that information to whoever called it.
+	if (TArray<AActor*> ActiveCombatants = CombatManager->GetActiveCombatants(); !ActiveCombatants.IsEmpty())
+	{
+		return ActiveCombatants;
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Game Mode: Get Active Combatant Roster - Array Empty"))
+	return TArray<AActor*>();
+}
+
 // Interface call to trigger combat
 void AMainGameMode::BeginCombat()
 {
@@ -135,13 +148,13 @@ void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* 
 void AMainGameMode::InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> ActiveCombatants)
 {
 	if (ActiveCombatants.IsEmpty()) return;
-
-
+	
 	// Adds the active combatant to the combat manager for tracking
 	for (const auto CombatantPair : ActiveCombatants)
 	{
 		AActor* NewActor = CombatantPair.Key;
 		CombatManager->AddActiveCombatant(NewActor);
+		CombatManager->AddPlayerPartyToActiveCombatants();
 	}	
 
 	// Commands the enemies to move to their starting positions.

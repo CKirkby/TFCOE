@@ -26,7 +26,7 @@ private:
 
 public:
 	
-	protected:
+protected:
 
 	// Input Mapping & Actions // 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input|MappingContext")
@@ -51,6 +51,9 @@ public:
 	float WalkSpeed = 400.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Configuration")
+	EFactionID FactionID = EFactionID::Player;
 
 	// Combat References 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
@@ -119,7 +122,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	AActor* GetPlayerAI_Dummy() const
 	{
-		return AIPlayerDummy;
+		if (AIPlayerDummy)
+		{
+			return AIPlayerDummy;
+		}
+		return nullptr;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Player")
@@ -150,6 +157,7 @@ public:
 	virtual FVector GetCombatPlayerLocation() override {return AIPlayerDummy->GetActorLocation();}
 	virtual void MoveAI_Character(FVector Location) override;
 	virtual FVector2D GetGridCoordinates() override;
+	virtual EFactionID GetActorFactionID() override {return FactionID;}
 
 	// Unneeded Interface Implementations
 	// Player
@@ -161,6 +169,9 @@ public:
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual void BeginTurnPhase() override {}
+	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
+	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

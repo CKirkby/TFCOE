@@ -15,6 +15,7 @@ class UCharacterCombatData;
 UCLASS()
 class TFCOE_API AAI_PlayerCombatant : public APaperZDCharacter, public ICombatInterface
 {
+private:
 	GENERATED_BODY()
 
 public:
@@ -49,6 +50,10 @@ public:
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual void BeginTurnPhase() override {}
+	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
+	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
+	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

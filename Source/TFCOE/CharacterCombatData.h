@@ -21,6 +21,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	UEnemyBehaviour* EntityCombatConfiguration;
+
+	// The target the AI Will pursue. Not necessary for player
+	UPROPERTY()
+	AActor* CurrentTarget = nullptr;
+	UPROPERTY()
+	AActor* PreviousAttacker = nullptr;
+	bool AttackedLastTurn = false;
 	
 	// Action Points
 	int TimePoints = 10;
@@ -33,14 +40,28 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	
-	UFUNCTION(BlueprintCallable, Category="CombatManager")
+
+	// Activates this characters turn. 
+	void ExecuteCurrentTurn();
+
+	// If AI, it will select a character to target. Most of the time it will be the player. 
+	AActor* SelectTargetForTurn();
+
+	// Checks if the character should actually move, is it already next to target etc...
+	bool CheckShouldMove(FVector2D PlayerCoordinates);
+
+	// Used to check if the actor has enough action points to move to that spot.
 	bool CheckCanAffordMovement(FVector2D CurrentCoordinates, FVector2D TargetCoordinates);
 
+	// The math part to the above function.
 	int CalculateMovementCost(FVector2D CurrentCoordinates, const FVector2D TargetCoordinates);
-
-	bool CheckShouldMove(FVector2D PlayerCoordinates);
+	
 	FVector2D CalculateTargetMovementPiece() const;
+	EFactionID GetFactionID() const;
+	EEnemyTier GetFactionRank() const;
+	TArray<AActor*> SortCombatantsByDistance(const TArray<AActor*>& Combatants) const;
+	TArray<AActor*> GetCombatantsByFaction(TArray<AActor*> CombatantsToCheck, EFactionID FactionToCheck);
+	AActor* GetTargetFromClosestOrRandom(TArray<AActor*> PotentialTargets, float Weight) const;
 	
 	// Getter and Setter //
 	

@@ -5,10 +5,22 @@
 #include "CombatInterface.h"
 
 #include "CoreMinimal.h"
+#include "EnemyTier.h"
 #include "Components/ActorComponent.h"
 #include "CombatManager.generated.h"
 
 class ABoardPiece;
+
+USTRUCT()
+struct FFactionTierContainer
+{
+	GENERATED_BODY()
+	
+	UPROPERTY() TArray<AActor*> FactionLeader;
+	UPROPERTY() TArray<AActor*>	Lieutenant;
+	UPROPERTY() TArray<AActor*> Elite;
+	UPROPERTY() TArray<AActor*> Grunt;
+};
 
 UENUM(BlueprintType)
 enum ETurnOrder
@@ -38,11 +50,29 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn Order")
 	TMap<int, TEnumAsByte<ETurnOrder>> TurnOrder;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combatants")
-	TArray<AActor*> ActiveCombatants;
+	// The turn priority's for the individual factions on the enemy turn, which ones will go before the others etc... might be subbed for a different system later
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn Order")
+	TMap<EFactionID, int> FactionTurnPriority;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combatants")
+	TArray<AActor*> PlayerPartyRoster = {};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combatants")
+	TArray<AActor*> ActiveCombatantRoster = {};
+
+	// The map that contains the inner scope of the turn order for each faction, based on the actors rank within that faction.
+	TMap<EFactionID, FFactionTierContainer> FactionTurnGroups = {};
+
+	// This information is for the turn order as a whole e.g. Player, Companion, Enemy etc...
 	ETurnOrder CurrentTurnOrder = None;
 	int CurrentTurnIndex = 1;
+
+	// This information is for the enemy turn only. Which factions will execute their turns first. 
+	TArray<EFactionID> FactionTurnOrder = {};
+	EEnemyTier CurrentFactionRankTurn;
+	int CurrentFactionTurnIndex = 0;
+
+	
 
 public:	
 	
@@ -57,12 +87,18 @@ public:
 	void SetTurnOrder(int NewTurnOrder);
 	UFUNCTION(BlueprintCallable, Category="CombatManager")
 	void EndCurrentTurn();
-	UFUNCTION(BlueprintCallable, Category="CombatManager")
+	void ExecuteTurnFunctionality(ETurnOrder NewTurn);
 	void EndCombat();
 
 	void SetActiveCombatants(const TArray<AActor*>& NewCombatants);
 	void AddActiveCombatant(AActor* NewCombatant);
 	void ClearActiveCombatants();
+	void AddPlayerPartyToActiveCombatants();
+
+	void QueueFactionGroupsForTurn();
+	TArray<EFactionID> OrderFactionsForTurn();
+	void ExecuteEnemyTurn();
+	void ExecuteIndividualEnemyTurn();
 
 	/**
 	 * 0 -> Disengaged
@@ -86,6 +122,11 @@ public:
 		return CurrentTurnIndex;
 	}
 
+	TArray<AActor*> GetActiveCombatants() const
+	{
+		return ActiveCombatantRoster;
+	}
+
 	// Interface Implementation
 	void NotifyPlayerOfCombatStatus(int CombatState) const;
 	virtual ETurnOrder GetCurrentTurnOrder() override {return CurrentTurnOrder;}
@@ -104,6 +145,10 @@ public:
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual void MoveAI_Character(FVector Location) override {}
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual void BeginTurnPhase() override {}
+	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
+	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
+	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

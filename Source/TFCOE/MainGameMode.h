@@ -18,7 +18,7 @@ class UCombatManager;
 UCLASS()
 class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface
 {
-	
+
 private:
 	GENERATED_BODY()
 
@@ -32,6 +32,8 @@ protected:
 	UCombatManager* CombatManager = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UBoardManager* BoardManager = nullptr;
+
+	
 
 
 public:
@@ -56,6 +58,7 @@ public:
 	virtual void NotifyEndTurnTriggered() override;
 	virtual ETurnOrder GetCurrentTurnOrder() override;
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override;
+	virtual TArray<AActor*> GetActiveCombatantRoster() override;
 
 	// Unneeded Interface Implementations
 	// Player
@@ -69,6 +72,9 @@ public:
 	// Gamemode
 	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
 	virtual void MoveAI_Character(FVector Location) override {}
+	virtual void BeginTurnPhase() override {}
+	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
+	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

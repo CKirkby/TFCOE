@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "FactionID.h"
+#include "EnemyTier.h"
 #include "CombatInterface.generated.h"
 
 enum EPieceState : int;
@@ -33,7 +35,10 @@ class TFCOE_API ICombatInterface
 	virtual FVector2D GetGridCoordinates() = 0;
 	virtual ETurnOrder GetCurrentTurnOrder() = 0;
 	virtual void NotifyEndTurnTriggered() = 0;
+	virtual TArray<AActor*> GetActiveCombatantRoster() = 0;
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) = 0;
+	virtual EFactionID GetActorFactionID() = 0;
+	virtual EEnemyTier GetActorFactionRank() = 0;
 	
 	// Board Piece
 	virtual void NotifyPieceClicked() = 0;
@@ -42,4 +47,5 @@ class TFCOE_API ICombatInterface
 
 	// General
 	virtual void MoveAI_Character(FVector Location) = 0;
+	virtual void BeginTurnPhase() = 0;
 };
