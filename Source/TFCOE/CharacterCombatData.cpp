@@ -36,7 +36,9 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
-{	
+{
+	// TODO - There is still a way for this function to completely fail. 
+	
 	// Gets preferred target faction from config
 	const EFactionID PreferredFaction = EntityCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
 
