@@ -149,13 +149,15 @@ void AMainGameMode::InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> Activ
 {
 	if (ActiveCombatants.IsEmpty()) return;
 	
-	// Adds the active combatant to the combat manager for tracking
+	// Adds the enemy combatant to the combat manager for tracking
 	for (const auto CombatantPair : ActiveCombatants)
 	{
 		AActor* NewActor = CombatantPair.Key;
 		CombatManager->AddActiveCombatant(NewActor);
-		CombatManager->AddPlayerPartyToActiveCombatants();
-	}	
+	}
+
+	// Adds the party to the active combatants.
+	CombatManager->AddPlayerPartyToActiveCombatants();
 
 	// Commands the enemies to move to their starting positions.
 	MoveEnemiesToStartingPos(ActiveCombatants);

@@ -18,7 +18,6 @@ class UCombatManager;
 UCLASS()
 class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface
 {
-
 private:
 	GENERATED_BODY()
 
@@ -75,6 +74,7 @@ public:
 	virtual void BeginTurnPhase() override {}
 	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
 	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}
+	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
 
 	// Board Piece
 	virtual void NotifyPieceClicked() override {}

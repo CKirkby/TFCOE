@@ -21,5 +21,7 @@ enum class EEntityID : uint8
 	BlackLine_Bishop_Enemy UMETA(DisplayName = "BlackLine | Bishop E"),
 	BlackLine_Bishop_Friendly UMETA(DisplayName = "BlackLine | Bishop F"),
 	BlackLine_Queen UMETA(DisplayName = "BlackLine | Queen"),
-	BlackLine_King UMETA(DisplayName = "BlackLine | King")
+	BlackLine_King UMETA(DisplayName = "BlackLine | King"),
+
+	Uninitialized_ID UMETA(DisplayName = "Uninitialized")
 };

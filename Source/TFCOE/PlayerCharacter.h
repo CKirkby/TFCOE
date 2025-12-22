@@ -8,6 +8,7 @@
 #include "CombatManager.h"
 #include "PaperZDCharacter.h"
 #include "EnhancedInputSubsystems.h"
+#include "EntityID.h"
 #include "PlayerCharacter.generated.h"
 
 class ACombatCameraOperator;
@@ -52,6 +53,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Configuration")
+	EEntityID EntityID = EEntityID::Player;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Configuration")
 	EFactionID FactionID = EFactionID::Player;
 
@@ -158,6 +161,7 @@ protected:
 	virtual void MoveAI_Character(FVector Location) override;
 	virtual FVector2D GetGridCoordinates() override;
 	virtual EFactionID GetActorFactionID() override {return FactionID;}
+	virtual EEntityID GetActorEntityID() override {return EEntityID::Player;}
 
 	// Unneeded Interface Implementations
 	// Player

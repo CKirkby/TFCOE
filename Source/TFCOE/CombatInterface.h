@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "FactionID.h"
 #include "EnemyTier.h"
+#include "EntityID.h"
 #include "CombatInterface.generated.h"
 
 enum EPieceState : int;
@@ -39,6 +40,7 @@ class TFCOE_API ICombatInterface
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) = 0;
 	virtual EFactionID GetActorFactionID() = 0;
 	virtual EEnemyTier GetActorFactionRank() = 0;
+	virtual EEntityID GetActorEntityID() = 0;
 	
 	// Board Piece
 	virtual void NotifyPieceClicked() = 0;

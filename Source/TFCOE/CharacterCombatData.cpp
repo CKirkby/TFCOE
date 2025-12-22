@@ -24,20 +24,19 @@ void UCharacterCombatData::BeginPlay()
 void UCharacterCombatData::ExecuteCurrentTurn()
 {
 	// Step 1: Select Target for this turn.
-	AActor* Target = SelectTargetForTurn();
-	if (!Target) return;
+	CurrentTarget = SelectTargetForTurn();
+	if (!CurrentTarget) return;
+
+	// FOR TESTING //
+	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
 	
-	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *Target->GetName());
 	// Step 2: Check if the actor should move
 
 	// End Current Turn
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
-{
-
-	// TODO - Chance to change target based on aggression is returning 0? 
-	
+{	
 	// Gets preferred target faction from config
 	const EFactionID PreferredFaction = EntityCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
 
@@ -48,10 +47,14 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	if (!CombatInterfacePlayer) return nullptr;
 	
 	// Gets the current combats combatants from the gamemode
-	const TArray<AActor*> CachedActiveCombatants = CombatInterfaceGamemode->GetActiveCombatantRoster();
+	TArray<AActor*> CachedActiveCombatants = CombatInterfaceGamemode->GetActiveCombatantRoster();
 	if (CachedActiveCombatants.IsEmpty()) return CombatInterfacePlayer->GetPlayerCombatant();
-
-	// TODO - Remove Owner from the active combatants, to not risk it choosing itself as a target
+	
+	// Checks to make sure the owner of this isn't in the list of possible targets
+ 	if (CachedActiveCombatants.Contains(this->GetOwner()))
+	{
+		CachedActiveCombatants.Remove(this->GetOwner());
+	}
 	
 	// Creates an array of potential targets to choose from. 
 	TArray<AActor*> PotentialTargets = {};
@@ -62,7 +65,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	if (AttackedLastTurn)
 	{
 		// This actor is set to prioritise the attackers so it will automatically target those.
-		if (EntityCombatConfiguration->CombatConfiguration.bAttackerTakesTargetPriority)
+  		if (EntityCombatConfiguration->CombatConfiguration.bAttackerTakesTargetPriority)
 		{
 			// Returns the previous attacker as the new target if this entity is set to prioritise those attackers. 
 			if (PreviousAttacker)
@@ -84,15 +87,25 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		}
 
 		// Makes sure this entity actually has a preferred faction to target and if not it will prioritise others.
-
-		// TODO - Make a call to gamemode to check current factions in play to make sure the faction is actually on the board.
+		
 		if (PreferredFaction != EFactionID::None)
 		{
-			// Gets the targets of these actors preferred target faction.
+			// Gets the targets of these actors preferred target faction. Also checks that there are faction members of present. Otherwise this will return empty.
 			PotentialTargets = GetCombatantsByFaction(CachedActiveCombatants, PreferredFaction);
 
 			// Chooses either the closest faction member or random. Weight: Closest 70% / Random 30%
-			if (AActor* PotentialTarget = GetTargetFromClosestOrRandom(PotentialTargets, 0.70f))
+			if (!PotentialTargets.IsEmpty())
+			{
+				if ( AActor* PotentialFactionTarget = GetTargetFromClosestOrRandom(PotentialTargets, 0.70f))
+				{
+					return PotentialFactionTarget;
+				}
+			}
+
+			// None of the preferred faction is available so just go after the closest or random //
+			
+			// Chooses either the closest member or random. Weight: Closest 70% / Random 30%
+			if (AActor* PotentialTarget = GetTargetFromClosestOrRandom(CachedActiveCombatants, 0.70f))
 			{
 				return PotentialTarget;
 			}
@@ -121,7 +134,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	}
 	
 	// Was not attacked last turn, choose a target.
-	float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
+  	float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
 	bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 	if (CurrentTarget && !bShouldChangeTarget)
 	{

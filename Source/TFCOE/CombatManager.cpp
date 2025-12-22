@@ -150,8 +150,11 @@ void UCombatManager::ClearActiveCombatants()
 // Simply adds the player party to the active combatant roster.
 void UCombatManager::AddPlayerPartyToActiveCombatants()
 {
-	if (PlayerPartyRoster.IsEmpty()) return;
+	// Adds the player to the active combatants
+	AddActiveCombatant(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+	// adds the player party to the active combatants
+	if (PlayerPartyRoster.IsEmpty()) return;
 	for (const auto Actor : PlayerPartyRoster)
 	{
 		AddActiveCombatant(Actor);
