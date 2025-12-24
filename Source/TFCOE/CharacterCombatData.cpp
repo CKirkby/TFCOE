@@ -30,33 +30,41 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	// FOR TESTING //
 	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
 	
-	// Step 2: Check if the actor should move
+	// Step 2: Check if the actor should move+
 
 	// End Current Turn
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
-{
-	// TODO - There is still a way for this function to completely fail. 
-	
-	// Gets preferred target faction from config
-	const EFactionID PreferredFaction = EntityCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
-
-	// Gets the main game modes interface
+{	
+	// Gets the needed interfaces for this function
 	ICombatInterface* CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (!CombatInterfaceGamemode) return nullptr;
 	if (!CombatInterfacePlayer) return nullptr;
+
+	AActor* PlayerCombatant = CombatInterfacePlayer->GetPlayerCombatant();
+	if (!PlayerCombatant) return nullptr;
+
+	// Checks if the characters combat config settings are present, if not just default target the player.
+	if (!EntityCombatConfiguration)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: Select Target for Turn - Combat Configuration Missing / Not set"))
+		return PlayerCombatant;
+	}
+	
+	// Gets preferred target faction from config
+	const EFactionID PreferredFaction = EntityCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
 	
 	// Gets the current combats combatants from the gamemode
 	TArray<AActor*> CachedActiveCombatants = CombatInterfaceGamemode->GetActiveCombatantRoster();
-	if (CachedActiveCombatants.IsEmpty()) return CombatInterfacePlayer->GetPlayerCombatant();
+	if (CachedActiveCombatants.IsEmpty()) return PlayerCombatant;
 	
 	// Checks to make sure the owner of this isn't in the list of possible targets
- 	if (CachedActiveCombatants.Contains(this->GetOwner()))
-	{
-		CachedActiveCombatants.Remove(this->GetOwner());
-	}
+	CachedActiveCombatants.Remove(this->GetOwner());
+	
+	// This acts as a failsafe, for whatever reason if the active combatants is empty after removing the current turns actor. It wont crash. 
+	if (CachedActiveCombatants.IsEmpty()) return PlayerCombatant;
 	
 	// Creates an array of potential targets to choose from. 
 	TArray<AActor*> PotentialTargets = {};
@@ -67,7 +75,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	if (AttackedLastTurn)
 	{
 		// This actor is set to prioritise the attackers so it will automatically target those.
-  		if (EntityCombatConfiguration->CombatConfiguration.bAttackerTakesTargetPriority)
+		if (EntityCombatConfiguration->CombatConfiguration.bAttackerTakesTargetPriority)
 		{
 			// Returns the previous attacker as the new target if this entity is set to prioritise those attackers. 
 			if (PreviousAttacker)
@@ -76,7 +84,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 				return PreviousAttacker;
 			}
 			UE_LOG(LogTemp, Warning, TEXT("Combat Data: Select Target For Turn - No previous Attacker ref set. Auto setting to player combatant"))
-			return CombatInterfacePlayer->GetPlayerCombatant();
+			return PlayerCombatant;
 		}
 
 		// Chance to keep attacking target, If the entity has focused aggression, very little chance to change target, otherwise normal chance
@@ -113,7 +121,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			}
 
 			// If all this fails for whatever reason, just target the player.
-			return CombatInterfacePlayer->GetPlayerCombatant();
+			return PlayerCombatant;
 		}
 
 		// The Preferred Faction is none //
@@ -122,7 +130,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		if (FMath::FRand() < 0.80f)
 		{
 			// Target Player
-			return CombatInterfacePlayer->GetPlayerCombatant();
+			return PlayerCombatant;
 		}
 
 		// Target Party //
@@ -133,10 +141,13 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			const int RandIndex = FMath::RandRange(0, PotentialTargets.Num() - 1);
 			return PotentialTargets[RandIndex];
 		}
+
+		// If all of this functionality fails, default to targeting the player character.
+		return PlayerCombatant;
 	}
 	
 	// Was not attacked last turn, choose a target.
-  	float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
+	float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
 	bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 	if (CurrentTarget && !bShouldChangeTarget)
 	{
@@ -152,18 +163,23 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		PotentialTargets = GetCombatantsByFaction(CachedActiveCombatants, PreferredFaction);
 
 		// Chooses either the closest faction member or random. Weight: Closest 70% / Random 30%
-		if (AActor* PotentialTarget = GetTargetFromClosestOrRandom(PotentialTargets, 0.70f))
+		if (!PotentialTargets.IsEmpty())
 		{
-			return PotentialTarget;
+			if (AActor* PotentialTarget = GetTargetFromClosestOrRandom(PotentialTargets, 0.70f))
+			{
+				return PotentialTarget;
+			}
 		}
 	}
+
+	// TODO - Make function to check which is closest and then determine which one to target
 	
 	// Else if no preferred faction target closest or player
 	// Target Player or Players party with weight 80/20 depending on the last attacker.
 	if (FMath::FRand() < 0.80f)
 	{
 		// Target Player
-		return CombatInterfacePlayer->GetPlayerCombatant();
+		return PlayerCombatant;
 	}
 
 	// Target Party
@@ -175,9 +191,8 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		return PotentialTargets[RandIndex];
 	}
 
-	// Complete Function Fail
-	UE_LOG(LogTemp, Error, TEXT("Combat Data: Select Target for Turn - Complete function fail"))
-	return nullptr;
+	// If all of this functionality fails, default to targeting the player character.
+	return PlayerCombatant;
 }
 
 bool UCharacterCombatData::CheckShouldMove(FVector2D PlayerCoordinates)
