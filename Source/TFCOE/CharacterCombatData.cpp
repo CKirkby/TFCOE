@@ -38,7 +38,7 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 AActor* UCharacterCombatData::SelectTargetForTurn()
 {	
 	// Gets the needed interfaces for this function
-	ICombatInterface* CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+ 	ICombatInterface* CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (!CombatInterfaceGamemode) return nullptr;
 	if (!CombatInterfacePlayer) return nullptr;
@@ -63,7 +63,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	// Checks to make sure the owner of this isn't in the list of possible targets
 	CachedActiveCombatants.Remove(this->GetOwner());
 	
-	// This acts as a failsafe, for whatever reason if the active combatants is empty after removing the current turns actor. It wont crash. 
+	// This acts as a failsafe, for whatever reason if the active combatants is empty after removing the current turns' actor. It won't crash. 
 	if (CachedActiveCombatants.IsEmpty()) return PlayerCombatant;
 	
 	// Creates an array of potential targets to choose from. 
@@ -171,26 +171,26 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			}
 		}
 	}
-
-	// TODO - Make function to check which is closest and then determine which one to target
 	
-	// Else if no preferred faction target closest or player
-	// Target Player or Players party with weight 80/20 depending on the last attacker.
-	if (FMath::FRand() < 0.80f)
-	{
-		// Target Player
-		return PlayerCombatant;
-	}
-
-	// Target Party
+	// Else if no preferred faction target closest or player //
+	
+	// Get whoever is closest from player and companions then choose them.
 	// Gets the party members from the active combatants.
 	PotentialTargets = GetCombatantsByFaction(CachedActiveCombatants, EFactionID::PlayerParty);
+	PotentialTargets.Add(PlayerCombatant);
+
 	if (!PotentialTargets.IsEmpty())
 	{
+		if (AActor* PotentialTarget = GetTargetFromClosestOrRandom(PotentialTargets, 0.80f))
+		{
+			return PotentialTarget;
+		}
+
+		// If the actor fails, then just get a random one from the index.
 		const int RandIndex = FMath::RandRange(0, PotentialTargets.Num() - 1);
 		return PotentialTargets[RandIndex];
 	}
-
+	
 	// If all of this functionality fails, default to targeting the player character.
 	return PlayerCombatant;
 }
