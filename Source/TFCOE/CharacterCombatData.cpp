@@ -37,6 +37,8 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
 {	
+	// TODO - Chunky function needs to be made into helper functions
+
 	// Gets the needed interfaces for this function
  	ICombatInterface* CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
