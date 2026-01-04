@@ -92,6 +92,11 @@ void AMainGameMode::NotifyEndTurnTriggered()
 	CombatManager->EndCurrentTurn();
 }
 
+void AMainGameMode::NotifyEndIndividualTurn()
+{
+	CombatManager->ExecuteIndividualEnemyTurn();
+}
+
 // Interface to receive the current turn order. 
 ETurnOrder AMainGameMode::GetCurrentTurnOrder()
 {

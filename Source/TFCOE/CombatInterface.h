@@ -25,7 +25,7 @@ class TFCOE_API ICombatInterface
 	public:
 
 	// Player
-	virtual void NotifyEndTurn() = 0;
+	virtual void NotifyEndIndividualTurn() = 0;
 	virtual void NotifyCombatStatus(int CombatState) = 0;
 	virtual FVector GetCombatPlayerLocation() = 0;
 	virtual AActor* GetPlayerCombatant() = 0;

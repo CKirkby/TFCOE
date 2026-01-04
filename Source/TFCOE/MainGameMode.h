@@ -55,13 +55,13 @@ public:
 
 	// Combat Interface 
 	virtual void NotifyEndTurnTriggered() override;
+	virtual void NotifyEndIndividualTurn() override;
 	virtual ETurnOrder GetCurrentTurnOrder() override;
 	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override;
 	virtual TArray<AActor*> GetActiveCombatantRoster() override;
 
 	// Unneeded Interface Implementations
 	// Player
-	virtual void NotifyEndTurn() override {}
 	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}

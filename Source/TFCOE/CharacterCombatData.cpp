@@ -19,6 +19,9 @@ void UCharacterCombatData::BeginPlay()
 	Super::BeginPlay();
 	
 	TimePoints = MaxTimePoints;
+
+	// Stores a reference to the game mode interface
+	CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
 void UCharacterCombatData::ExecuteCurrentTurn()
@@ -30,9 +33,10 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	// FOR TESTING //
 	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
 	
-	// Step 2: Check if the actor should move+
+	// Step 2: Check if the actor should move
 
 	// End Current Turn
+	EndThisActorTurn();
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
@@ -40,7 +44,6 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	// TODO - Chunky function needs to be made into helper functions
 
 	// Gets the needed interfaces for this function
- 	ICombatInterface* CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (!CombatInterfaceGamemode) return nullptr;
 	if (!CombatInterfacePlayer) return nullptr;
@@ -220,8 +223,7 @@ FVector2D UCharacterCombatData::CalculateTargetMovementPiece() const
 {
 	ICombatInterface* CombatInterface = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (!CombatInterface) return FVector2D(1,1);
-
-	ICombatInterface* CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	
 	if (!CombatInterfaceGamemode) return FVector2D(1,1);
 
 	const FVector2D PlayerCoordinates = CombatInterface->GetGridCoordinates();
@@ -414,4 +416,13 @@ bool UCharacterCombatData::CheckCanAffordMovement(const FVector2D CurrentCoordin
 	}
 	
 	return false;
+}
+
+void UCharacterCombatData::EndThisActorTurn() const
+{
+	// Tells the gamemode that this actor has finished its turn and to then cycle to the next enemy turn.
+	if (CombatInterfaceGamemode)
+	{
+		CombatInterfaceGamemode->NotifyEndIndividualTurn();
+	}
 }

@@ -131,22 +131,6 @@ void UCombatManager::EndCombat()
 	CurrentTurnOrder = None;
 }
 
-void UCombatManager::SetActiveCombatants(const TArray<AActor*>& NewCombatants)
-{
-	ActiveCombatantRoster = NewCombatants;
-}
-
-void UCombatManager::AddActiveCombatant(AActor* NewCombatant)
-{
-	if (!NewCombatant) return;
-	ActiveCombatantRoster.Add(NewCombatant);
-}
-
-void UCombatManager::ClearActiveCombatants()
-{
-	ActiveCombatantRoster.Empty();
-}
-
 // Simply adds the player party to the active combatant roster.
 void UCombatManager::AddPlayerPartyToActiveCombatants()
 {
@@ -161,6 +145,25 @@ void UCombatManager::AddPlayerPartyToActiveCombatants()
 	}
 }
 
+void UCombatManager::ExecuteEnemyTurn()
+{
+	// Clears the turn information from last turn.
+	FactionTurnGroups.Empty();
+
+	// Queues the new information for this turn. Populates the faction groups with each respective combatants. 
+	QueueFactionGroupsForTurn();
+
+	// Sorts which factions should be going before the others. 
+	FactionTurnOrder = OrderFactionsForTurn();
+	
+	// Sets up the iteration. Makes sure that the rank turn is set to which I desire to go first. I want the leaders to go first. 
+	CurrentFactionTurnIndex = 0;
+	CurrentFactionRankTurn = EEnemyTier::Faction_Leader;
+
+	// Iterates through the factions and then the ranks and activates the enemies turns. 
+	ExecuteIndividualEnemyTurn();
+}
+
 void UCombatManager::QueueFactionGroupsForTurn()
 {
 	for (auto Combatant : ActiveCombatantRoster)
@@ -169,6 +172,13 @@ void UCombatManager::QueueFactionGroupsForTurn()
 		if (!CombatInterface) continue;
 
 		EFactionID FactionID = CombatInterface->GetActorFactionID();
+		if (FactionID == EFactionID::Player || FactionID == EFactionID::PlayerParty)
+		{
+			// Do not want the players party here as its enemies only.
+			continue;
+		}
+
+		// Gets the enemy rank so it can be sorted
 		EEnemyTier EnemyRank = CombatInterface->GetActorFactionRank();
 
 		FFactionTierContainer& Container = FactionTurnGroups.FindOrAdd(FactionID);
@@ -212,9 +222,9 @@ TArray<EFactionID> UCombatManager::OrderFactionsForTurn()
 	// This may be changed to be more attribute dependent in future.
 	TMap<EFactionID, int> PriorityMap = {
 		{EFactionID::Forlorn, FactionTurnPriority.Contains(EFactionID::Forlorn) ? FactionTurnPriority.FindRef(EFactionID::Forlorn) : 1},
-		{EFactionID::BlackLine, FactionTurnPriority.Contains(EFactionID::Forlorn) ? FactionTurnPriority.FindRef(EFactionID::BlackLine) : 3},
-		{EFactionID::EmpireOfEos, FactionTurnPriority.Contains(EFactionID::Forlorn) ? FactionTurnPriority.FindRef(EFactionID::EmpireOfEos) : 4},
-		{EFactionID::Creature, FactionTurnPriority.Contains(EFactionID::Forlorn) ? FactionTurnPriority.FindRef(EFactionID::Creature) : 2}
+		{EFactionID::BlackLine, FactionTurnPriority.Contains(EFactionID::BlackLine) ? FactionTurnPriority.FindRef(EFactionID::BlackLine) : 3},
+		{EFactionID::EmpireOfEos, FactionTurnPriority.Contains(EFactionID::EmpireOfEos) ? FactionTurnPriority.FindRef(EFactionID::EmpireOfEos) : 4},
+		{EFactionID::Creature, FactionTurnPriority.Contains(EFactionID::Creature) ? FactionTurnPriority.FindRef(EFactionID::Creature) : 2}
 	};
 
 	// Sorts the entries based on the above criteria. Then returns the ordered factions to be used in the turn route. 
@@ -228,27 +238,8 @@ TArray<EFactionID> UCombatManager::OrderFactionsForTurn()
 	return FactionsToSort;
 }
 
-void UCombatManager::ExecuteEnemyTurn()
-{
-	// Clears the turn information from last turn.
-	FactionTurnGroups.Empty();
-
-	// Queues the new information for this turn. Populates the faction groups with each respective combatants. 
-	QueueFactionGroupsForTurn();
-
-	// Sorts which factions should be going before the others. 
-	FactionTurnOrder = OrderFactionsForTurn();
-	
-	// Sets up the iteration. Makes sure that the rank turn is set to which I desire to go first. I want the leaders to go first. 
-	CurrentFactionTurnIndex = 0;
-	CurrentFactionRankTurn = EEnemyTier::Faction_Leader;
-
-	// Iterates through the factions and then the ranks and activates the enemies turns. 
-	ExecuteIndividualEnemyTurn();
-}
-
 void UCombatManager::ExecuteIndividualEnemyTurn()
-          {
+{
 	// If no more enemies in the faction list then enemy turn will be complete.
 	if (CurrentFactionTurnIndex >= FactionTurnOrder.Num())
 	{
@@ -310,7 +301,6 @@ void UCombatManager::ExecuteIndividualEnemyTurn()
 	{
 		CombatInterfaceEnemy->BeginTurnPhase();
 	}
-	
 }
 
 // Function to send an interface message to the player stating what the combat status is.
@@ -320,4 +310,20 @@ void UCombatManager::NotifyPlayerOfCombatStatus(const int CombatState) const
 	{
 		CombatInterface->NotifyCombatStatus(CombatState);
 	}
+}
+
+void UCombatManager::SetActiveCombatants(const TArray<AActor*>& NewCombatants)
+{
+	ActiveCombatantRoster = NewCombatants;
+}
+
+void UCombatManager::AddActiveCombatant(AActor* NewCombatant)
+{
+	if (!NewCombatant) return;
+	ActiveCombatantRoster.Add(NewCombatant);
+}
+
+void UCombatManager::ClearActiveCombatants()
+{
+	ActiveCombatantRoster.Empty();
 }

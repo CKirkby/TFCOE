@@ -37,7 +37,7 @@ protected:
 	virtual EEnemyTier GetActorFactionRank() override;
 
 	// Unneeded Interface Implementations
-	virtual void NotifyEndTurn() override {}
+	virtual void NotifyEndIndividualTurn() override {}
 	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyCombatStatus(int CombatState) override {}

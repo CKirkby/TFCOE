@@ -133,7 +133,7 @@ public:
 
 	// Unneeded Interface Implementations
 	// Player
-	virtual void NotifyEndTurn() override {}
+	virtual void NotifyEndIndividualTurn() override {}
 	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}

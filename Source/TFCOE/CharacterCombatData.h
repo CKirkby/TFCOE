@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "CharacterCombatData.generated.h"
 
+class ICombatInterface;
 class UEnemyBehaviour;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -37,12 +38,16 @@ protected:
 	// Movement
 	FVector2D CurrentGridCoordinates = FVector2D::ZeroVector;
 
+	// Interfaces
+	ICombatInterface* CombatInterfaceGamemode = nullptr;
+	
 	virtual void BeginPlay() override;
 
 public:
 
 	// Activates this characters turn. 
 	void ExecuteCurrentTurn();
+	void EndThisActorTurn() const;
 
 	// If AI, it will select a character to target. Most of the time it will be the player. 
 	AActor* SelectTargetForTurn();

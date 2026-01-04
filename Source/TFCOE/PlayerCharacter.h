@@ -165,7 +165,7 @@ protected:
 
 	// Unneeded Interface Implementations
 	// Player
-	virtual void NotifyEndTurn() override {}
+	virtual void NotifyEndIndividualTurn() override {}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
 	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
 
