@@ -29,8 +29,8 @@ protected:
 	UCharacterCombatData* CombatData = nullptr;
 
 	// Interface Implementation
-	virtual FVector2D GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
-	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {CombatData->SetCurrentGridCoordinates(Coordinates);}
+	virtual FIntPoint GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
+	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {CombatData->SetCurrentGridCoordinates(Coordinates);}
 	virtual void MoveAI_Character(FVector Location) override;
 	virtual void BeginTurnPhase() override;
 	virtual EFactionID GetActorFactionID() override;
@@ -47,7 +47,7 @@ protected:
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
-	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override {return nullptr;}
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
 	

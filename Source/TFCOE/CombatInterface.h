@@ -30,14 +30,14 @@ class TFCOE_API ICombatInterface
 	virtual FVector GetCombatPlayerLocation() = 0;
 	virtual AActor* GetPlayerCombatant() = 0;
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) = 0;
-	virtual void SetCombatantCoordinates(FVector2D Coordinates) = 0;
+	virtual void SetCombatantCoordinates(FIntPoint Coordinates) = 0;
 
 	// Gamemode
-	virtual FVector2D GetGridCoordinates() = 0;
+	virtual FIntPoint GetGridCoordinates() = 0;
 	virtual ETurnOrder GetCurrentTurnOrder() = 0;
 	virtual void NotifyEndTurnTriggered() = 0;
 	virtual TArray<AActor*> GetActiveCombatantRoster() = 0;
-	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) = 0;
+	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) = 0;
 	virtual EFactionID GetActorFactionID() = 0;
 	virtual EEnemyTier GetActorFactionRank() = 0;
 	virtual EEntityID GetActorEntityID() = 0;

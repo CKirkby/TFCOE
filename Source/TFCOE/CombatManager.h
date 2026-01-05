@@ -138,13 +138,13 @@ public:
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
 	virtual void NotifyCombatStatus(int CombatState) override {}
-	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
+	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 
 	// Gamemode
-	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
+	virtual FIntPoint GetGridCoordinates() override {return FIntPoint::ZeroValue;}
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual void MoveAI_Character(FVector Location) override {}
-	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override {return nullptr;}
 	virtual void BeginTurnPhase() override {}
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}

@@ -394,7 +394,7 @@ void APlayerCharacter::MoveAI_Character(FVector Location)
 	}
 }
 
-FVector2D APlayerCharacter::GetGridCoordinates()
+FIntPoint APlayerCharacter::GetGridCoordinates()
 {
 	if (AIPlayerDummy)
 	{
@@ -403,9 +403,9 @@ FVector2D APlayerCharacter::GetGridCoordinates()
 		{
 			return CombatInterface->GetGridCoordinates();
 		}
-		return FVector2D::ZeroVector;
+		return FIntPoint::ZeroValue;
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("Player Character: Get Grid Coords - AI Actor ref fail"))
-	return FVector2D::ZeroVector;
+	return FIntPoint::ZeroValue;
 }

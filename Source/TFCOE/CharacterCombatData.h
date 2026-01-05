@@ -36,7 +36,7 @@ protected:
 	int MaxTimePoints = 10;
 	
 	// Movement
-	FVector2D CurrentGridCoordinates = FVector2D::ZeroVector;
+	FIntPoint CurrentGridCoordinates = FIntPoint::ZeroValue;
 
 	// Interfaces
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
@@ -54,14 +54,15 @@ public:
 
 	// Checks if the character should actually move, is it already next to target etc...
 	bool CheckShouldMove(FVector2D PlayerCoordinates);
-
+	bool CheckIsAdjacent(FVector2D A, FVector2D B) const;
+	
 	// Used to check if the actor has enough action points to move to that spot.
-	bool CheckCanAffordMovement(FVector2D CurrentCoordinates, FVector2D TargetCoordinates);
+	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
 
 	// The math part to the above function.
-	int CalculateMovementCost(FVector2D CurrentCoordinates, const FVector2D TargetCoordinates);
-	
-	FVector2D CalculateTargetMovementPiece() const;
+	int CalculateMovementCost(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
+
+	FIntPoint CalculateTargetMovementPiece() const;
 	EFactionID GetFactionID() const;
 	EEnemyTier GetFactionRank() const;
 	TArray<AActor*> SortCombatantsByDistance(const TArray<AActor*>& Combatants) const;
@@ -71,13 +72,13 @@ public:
 	// Getter and Setter //
 	
 	UFUNCTION(BlueprintCallable, Category = "CombatData")
-	FVector2D GetCurrentGridCoordinates() const
+	FIntPoint GetCurrentGridCoordinates() const
 	{
 		return CurrentGridCoordinates;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "CombatData")
-	void SetCurrentGridCoordinates(const FVector2D Coordinates)
+	void SetCurrentGridCoordinates(const FIntPoint Coordinates)
 	{
 		CurrentGridCoordinates = Coordinates;
 	}

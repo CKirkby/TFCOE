@@ -35,7 +35,7 @@ void AAI_PlayerCombatant::NotifyMovementRequirementsMet(AActor* BoardPiece)
 	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(BoardPiece))
 	{
 		// Gets the target grid coordinates
-		const FVector2D GridCoordinates = CombatInterface->GetGridCoordinates();
+		const FIntPoint GridCoordinates = CombatInterface->GetGridCoordinates();
 
 		// Performs a check to see if the player has sufficient time points to be able to move. Reducing the time points in the process
 		if (CombatData->CheckCanAffordMovement(CombatData->GetCurrentGridCoordinates(), GridCoordinates))
@@ -53,7 +53,7 @@ void AAI_PlayerCombatant::NotifyMovementRequirementsMet(AActor* BoardPiece)
 }
 
 // A interface function to set the current grid coordinates of this character.
-void AAI_PlayerCombatant::SetCombatantCoordinates(const FVector2D Coordinates)
+void AAI_PlayerCombatant::SetCombatantCoordinates(FIntPoint Coordinates)
 {
 	CombatData->SetCurrentGridCoordinates(Coordinates);
 }

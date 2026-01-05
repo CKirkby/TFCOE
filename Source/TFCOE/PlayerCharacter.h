@@ -159,7 +159,7 @@ protected:
 	virtual AActor* GetPlayerCombatant() override {return GetPlayerAI_Dummy();}
 	virtual FVector GetCombatPlayerLocation() override {return AIPlayerDummy->GetActorLocation();}
 	virtual void MoveAI_Character(FVector Location) override;
-	virtual FVector2D GetGridCoordinates() override;
+	virtual FIntPoint GetGridCoordinates() override;
 	virtual EFactionID GetActorFactionID() override {return FactionID;}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Player;}
 
@@ -167,12 +167,12 @@ protected:
 	// Player
 	virtual void NotifyEndIndividualTurn() override {}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
-	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
+	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
-	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override {return nullptr;}
 	virtual void BeginTurnPhase() override {}
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}

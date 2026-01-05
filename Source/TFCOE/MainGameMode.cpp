@@ -104,7 +104,7 @@ ETurnOrder AMainGameMode::GetCurrentTurnOrder()
 }
 
 // Interface call to get a grid peice in the board pairing from the coordinates.x
-AActor* AMainGameMode::GetGridPieceFromCoordinates(const FVector2D Coordinates)
+AActor* AMainGameMode::GetGridPieceFromCoordinates(FIntPoint Coordinates)
 {
 	return BoardManager->GetGridPiece(Coordinates);
 }

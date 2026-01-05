@@ -40,7 +40,7 @@ protected:
 	USceneComponent* CharacterPosition = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	FVector2D GridPosition;
+	FIntPoint GridPosition;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	TEnumAsByte<EPieceState> CurrentPieceState = Enabled;
@@ -118,7 +118,7 @@ public:
 	virtual void NotifyPieceClicked() override;
 	virtual FVector GetBoardPieceLocation() override;
 	virtual EPieceState GetCurrentPieceState() override {return CurrentPieceState;}
-	virtual FVector2D GetGridCoordinates() override {return GridPosition;};
+	virtual FIntPoint GetGridCoordinates() override {return GridPosition;};
 
 	// Unneeded Interface Implementations
 	// Player
@@ -127,13 +127,13 @@ public:
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {};
 	virtual void NotifyCombatStatus(int CombatState) override {}
-	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
+	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual void MoveAI_Character(FVector Location) override {}
-	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override {return nullptr;}
+	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override {return nullptr;}
 	virtual void BeginTurnPhase() override {}
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}

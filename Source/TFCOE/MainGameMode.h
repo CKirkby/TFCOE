@@ -57,7 +57,7 @@ public:
 	virtual void NotifyEndTurnTriggered() override;
 	virtual void NotifyEndIndividualTurn() override;
 	virtual ETurnOrder GetCurrentTurnOrder() override;
-	virtual AActor* GetGridPieceFromCoordinates(FVector2D Coordinates) override;
+	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override;
 	virtual TArray<AActor*> GetActiveCombatantRoster() override;
 
 	// Unneeded Interface Implementations
@@ -66,10 +66,10 @@ public:
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
 	virtual void NotifyCombatStatus(int CombatState) override {}
-	virtual void SetCombatantCoordinates(FVector2D Coordinates) override {}
+	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 
 	// Gamemode
-	virtual FVector2D GetGridCoordinates() override {return FVector2D::ZeroVector;}
+	virtual FIntPoint GetGridCoordinates() override {return FIntPoint::ZeroValue;}
 	virtual void MoveAI_Character(FVector Location) override {}
 	virtual void BeginTurnPhase() override {}
 	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}

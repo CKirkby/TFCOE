@@ -202,34 +202,41 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 
 bool UCharacterCombatData::CheckShouldMove(FVector2D PlayerCoordinates)
 {
-	
+	// Gets the 
+
 	return false;
 }
 
-int UCharacterCombatData::CalculateMovementCost(const FVector2D CurrentCoordinates,
-												const FVector2D TargetCoordinates)
+bool UCharacterCombatData::CheckIsAdjacent(const FVector2D A, const FVector2D B) const
+{
+	// Gets the absolute value of these and checks that neither are 1, because that means the actor is next to the target.
+	return FMath::Abs(A.X - B.X) + FMath::Abs(A.Y - B.Y) == 1.0f;
+}
+
+int UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinates,
+                                                const FIntPoint TargetCoordinates)
 {
 	// Uses the Chebyshev method to calculate action cost.
 
 	// Gets the absolute number because I don't care the direction of movement only the distance.
-	const float DeltaX = FMath::Abs(TargetCoordinates.X - CurrentCoordinates.X);
-	const float DeltaY = FMath::Abs(TargetCoordinates.Y - CurrentCoordinates.Y);
+	const int DeltaX = FMath::Abs(TargetCoordinates.X - CurrentCoordinates.X);
+	const int DeltaY = FMath::Abs(TargetCoordinates.Y - CurrentCoordinates.Y);
 
 	// Gets the max number between the two variables so it can calculate the max amount of cost on the axis.
 	return FMath::Max(DeltaX, DeltaY);
 }
 
-FVector2D UCharacterCombatData::CalculateTargetMovementPiece() const
+FIntPoint UCharacterCombatData::CalculateTargetMovementPiece() const
 {
 	ICombatInterface* CombatInterface = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	if (!CombatInterface) return FVector2D(1,1);
+	if (!CombatInterface) return FIntPoint(1,1);
 	
-	if (!CombatInterfaceGamemode) return FVector2D(1,1);
+	if (!CombatInterfaceGamemode) return FIntPoint(1,1);
 
-	const FVector2D PlayerCoordinates = CombatInterface->GetGridCoordinates();
-	FVector2D TargetCoordinates = PlayerCoordinates;
+	const FIntPoint PlayerCoordinates = CombatInterface->GetGridCoordinates();
+	FIntPoint TargetCoordinates = PlayerCoordinates;
 
-	const FVector2D DirToPlayer = FVector2D(PlayerCoordinates.X - CurrentGridCoordinates.X, PlayerCoordinates.Y - CurrentGridCoordinates.Y);
+	const FIntPoint DirToPlayer = FIntPoint(PlayerCoordinates.X - CurrentGridCoordinates.X, PlayerCoordinates.Y - CurrentGridCoordinates.Y);
 
 	// Calculates which piece should be the target of this actor. 
 	if (FMath::Abs(DirToPlayer.X) > FMath::Abs(DirToPlayer.Y))
@@ -247,7 +254,7 @@ FVector2D UCharacterCombatData::CalculateTargetMovementPiece() const
 
 		// If it has chosen this route, get the piece coordinates and return them to the function. (WHAT IF IT CANNOT MOVE AT ALL? IS THIS FLAWED)
 		AActor* TargetPiece = CombatInterfaceGamemode->GetGridPieceFromCoordinates(TargetCoordinates);
-		if (!TargetPiece) return FVector2D(1,1);
+		if (!TargetPiece) return FIntPoint(1,1);
 
 		// Gets the interface of the piece and makes sure it is a piece that can be moved to.
 		if (ICombatInterface* CombatInterfaceChosenPiece = Cast<ICombatInterface>(TargetPiece))
@@ -277,7 +284,7 @@ FVector2D UCharacterCombatData::CalculateTargetMovementPiece() const
 
 		// If it has chosen this route, get the piece coordinates and return them to the function. (WHAT IF IT CANNOT MOVE AT ALL? IS THIS FLAWED)
 		AActor* TargetPiece = CombatInterfaceGamemode->GetGridPieceFromCoordinates(TargetCoordinates);
-		if (!TargetPiece) return FVector2D(1,1);
+		if (!TargetPiece) return FIntPoint(1,1);
 
 		// Gets the interface of the piece and makes sure it is a piece that can be moved to.
 		if (ICombatInterface* CombatInterfaceChosenPiece = Cast<ICombatInterface>(TargetPiece))
@@ -293,7 +300,7 @@ FVector2D UCharacterCombatData::CalculateTargetMovementPiece() const
 		}
 	}
 	
-	return FVector2D(1,1);
+	return FIntPoint(1,1);
 }
 
 EFactionID UCharacterCombatData::GetFactionID() const
@@ -334,7 +341,7 @@ TArray<AActor*> UCharacterCombatData::SortCombatantsByDistance(const TArray<AAct
 		if (!CombatInterface) continue;
 
 		// Gets the current coordinates from the combatants
-		FVector2D Coords = CombatInterface->GetGridCoordinates();
+		const FIntPoint Coords = CombatInterface->GetGridCoordinates();
 
 		// Calculates the distance in grid pieces from the current entity to these combatants and then stores them. 
 		CachedDistances.Add(Combatant, FMath::Abs(Coords.X - CurrentGridCoordinates.X) + FMath::Abs(Coords.Y - CurrentGridCoordinates.Y));
@@ -403,7 +410,7 @@ AActor* UCharacterCombatData::GetTargetFromClosestOrRandom(TArray<AActor*> Poten
 	return nullptr;
 }
 
-bool UCharacterCombatData::CheckCanAffordMovement(const FVector2D CurrentCoordinates, const FVector2D TargetCoordinates)
+bool UCharacterCombatData::CheckCanAffordMovement(const FIntPoint CurrentCoordinates, const FIntPoint TargetCoordinates)
 {
 	const int CostToMove = CalculateMovementCost(CurrentCoordinates, TargetCoordinates);
 
