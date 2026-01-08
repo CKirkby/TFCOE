@@ -355,6 +355,7 @@ FIntPoint UCharacterCombatData::ChooseMovementPosition(const FAttackConfiguratio
 	}
 
 	int MovementRange = EntityCombatConfiguration->CombatConfiguration.MovementRange;
+	return FIntPoint::ZeroValue;
 }
 
 int UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinates,

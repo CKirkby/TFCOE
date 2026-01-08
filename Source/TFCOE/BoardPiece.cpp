@@ -82,3 +82,8 @@ void ABoardPiece::ResetMaterial()
 	UMaterialInstanceDynamic* OrginalMat = UMaterialInstanceDynamic::Create(OriginalMaterial, this);
 	StaticMesh->SetMaterial(0, OrginalMat);
 }
+
+void ABoardPiece::SetGridCoordinates(const FIntPoint NewCoordinates)
+{
+	GridPosition = NewCoordinates;
+}

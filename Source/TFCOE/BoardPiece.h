@@ -73,6 +73,9 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Board Piece")
+	void SetGridCoordinates(FIntPoint NewCoordinates);
+
+	UFUNCTION(BlueprintCallable, Category = "Board Piece")
 	EPieceState GetPieceState() const
 	{
 		return CurrentPieceState;
