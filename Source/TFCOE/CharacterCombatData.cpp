@@ -20,31 +20,55 @@ void UCharacterCombatData::BeginPlay()
 	
 	TimePoints = MaxTimePoints;
 
-	// Stores a reference to the game mode interface
+	// Stores a reference to the game mode interface and player
 	CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 }
 
 void UCharacterCombatData::ExecuteCurrentTurn()
 {
 	// Step 1: Select Target for this turn.
 	CurrentTarget = SelectTargetForTurn();
-	if (!CurrentTarget) return;
+	if (!CurrentTarget) EndThisActorTurn();
 
-	// FOR TESTING //
+	// FOR TESTING STEP 1 //
 	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
-	
-	// Step 2: Check if the actor should move
 
-	// End Current Turn
-	EndThisActorTurn();
+	// Step 2: Choose an attack
+	FAttackConfiguration* CurrentAttack = ChooseAttackForTurn(CurrentTarget);
+	if (!CurrentAttack) EndThisActorTurn();
+
+	// TESTING STEP 2 //
+	if (CurrentAttack)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
+	}
+	
+	// Step 3: Check if the actor should move
+	if (CheckShouldMove(CurrentAttack, CurrentTarget))
+	{
+		// Select Movement Point
+		// Move
+		UE_LOG(LogTemp, Error, TEXT("Will Move"))
+	}
+	else
+	{
+		// Dont move, Attack
+		UE_LOG(LogTemp, Error, TEXT("Will not move, Attacking now"))
+	}
+	
+	// A small delay before ending its turn
+	DelayLambda(1.0f, [this]()
+	{
+		// End Current Turn
+		EndThisActorTurn();
+	});
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
 {	
 	// TODO - Chunky function needs to be made into helper functions
-
-	// Gets the needed interfaces for this function
-	ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
 	if (!CombatInterfaceGamemode) return nullptr;
 	if (!CombatInterfacePlayer) return nullptr;
 
@@ -200,17 +224,137 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	return PlayerCombatant;
 }
 
-bool UCharacterCombatData::CheckShouldMove(FVector2D PlayerCoordinates)
+bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAttack, AActor* ChosenTarget)
 {
-	// Gets the 
+	if (!EntityCombatConfiguration || !ChosenAttack || !ChosenTarget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: CheckShouldMove - Reference failure"));
+		return false;
+	}
 
+	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(ChosenTarget);
+	if (CombatInterfaceTarget == nullptr) return false;
+	
+	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+	int DistToTarget = GetGridDistanceAllDir(CurrentGridCoordinates, TargetCoordinates);
+
+	// Checks if this attack requires alignment, if it does then it will immediately tell it to move
+	if (ChosenAttack->RequiresAlignment)
+	{
+		if (!IsAlignedAllDir(CurrentGridCoordinates, TargetCoordinates))
+		{
+			return true;
+		}
+	}
+
+	// If it is already aligned or otherwise doesn't require alignment, then it will continue 
+	switch (ChosenAttack->AttackType)
+	{
+	case EAttackType::Close:
+		{
+			const int AttackRange = ChosenAttack->AttackRange;
+			return DistToTarget > AttackRange;
+		}
+	
+	case EAttackType::Ranged:
+		{
+			const int MinRange = ChosenAttack->AttackRange;
+			const int MaxRange = ChosenAttack->MaxAttackRange;
+			return (DistToTarget < MinRange) || (DistToTarget > MaxRange);
+		}
+	}
+	
 	return false;
 }
 
-bool UCharacterCombatData::CheckIsAdjacent(const FVector2D A, const FVector2D B) const
+FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetActor) const
 {
-	// Gets the absolute value of these and checks that neither are 1, because that means the actor is next to the target.
-	return FMath::Abs(A.X - B.X) + FMath::Abs(A.Y - B.Y) == 1.0f;
+	if (!TargetActor || !EntityCombatConfiguration || EntityCombatConfiguration->AttackConfigurations.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Attack - Reference fail"));
+		return nullptr;
+	}
+
+	// Gets the targets interface to get the grid coordinates.
+	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(TargetActor);
+	if (!CombatInterfaceTarget) return nullptr;
+
+	// Gets the targets coordinates. 
+	const FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+
+	// Gets these actors preferred combat style. 
+	const ECombatStyle PreferredCombatStyle = EntityCombatConfiguration->PreferredCombatStyle;
+	const int DistToTarget = GetGridDistanceAllDir(CurrentGridCoordinates, TargetCoordinates);
+
+	// Creates an attack type to chose based on distance. If this actor is far, use ranged, if not move close. 
+	EAttackType TargetAttackToUse = (DistToTarget > 1) ? EAttackType::Ranged : EAttackType::Close;
+
+	// Considers if the actor has a preferred style of attack. Will usually only be close or ranged.
+	switch (PreferredCombatStyle)
+	{
+	case ECombatStyle::Any:
+		break;
+	
+	case ECombatStyle::PreferClose:
+		// 90% Chance to be a close attack
+		if (FMath::FRand() < 0.90f) TargetAttackToUse = EAttackType::Close;
+		break;
+		
+	case ECombatStyle::PreferRanged:
+		// 90% Chance to be a ranged attack
+		if (FMath::FRand() < 0.90f) TargetAttackToUse = EAttackType::Ranged;
+		break;
+	}
+
+	// After that, it will get attempt to get a random attack from the priority list, if there is no attacks it will just choose at random.
+	return GetAttackFromType(TargetAttackToUse);
+}
+
+FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType AttackType) const
+{
+	if (EntityCombatConfiguration->AttackConfigurations.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data - Get Attack from type - No attack configurations available"))
+		return nullptr;
+	}
+	
+	// Caches the attacks this actor has to sort through. 
+	TArray<FAttackConfiguration>& CachedAttacks = EntityCombatConfiguration->AttackConfigurations;
+	if (CachedAttacks.IsEmpty()) return nullptr;
+
+	TArray<FAttackConfiguration*> DesiredAttacks;
+
+	// Sorts through the attacks to add the priority attacks to be returned. 
+	for (FAttackConfiguration& Attack : CachedAttacks)
+	{
+		if (Attack.AttackType == AttackType)
+		{
+			DesiredAttacks.Add(&Attack);
+		}
+	}
+
+	// If it's not empty, that means preferred attacks do exist and uses them as a priority.
+	if (!DesiredAttacks.IsEmpty())
+	{
+		const int RandIndex = FMath::RandRange(0, DesiredAttacks.Num() - 1);
+		return DesiredAttacks[RandIndex];
+	}
+
+	// Choose any attack.
+	const int RandIndex = FMath::RandRange(0, CachedAttacks.Num() - 1);
+	return &CachedAttacks[RandIndex];
+}
+
+FIntPoint UCharacterCombatData::ChooseMovementPosition(const FAttackConfiguration* ChosenAttack,
+                                                       const AActor* TargetActor)
+{
+	if (!TargetActor || !ChosenAttack || !EntityCombatConfiguration)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Movement Position - Reference fail"));
+		return FIntPoint::ZeroValue;
+	}
+
+	int MovementRange = EntityCombatConfiguration->CombatConfiguration.MovementRange;
 }
 
 int UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinates,
@@ -228,12 +372,11 @@ int UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinat
 
 FIntPoint UCharacterCombatData::CalculateTargetMovementPiece() const
 {
-	ICombatInterface* CombatInterface = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	if (!CombatInterface) return FIntPoint(1,1);
+	if (!CombatInterfacePlayer) return FIntPoint(1,1);
 	
 	if (!CombatInterfaceGamemode) return FIntPoint(1,1);
 
-	const FIntPoint PlayerCoordinates = CombatInterface->GetGridCoordinates();
+	const FIntPoint PlayerCoordinates = CombatInterfacePlayer->GetGridCoordinates();
 	FIntPoint TargetCoordinates = PlayerCoordinates;
 
 	const FIntPoint DirToPlayer = FIntPoint(PlayerCoordinates.X - CurrentGridCoordinates.X, PlayerCoordinates.Y - CurrentGridCoordinates.Y);
@@ -410,6 +553,23 @@ AActor* UCharacterCombatData::GetTargetFromClosestOrRandom(TArray<AActor*> Poten
 	return nullptr;
 }
 
+void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
+{
+	TWeakObjectPtr<UCharacterCombatData> SafeThis = this;
+	FTimerHandle TimerHandle;
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [SafeThis, Function]()
+	{
+		if (!SafeThis.IsValid()) return;
+
+		Function();
+		
+	},DelayTime, false);
+}
+
 bool UCharacterCombatData::CheckCanAffordMovement(const FIntPoint CurrentCoordinates, const FIntPoint TargetCoordinates)
 {
 	const int CostToMove = CalculateMovementCost(CurrentCoordinates, TargetCoordinates);
@@ -433,3 +593,35 @@ void UCharacterCombatData::EndThisActorTurn() const
 		CombatInterfaceGamemode->NotifyEndIndividualTurn();
 	}
 }
+
+bool UCharacterCombatData::CheckIsAdjacent(FIntPoint& PointA, FIntPoint& PointB) const
+{
+	// Gets the absolute value of these and checks that neither are 1, because that means the actor is next to the target.
+	return GetGridDistanceAllDir(PointA, PointB) == 1;
+}
+
+int UCharacterCombatData::GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const
+{
+	// Uses the Chebyshev method to include Diagonals into the movement consideration
+	return FMath::Max(FMath::Abs(PointA.X - PointB.X) + FMath::Abs(PointA.Y - PointB.Y));
+}
+
+int UCharacterCombatData::GetGridDistanceCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const
+{
+	// Uses the Manhattan method to check distance using only the up,down,left,right directions. 
+	return FMath::Abs(PointA.X - PointB.X) + FMath::Abs(PointA.Y - PointB.Y);
+}
+
+bool UCharacterCombatData::IsAlignedCardinal(FIntPoint& PointA, FIntPoint& PointB) const
+{
+	return (PointA.X == PointB.X || PointA.Y == PointB.Y);
+}
+
+bool UCharacterCombatData::IsAlignedAllDir(FIntPoint& PointA, FIntPoint& PointB) const
+{
+	int DeltaX = FMath::Abs(PointA.X - PointB.X);
+	int DeltaY = FMath::Abs(PointA.Y - PointB.Y);
+
+	return (DeltaX == 0) || (DeltaY == 0) || (DeltaX == DeltaY);
+}
+

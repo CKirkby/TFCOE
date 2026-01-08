@@ -36,10 +36,25 @@ protected:
 	int MaxTimePoints = 10;
 	
 	// Movement
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
 	FIntPoint CurrentGridCoordinates = FIntPoint::ZeroValue;
 
 	// Interfaces
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
+	ICombatInterface* CombatInterfacePlayer = nullptr;
+
+	// Direction Storage
+	const TArray<FIntPoint> Directions =
+	{
+		{0, 1}, //Up
+		{0, -1 }, // Down
+		{-1,0 }, // Left
+		{1,0 }, // Right
+		{-1,1 }, // Up-Left
+		{1,1 }, // Up-Right
+		{-1, -1 }, // Down-Left
+		{1, -1 }  // Down-Right
+	};
 	
 	virtual void BeginPlay() override;
 
@@ -53,8 +68,19 @@ public:
 	AActor* SelectTargetForTurn();
 
 	// Checks if the character should actually move, is it already next to target etc...
-	bool CheckShouldMove(FVector2D PlayerCoordinates);
-	bool CheckIsAdjacent(FVector2D A, FVector2D B) const;
+	bool CheckShouldMove(const FAttackConfiguration* ChosenAttack, AActor* ChosenTarget);
+	bool CheckIsAdjacent(FIntPoint& PointA, FIntPoint& PointB) const;
+	int GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	int GetGridDistanceCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	bool IsAlignedCardinal(FIntPoint& PointA, FIntPoint& PointB) const;
+	bool IsAlignedAllDir(FIntPoint& PointA, FIntPoint& PointB) const;
+
+	// Stores a chosen attack.
+	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor) const;
+	FAttackConfiguration* GetAttackFromType(EAttackType AttackType) const;
+
+	// AI movement functions
+	FIntPoint ChooseMovementPosition(const FAttackConfiguration* ChosenAttack, const AActor* TargetActor);	
 	
 	// Used to check if the actor has enough action points to move to that spot.
 	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
@@ -68,6 +94,8 @@ public:
 	TArray<AActor*> SortCombatantsByDistance(const TArray<AActor*>& Combatants) const;
 	TArray<AActor*> GetCombatantsByFaction(TArray<AActor*> CombatantsToCheck, EFactionID FactionToCheck);
 	AActor* GetTargetFromClosestOrRandom(TArray<AActor*> PotentialTargets, float Weight) const;
+
+	void DelayLambda(float DelayTime, TFunction<void()> Function);
 	
 	// Getter and Setter //
 	
