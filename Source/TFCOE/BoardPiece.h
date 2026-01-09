@@ -22,7 +22,7 @@ enum EPieceState
 UCLASS()
 class TFCOE_API ABoardPiece : public AActor, public ICombatInterface
 {
-	
+
 private:
 	GENERATED_BODY()
 
@@ -103,7 +103,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Board Piece")
-	FVector2D GetGridPosition() const
+	FIntPoint GetGridPosition() const
 	{
 		return GridPosition;
 	}
@@ -142,4 +142,5 @@ public:
 	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
 	virtual EEnemyTier GetActorFactionRank() override { return EEnemyTier::Grunt;}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
+	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
 };

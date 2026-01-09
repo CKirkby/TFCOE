@@ -29,35 +29,42 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 {
 	// Step 1: Select Target for this turn.
 	CurrentTarget = SelectTargetForTurn();
-	if (!CurrentTarget) EndThisActorTurn();
+	if (!CurrentTarget)
+	{
+		EndThisActorTurn();
+		return;
+	}
 
 	// FOR TESTING STEP 1 //
 	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
 
 	// Step 2: Choose an attack
 	FAttackConfiguration* CurrentAttack = ChooseAttackForTurn(CurrentTarget);
-	if (!CurrentAttack) EndThisActorTurn();
+	if (!CurrentAttack)
+	{
+		EndThisActorTurn();
+		return;
+	}
 
 	// TESTING STEP 2 //
-	if (CurrentAttack)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
-	}
+	UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
+	
 	
 	// Step 3: Check if the actor should move
 	if (CheckShouldMove(CurrentAttack, CurrentTarget))
 	{
-		// Select Movement Point
+		// Step 4: Movement
+		const FIntPoint TargetCoordinatesForMove = ChooseMovementPosition(CurrentTarget);
+		UE_LOG(LogTemp, Error, TEXT("Movement Target: %i, %i"), TargetCoordinatesForMove.X, TargetCoordinatesForMove.Y);
+
 		// Move
-		UE_LOG(LogTemp, Error, TEXT("Will Move"))
 	}
 	else
 	{
-		// Dont move, Attack
-		UE_LOG(LogTemp, Error, TEXT("Will not move, Attacking now"))
+		// Step 5: Attack
 	}
 	
-	// A small delay before ending its turn
+	// Final Step: End Turn w Delay
 	DelayLambda(1.0f, [this]()
 	{
 		// End Current Turn
@@ -345,17 +352,56 @@ FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType 
 	return &CachedAttacks[RandIndex];
 }
 
-FIntPoint UCharacterCombatData::ChooseMovementPosition(const FAttackConfiguration* ChosenAttack,
-                                                       const AActor* TargetActor)
+FIntPoint UCharacterCombatData::ChooseMovementPosition(AActor* TargetActor)
 {
-	if (!TargetActor || !ChosenAttack || !EntityCombatConfiguration)
+	if (!TargetActor || !EntityCombatConfiguration)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Movement Position - Reference fail"));
-		return FIntPoint::ZeroValue;
+		return CurrentGridCoordinates;
 	}
 
-	int MovementRange = EntityCombatConfiguration->CombatConfiguration.MovementRange;
-	return FIntPoint::ZeroValue;
+	// Gets the interface for the target
+	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(TargetActor);
+	if (!CombatInterfaceTarget) return CurrentGridCoordinates;
+
+	// Gets the coordinates of the grid the target is stood on
+	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+
+	// Sets an array to check whether 
+	TArray<FIntPoint> CoordinatesToAttempt;
+	TArray<FIntPoint> SuccessfulCandidates;
+
+	// Populates the array with the grid pieces around the 
+	GetGridAdjacentAllDir(TargetCoordinates, CoordinatesToAttempt);
+	if (CoordinatesToAttempt.IsEmpty()) return CurrentGridCoordinates;
+
+	// Sorts through the coordinates to check to see which
+	for (auto Coordinates : CoordinatesToAttempt)
+	{
+		if (!DoesGridCoordinatesExist(Coordinates)) continue;
+		if (!IsGridPieceActive(Coordinates)) continue;
+
+		// Culls the non-existent or occupied coordinates. 
+		SuccessfulCandidates.Add(Coordinates);
+	}
+
+	if (SuccessfulCandidates.IsEmpty()) return CurrentGridCoordinates;
+
+	// Sorts through the successful candidates to get the distance to each.
+	SuccessfulCandidates.Sort([this](const FIntPoint& A, const FIntPoint& B)
+	{
+		const int DistanceA = GetGridDistanceAllDir(CurrentGridCoordinates, A);
+		const int DistanceB = GetGridDistanceAllDir(CurrentGridCoordinates, B);
+
+		// If A is closer than B return A, or vice versa 
+		if (DistanceA != DistanceB) return DistanceA < DistanceB;
+
+		// If coords are by chance the same distance away, just sorts the smallest X then the smallest Y as a tiebreaker.
+		if (A.X != B.X) return A.X < B.X;
+		return A.Y < B.Y;
+	});
+
+	return SuccessfulCandidates[0];
 }
 
 int UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinates,
@@ -626,3 +672,40 @@ bool UCharacterCombatData::IsAlignedAllDir(FIntPoint& PointA, FIntPoint& PointB)
 	return (DeltaX == 0) || (DeltaY == 0) || (DeltaX == DeltaY);
 }
 
+void UCharacterCombatData::GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates,
+	TArray<FIntPoint>& OutNeighbors) const
+{
+	OutNeighbors.Reset(8);
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(1, 0));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(-1, 0));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(0, 1));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(0, -1));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(1, 1));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(1, -1));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(-1, 1));
+	OutNeighbors.Add(OriginCoordinates + FIntPoint(-1, -1));
+}
+
+bool UCharacterCombatData::DoesGridCoordinatesExist(const FIntPoint GridCoordinates) const
+{
+	return CombatInterfaceGamemode->DoesGridContainCoordinate(GridCoordinates);
+}
+
+bool UCharacterCombatData::IsGridPieceActive(const FIntPoint GridCoordinates) const
+{
+	//Gets the grid piece so it can check the specific piece for its state. 
+	AActor* GridPiece = CombatInterfaceGamemode->GetGridPieceFromCoordinates(GridCoordinates);
+
+	// Gets its interface.
+	ICombatInterface* CombatInterfaceGridPiece = Cast<ICombatInterface>(GridPiece);
+	if (!CombatInterfaceGridPiece) return false;
+	
+	// Checks the piece isn't occupied or non-walkable. 
+	if (CombatInterfaceGridPiece->GetCurrentPieceState() == EPieceState::Enabled)
+	{
+		return true;
+	}
+
+	// Otherwise it will be not available and must not be chosen.
+	return false;
+}

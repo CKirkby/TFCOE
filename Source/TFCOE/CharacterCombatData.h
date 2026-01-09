@@ -43,18 +43,6 @@ protected:
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
 	ICombatInterface* CombatInterfacePlayer = nullptr;
 
-	// Direction Storage
-	const TArray<FIntPoint> Directions =
-	{
-		{0, 1}, //Up
-		{0, -1 }, // Down
-		{-1,0 }, // Left
-		{1,0 }, // Right
-		{-1,1 }, // Up-Left
-		{1,1 }, // Up-Right
-		{-1, -1 }, // Down-Left
-		{1, -1 }  // Down-Right
-	};
 	
 	virtual void BeginPlay() override;
 
@@ -80,7 +68,11 @@ public:
 	FAttackConfiguration* GetAttackFromType(EAttackType AttackType) const;
 
 	// AI movement functions
-	FIntPoint ChooseMovementPosition(const FAttackConfiguration* ChosenAttack, const AActor* TargetActor);	
+	FIntPoint ChooseMovementPosition(AActor* TargetActor);
+	//TArray<FIntPoint>& CalculatePathForMovement(const FIntPoint& Start)
+
+	// Pathfinding
+    void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;	
 	
 	// Used to check if the actor has enough action points to move to that spot.
 	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
@@ -96,6 +88,10 @@ public:
 	AActor* GetTargetFromClosestOrRandom(TArray<AActor*> PotentialTargets, float Weight) const;
 
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
+
+	// Grid Piece checker
+	bool DoesGridCoordinatesExist(const FIntPoint GridCoordinates) const;
+	bool IsGridPieceActive(const FIntPoint GridCoordinates) const;
 	
 	// Getter and Setter //
 	

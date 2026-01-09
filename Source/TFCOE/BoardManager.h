@@ -20,7 +20,7 @@ public:
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
-	TMap<FVector2D, AActor*> GridPairing;
+	TMap<FIntPoint, AActor*> GridPairing;
 
 	UPROPERTY()
 	AActor* CurrentStartingPiece = nullptr;
@@ -30,10 +30,10 @@ protected:
 public:	
 	
 	UFUNCTION(BlueprintCallable)
-	void AddGridPairing(FVector2D GridCoordinates, AActor* BoardPiece);
+	void AddGridPairing(FIntPoint GridCoordinates, AActor* BoardPiece);
 
 	UFUNCTION(BlueprintCallable)
-	AActor* GetGridPiece(FVector2D GridCoordinates) const;
+	AActor* GetGridPiece(FIntPoint GridCoordinates) const;
 
 	void ClearActiveBoard();
 	
@@ -46,5 +46,7 @@ public:
 	{
 		CurrentStartingPiece = NewCurrentStartingPiece;
 	}
+
+	bool DoesGridCoordinatesExist(FIntPoint Coords) const;
 	
 };

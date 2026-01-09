@@ -12,7 +12,7 @@ void UBoardManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UBoardManager::AddGridPairing(const FVector2D GridCoordinates, AActor* BoardPiece)
+void UBoardManager::AddGridPairing(FIntPoint GridCoordinates, AActor* BoardPiece)
 {
 	if (BoardPiece)
 	{
@@ -24,7 +24,7 @@ void UBoardManager::AddGridPairing(const FVector2D GridCoordinates, AActor* Boar
 	}
 }
 
-AActor* UBoardManager::GetGridPiece(const FVector2D GridCoordinates) const
+AActor* UBoardManager::GetGridPiece(FIntPoint GridCoordinates) const
 {
 	if (AActor* FoundPiece = GridPairing.FindRef(GridCoordinates))
 	{
@@ -39,4 +39,9 @@ void UBoardManager::ClearActiveBoard()
 	GridPairing.Empty();
 
 	CurrentStartingPiece = nullptr;
+}
+
+bool UBoardManager::DoesGridCoordinatesExist(const FIntPoint Coords) const
+{
+	return GridPairing.Contains(Coords);
 }

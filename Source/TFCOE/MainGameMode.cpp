@@ -135,7 +135,7 @@ void AMainGameMode::InitialiseActiveBoard(TArray<AActor*> ActivePieces, AActor* 
 	{
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(BoardActor))
 		{
-			const FVector2D Pos = CombatInterface->GetGridCoordinates();
+			const FIntPoint Pos = CombatInterface->GetGridCoordinates();
 			BoardManager->AddGridPairing(Pos, BoardActor);
 
 			if (StartingPiece)
@@ -166,6 +166,12 @@ void AMainGameMode::InitialiseActiveCombatants(TMap<AActor*, ABoardPiece*> Activ
 
 	// Commands the enemies to move to their starting positions.
 	MoveEnemiesToStartingPos(ActiveCombatants);
+}
+
+// Interface call to check if a grid position exists. 
+bool AMainGameMode::DoesGridContainCoordinate(FIntPoint CoordsToCheck)
+{
+	return BoardManager->DoesGridCoordinatesExist(CoordsToCheck);
 }
 
 

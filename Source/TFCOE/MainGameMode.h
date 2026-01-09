@@ -18,6 +18,7 @@ class UCombatManager;
 UCLASS()
 class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface
 {
+
 private:
 	GENERATED_BODY()
 
@@ -59,6 +60,7 @@ public:
 	virtual ETurnOrder GetCurrentTurnOrder() override;
 	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override;
 	virtual TArray<AActor*> GetActiveCombatantRoster() override;
+	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override;
 
 	// Unneeded Interface Implementations
 	// Player

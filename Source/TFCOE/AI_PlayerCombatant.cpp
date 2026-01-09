@@ -63,7 +63,7 @@ void AAI_PlayerCombatant::MoveAI_Character(const FVector Location)
 	if (AAIController* AI_Controller = Cast<AAIController>(GetController()))
 	{
 		// Moves the character. 
-		AI_Controller->MoveToLocation(Location, 5.0f, false);
+		AI_Controller->MoveToLocation(Location, 5.0f, true);
 	}
 }
 

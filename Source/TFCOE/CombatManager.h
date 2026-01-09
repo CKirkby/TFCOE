@@ -155,4 +155,5 @@ public:
 	virtual void NotifyPieceClicked() override {}
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
+	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
 };
