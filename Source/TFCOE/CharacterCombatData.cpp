@@ -62,7 +62,8 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	{
 		// Step 5: Attack
 	}
-	
+
+	// TODO - This will end turn whether or not the enemy has finished moving attacking etc...
 	// Final Step: End Turn w Delay
 	DelayLambda(1.0f, [this]()
 	{
