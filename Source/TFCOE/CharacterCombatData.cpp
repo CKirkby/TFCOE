@@ -49,7 +49,6 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	// TESTING STEP 2 //
 	UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
 	
-	
 	// Step 3: Check if the actor should move
 	if (CheckShouldMove(CurrentAttack, CurrentTarget))
 	{
@@ -365,7 +364,8 @@ FIntPoint UCharacterCombatData::ChooseMovementPosition(AActor* TargetActor)
 	if (!CombatInterfaceTarget) return CurrentGridCoordinates;
 
 	// Gets the coordinates of the grid the target is stood on
-	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+   	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+	int MovementRange = EntityCombatConfiguration->CombatConfiguration.MovementRange;
 
 	// Sets an array to check whether 
 	TArray<FIntPoint> CoordinatesToAttempt;
@@ -387,21 +387,42 @@ FIntPoint UCharacterCombatData::ChooseMovementPosition(AActor* TargetActor)
 
 	if (SuccessfulCandidates.IsEmpty()) return CurrentGridCoordinates;
 
-	// Sorts through the successful candidates to get the distance to each.
-	SuccessfulCandidates.Sort([this](const FIntPoint& A, const FIntPoint& B)
+	// Creates a struct to store how the reachable grid points and how many steps it will take to get there.
+	struct FCandidatePathway
 	{
-		const int DistanceA = GetGridDistanceAllDir(CurrentGridCoordinates, A);
-		const int DistanceB = GetGridDistanceAllDir(CurrentGridCoordinates, B);
+		FIntPoint GridPoint;
+		int Steps = 0;
+	};
 
-		// If A is closer than B return A, or vice versa 
-		if (DistanceA != DistanceB) return DistanceA < DistanceB;
+	// Creates an array of those structs to prepare for storage
+	TArray<FCandidatePathway> ReachableGridPositions;
+	ReachableGridPositions.Reserve(SuccessfulCandidates.Num());
 
-		// If coords are by chance the same distance away, just sorts the smallest X then the smallest Y as a tiebreaker.
-		if (A.X != B.X) return A.X < B.X;
-		return A.Y < B.Y;
+	// Calculates a path to the position and how many steps it will take to reach that. Then store it in the array.
+	for (FIntPoint& Candidate : SuccessfulCandidates)
+	{
+		int Steps = 0;
+		if (CalculatePathToPosition(CurrentGridCoordinates, Candidate, Steps))
+		{
+			if (Steps <= MovementRange)
+			{
+				ReachableGridPositions.Add({Candidate, Steps});
+			}
+		}
+	}
+
+	if (ReachableGridPositions.IsEmpty()) return CurrentGridCoordinates;
+
+	// Sorts the structs based on how less steps it will take to reach, the less, the lower in the array.
+	ReachableGridPositions.Sort([](const FCandidatePathway& PathA, const FCandidatePathway& PathB)
+	{
+		if (PathA.Steps != PathB.Steps) return PathA.Steps < PathB.Steps;
+		if (PathA.GridPoint.X != PathB.GridPoint.X) return PathA.GridPoint.X < PathB.GridPoint.X;
+		return PathA.GridPoint.Y < PathB.GridPoint.Y;
 	});
 
-	return SuccessfulCandidates[0];
+	// Returns the struct with the least amount of steps,
+	return ReachableGridPositions[0].GridPoint;
 }
 
 int UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinates,
@@ -709,3 +730,86 @@ bool UCharacterCombatData::IsGridPieceActive(const FIntPoint GridCoordinates) co
 	// Otherwise it will be not available and must not be chosen.
 	return false;
 }
+
+bool UCharacterCombatData::CalculatePathToPosition(const FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const
+{
+	// Tries to calculate a path to the target, based on the least amount of steps it will take to reach.
+	TArray<FIntPoint> Path;
+	if (!FindPathUsingBFS(Start, Target, Path))
+	{
+		return false;
+	}
+
+	// Takes the amount of steps, considers the start is the actors location so -1 step.
+	OutSteps = FMath::Max(0, Path.Num() - 1);
+	return true;
+}
+
+bool UCharacterCombatData::FindPathUsingBFS(const FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const
+{
+	OutPath.Empty();
+
+	// Failsafe incase it will try to move towards itself.
+	if (StartCoords == TargetCoords)
+	{
+		OutPath.Add(StartCoords);
+		return true;
+	}
+
+	TQueue<FIntPoint> PathQueue; // A queue of grid points to try to access for reachability.
+	TSet<FIntPoint> Finished; // Which grid points have been tested
+	TMap<FIntPoint, FIntPoint> PreviousAttempt; // The previous to current attempt.
+
+	// Starts out with the starting coordinates.
+	PathQueue.Enqueue(StartCoords);
+	Finished.Add(StartCoords);
+
+	// An array to contain the adjacent grid positions to the target we are testing.
+	TArray<FIntPoint> AdjacentPoints;
+	AdjacentPoints.Reserve(8);
+
+	// Iterates through all the neighbors until it will find an eventual path to the target.
+	while (!PathQueue.IsEmpty())
+	{
+		FIntPoint CurrentAttemptCoords;
+		PathQueue.Dequeue(CurrentAttemptCoords);
+
+		// Gets all the adjacent grid positions to the target and populates the array with them.
+		GetGridAdjacentAllDir(CurrentAttemptCoords, AdjacentPoints);
+
+		for (FIntPoint GridPoint : AdjacentPoints)
+		{
+			// Checks that it exists, it is accessible and it hasn't been tested yet.
+			if (Finished.Contains(GridPoint)) continue;
+			if (!DoesGridCoordinatesExist(GridPoint)) continue;
+			if (!IsGridPieceActive(GridPoint)) continue;
+			
+			Finished.Add(GridPoint);
+			PreviousAttempt.Add(GridPoint, CurrentAttemptCoords);
+
+			// Has found the target movement piece for this turn an will build a path backwards to the actor.
+			if (GridPoint == TargetCoords)
+			{
+				// Rebuild path backwards
+				FIntPoint Step = TargetCoords;
+				OutPath.Add(Step);
+
+				while (Step != StartCoords)
+				{
+					Step = PreviousAttempt[Step];
+					OutPath.Add(Step);
+				}
+
+				Algo::Reverse(OutPath);
+				return true;
+			}
+
+			// if is not target, try the next one.
+			PathQueue.Enqueue(GridPoint);
+		}
+	}
+
+	// If all of that fails return false, No pathway was found. 
+	return false;
+}
+

@@ -69,7 +69,8 @@ public:
 
 	// AI movement functions
 	FIntPoint ChooseMovementPosition(AActor* TargetActor);
-	//TArray<FIntPoint>& CalculatePathForMovement(const FIntPoint& Start)
+	bool CalculatePathToPosition(const FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const;
+	bool FindPathUsingBFS(const FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const;
 
 	// Pathfinding
     void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;	

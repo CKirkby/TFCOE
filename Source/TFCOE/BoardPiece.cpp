@@ -23,6 +23,7 @@ void ABoardPiece::BeginPlay()
 void ABoardPiece::TriggerOverlapFunctionality(AActor* OtherActor)
 {
 	if (!OtherActor) return;
+	if (CurrentPieceState == EPieceState::Disabled) return;
 
 	if (OtherActor->ActorHasTag("Combatant"))
 	{
@@ -41,10 +42,11 @@ void ABoardPiece::TriggerOverlapFunctionality(AActor* OtherActor)
 void ABoardPiece::TriggerOverlapEndFunctionality(AActor* OtherActor)
 {
 	if (!OtherActor) return;
+	if (CurrentPieceState == EPieceState::Disabled) return;
 
 	if (OtherActor->ActorHasTag("Combatant"))
 	{		
-		// Returns the piece state to 
+		// Returns the piece state to normal 
 		SetPieceState(Enabled);
 		ClearCurrentOccupier();
 	}
