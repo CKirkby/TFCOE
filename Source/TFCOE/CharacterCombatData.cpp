@@ -671,7 +671,7 @@ bool UCharacterCombatData::CheckIsAdjacent(FIntPoint& PointA, FIntPoint& PointB)
 int UCharacterCombatData::GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const
 {
 	// Uses the Chebyshev method to include Diagonals into the movement consideration
-	return FMath::Max(FMath::Abs(PointA.X - PointB.X) + FMath::Abs(PointA.Y - PointB.Y));
+	return FMath::Max(FMath::Abs(PointA.X - PointB.X), FMath::Abs(PointA.Y - PointB.Y));
 }
 
 int UCharacterCombatData::GetGridDistanceCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const
