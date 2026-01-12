@@ -5,10 +5,23 @@
 #include "CoreMinimal.h"
 #include "EnemyBehaviour.h"
 #include "Components/ActorComponent.h"
+#include "Navigation/PathFollowingComponent.h"
 #include "CharacterCombatData.generated.h"
 
+struct FAIRequestID;
 class ICombatInterface;
 class UEnemyBehaviour;
+
+struct FAStarNode
+{
+	FIntPoint Coordinates;
+	int32 TotalCost = 0;
+};
+
+static bool AStarHeapLess(const FAStarNode& PointA, const FAStarNode& PointB)
+{
+	return PointA.TotalCost > PointB.TotalCost;
+}
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TFCOE_API UCharacterCombatData : public UActorComponent
@@ -31,13 +44,15 @@ protected:
 	bool AttackedLastTurn = false;
 	
 	// Action Points
-	int TimePoints = 10;
+	int32 TimePoints = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	int MaxTimePoints = 10;
+	int32 MaxTimePoints = 10;
 	
 	// Movement
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
 	FIntPoint CurrentGridCoordinates = FIntPoint::ZeroValue;
+	TArray<FIntPoint> TurnPath;
+	int32 TurnPathIndex = 0;
 
 	// Interfaces
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
@@ -58,8 +73,8 @@ public:
 	// Checks if the character should actually move, is it already next to target etc...
 	bool CheckShouldMove(const FAttackConfiguration* ChosenAttack, AActor* ChosenTarget);
 	bool CheckIsAdjacent(FIntPoint& PointA, FIntPoint& PointB) const;
-	int GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const;
-	int GetGridDistanceCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	int32 GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	int32 GetGridDistanceCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
 	bool IsAlignedCardinal(FIntPoint& PointA, FIntPoint& PointB) const;
 	bool IsAlignedAllDir(FIntPoint& PointA, FIntPoint& PointB) const;
 
@@ -69,8 +84,14 @@ public:
 
 	// AI movement functions
 	FIntPoint ChooseMovementPosition(AActor* TargetActor);
-	bool CalculatePathToPosition(const FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const;
-	bool FindPathUsingBFS(const FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const;
+	bool CalculatePathToPosition(FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const;
+	bool FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const;
+
+	UFUNCTION()
+	void OnMovementComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+	void StartMovementAlongGridPath(const TArray<FIntPoint>& Path);
+	void MoveToNextGridPos();
+	FVector GetGridPosition(const FIntPoint& Coordinates) const;
 
 	// Pathfinding
     void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;	
@@ -79,7 +100,7 @@ public:
 	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
 
 	// The math part to the above function.
-	int CalculateMovementCost(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
+	int32 CalculateMovementCost(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
 
 	FIntPoint CalculateTargetMovementPiece() const;
 	EFactionID GetFactionID() const;
@@ -109,7 +130,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "CombatData")
-	int GetTimePoints() const
+	int32 GetTimePoints() const
 	{
 		return TimePoints;
 	}
