@@ -410,7 +410,8 @@ TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AA
 TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCandidatePathway>& PossiblePositions, const int32 PathwayAttemptModifier)
 {
 	if (PossiblePositions.IsEmpty()) return {CurrentGridCoordinates};
-
+	if (!EntityCombatConfiguration) return {CurrentGridCoordinates};
+	
 	// This is the current attempt of tries
 	int32 AttemptIndex = PathwayAttemptModifier;
 
@@ -436,14 +437,18 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 	TArray<FIntPoint> PathToFollow;
 	if (FindPathUsingAStar(CurrentGridCoordinates, TargetCoordinatesForMove, PathToFollow))
 	{
-		//Testing//
-		int32 Index = 1;
-		for (auto ToFollow : PathToFollow)
+		int32 MovementSpeed = EntityCombatConfiguration->CombatConfiguration.MovementRange;
+
+		// Checks that the movement speed isn't zero or there isn't a path. 
+		if (MovementSpeed <= 0 || PathToFollow.Num() <= 1)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Location %i is %i, %i"), Index, ToFollow.X, ToFollow.Y);
-			Index++;
+			return {CurrentGridCoordinates};;
 		}
 
+		// Configures the path so that it can only move depending on its movement speed. 
+		const int32 ConfiguredMovements = FMath::Min(PathToFollow.Num(), MovementSpeed + 1);
+		PathToFollow.SetNum(ConfiguredMovements);
+		
 		return PathToFollow;
 	}
 
@@ -788,7 +793,7 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 	TArray<FIntPoint>& OutPath) const
 {
 	OutPath.Reset();
-
+	
 	// If the start is the target, it's the current pos already, so just return and don't move.
 	if (StartCoords == TargetCoords)
 	{
@@ -854,6 +859,7 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 			}
 
 			Algo::Reverse(OutPath);
+			
 			return true;
 		}
 

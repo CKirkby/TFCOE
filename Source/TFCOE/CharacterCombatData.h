@@ -105,9 +105,7 @@ public:
 	void StartMovementAlongGridPath(const TArray<FIntPoint>& Path);
 	void MoveToNextGridPos();
 	FVector GetGridPosition(const FIntPoint& Coordinates) const;
-
-	// Pathfinding
-    void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;	
+    void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;
 	
 	// Used to check if the actor has enough action points to move to that spot.
 	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
