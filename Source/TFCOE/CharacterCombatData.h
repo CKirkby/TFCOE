@@ -21,13 +21,14 @@ struct FCandidatePathway
 struct FAStarGrid
 {
 	FIntPoint GridPoint;
-	int32 Cost = 0;
-	int32 Heuristic = 0;
+	int32 Cost = 0; // How many steps it will take. 
+	int32 Heuristic = 0; // Distance it will be
 	int32 Final() const {return Cost + Heuristic;}
 };
 
 static bool AStarHeapCheck(const FAStarGrid& PointA, const FAStarGrid& PointB)
 {
+	// We want the lowest possible moves and distance so this organises them by that standard
 	const int32 AFinal = PointA.Final();
 	const int32 BFinal = PointB.Final();
 	if (AFinal != BFinal) return AFinal < BFinal;

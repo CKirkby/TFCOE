@@ -751,10 +751,13 @@ void UCharacterCombatData::GetGridAdjacentAllDir(const FIntPoint& OriginCoordina
                                                  TArray<FIntPoint>& OutNeighbors) const
 {
 	OutNeighbors.Reset(8);
+	// Adds the four different cardinal directions, Up, down, left, right.
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(1, 0));
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(-1, 0));
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(0, 1));
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(0, -1));
+
+	// Adds the ordinal diagonal directions. 
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(1, 1));
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(1, -1));
 	OutNeighbors.Add(OriginCoordinates + FIntPoint(-1, 1));
