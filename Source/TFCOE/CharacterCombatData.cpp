@@ -821,7 +821,7 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 	}
 
 	// An array of structs to store the grid positions that will be attempted to sorted through. 
-	TArray<FCandidatePathway> ToAttempt;
+	TArray<FAStarGrid> ToAttempt;
 
 	// A map that stores the coordinates and the cost it will take to move there
 	TMap<FIntPoint, int32> DistanceCost;
@@ -834,7 +834,13 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 
 	
 	DistanceCost.Add(StartCoords, 0); // Starting with the current pos of the character.
-	ToAttempt.Add({StartCoords, GetGridDistanceAllDir(StartCoords, TargetCoords)}); // The initial attempt, starting from the pos and the cost it will take. 
+
+	FAStarGrid StartGrid;
+	StartGrid.GridPoint = StartCoords;
+	StartGrid.Cost = 0;
+	StartGrid.Heuristic = GetGridDistanceAllDir(StartCoords, TargetCoords);
+	
+	ToAttempt.Add(StartGrid); // The initial attempt, starting from the pos and the cost it will take. 
 	ToAttempt.Heapify(AStarHeapLess);
 
 	// Stores the adjoining grid points to the current grid point attempt. 
@@ -844,7 +850,7 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 	while (ToAttempt.Num() > 0)
 	{
 		// Sets up the current grid position, we will attempt this iteration. 
-		FCandidatePathway CurrentGridPos;
+		FAStarGrid CurrentGridPos;
 		ToAttempt.HeapPop(CurrentGridPos, AStarHeapLess);
 
 		FIntPoint CurrentCoordinates = CurrentGridPos.GridPoint;
@@ -884,13 +890,17 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 
 			int32* ExistingCost = DistanceCost.Find(Point);
 
-			if (!ExistingCost || PossibleCost < * ExistingCost)
+			if (!ExistingCost || PossibleCost < *ExistingCost)
 			{
 				PathAttempted.Add(Point, CurrentCoordinates);
 				DistanceCost.Add(Point, PossibleCost);
 
-				int32 F = PossibleCost + GetGridDistanceAllDir(Point, TargetCoords);
-				ToAttempt.HeapPush(FCandidatePathway{Point, F}, AStarHeapLess);
+				FAStarGrid Grid;
+				Grid.GridPoint = Point;
+				Grid.Cost = PossibleCost;
+				Grid.Heuristic = GetGridDistanceAllDir(Point, TargetCoords);
+				
+				ToAttempt.HeapPush(Grid, AStarHeapLess);
 			}
 		}
 	}

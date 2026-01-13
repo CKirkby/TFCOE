@@ -18,10 +18,21 @@ struct FCandidatePathway
 	int32 Distance = 0;
 };
 
-static bool AStarHeapLess(const FCandidatePathway& PointA, const FCandidatePathway& PointB)
+struct FAStarGrid
 {
-	if (PointA.Distance != PointB.Distance) return PointA.Distance > PointB.Distance;
-	return PointA.Distance > PointB.Distance;
+	FIntPoint GridPoint;
+	int32 Cost = 0;
+	int32 Heuristic = 0;
+	int32 Final() const {return Cost + Heuristic;}
+};
+
+static bool AStarHeapLess(const FAStarGrid& PointA, const FAStarGrid& PointB)
+{
+	const int32 AFinal = PointA.Final();
+	const int32 BFinal = PointB.Final();
+	if (AFinal != BFinal) return AFinal < BFinal;
+
+	return PointA.Heuristic < PointB.Heuristic;
 }
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
