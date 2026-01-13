@@ -6,6 +6,7 @@
 #include "AIController.h"
 
 #include "CharacterCombatData.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AAI_PlayerCombatant::AAI_PlayerCombatant()
@@ -34,21 +35,25 @@ void AAI_PlayerCombatant::NotifyMovementRequirementsMet(AActor* BoardPiece)
 
 	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(BoardPiece))
 	{
-		// Gets the target grid coordinates
-		const FIntPoint GridCoordinates = CombatInterface->GetGridCoordinates();
+		ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+		if (!CombatInterfacePlayer) return;
+		
+		// Gets the Current and Target grid coordinates
+		FIntPoint CurrentGridCoords = CombatInterfacePlayer->GetGridCoordinates();
+		const FIntPoint TargetGridCoordinates = CombatInterface->GetGridCoordinates();
 
-		// Performs a check to see if the player has sufficient time points to be able to move. Reducing the time points in the process
-		if (CombatData->CheckCanAffordMovement(CombatData->GetCurrentGridCoordinates(), GridCoordinates))
+		TArray<FIntPoint> CalculatedPathway;
+		if (CombatData->FindPathUsingAStar(CurrentGridCoords, TargetGridCoordinates, CalculatedPathway))
 		{
-			CombatInterface->NotifyPieceClicked();
-
-			if (AAIController* AI_Controller = Cast<AAIController>(GetController()))
+			// Performs a check to see if the player has sufficient time points to be able to move. Reducing the time points in the process
+			if (CombatData->CheckCanAffordMovement(CombatData->GetCurrentGridCoordinates(), TargetGridCoordinates))
 			{
-				// Moves the character. 
-				const FVector MovementDestination = CombatInterface->GetBoardPieceLocation();
-				AI_Controller->MoveToLocation(MovementDestination, 5.0f, false);
+				CombatInterface->NotifyPieceClicked();
+				
+				CombatData->StartMovementAlongGridPath(CalculatedPathway);
 			}
 		}
+		
 	}
 }
 

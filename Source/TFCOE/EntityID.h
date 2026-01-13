@@ -8,7 +8,7 @@ UENUM(BlueprintType)
 enum class EEntityID : uint8
 {
 	Player UMETA(DisplayName = "Player"),
-	Scavenger UMETA(DisplayName = "Scavenger"),
+	Exile UMETA(DisplayName = "Exile"),
 		
 	BlackLine_Pawn UMETA(DisplayName = "BlackLine | Pawn"),
 	BlackLine_Vanguard UMETA(DisplayName = "BlackLine | Vanguard"),

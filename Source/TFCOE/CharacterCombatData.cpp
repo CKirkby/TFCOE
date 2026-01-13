@@ -60,14 +60,9 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 		const TArray<FIntPoint> CalculatedPathway = ChooseValidMovementPath(PossibleLocations, 0);
 
 		StartMovementAlongGridPath(CalculatedPathway);
-		return;
 	}
 
 	// Step 4: Attack
-
-	
-	EndThisActorTurn();
-	return;
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
@@ -134,7 +129,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		
 		if (PreferredFaction != EFactionID::None)
 		{
-			// Gets the targets of these actors preferred target faction. Also checks that there are faction members of present. Otherwise this will return empty.
+			// Gets the targets of these actors preferred target faction. Also checks that there are faction members of present. Otherwise, this will return empty.
 			PotentialTargets = GetCombatantsByFaction(CachedActiveCombatants, PreferredFaction);
 
 			// Chooses either the closest faction member or random. Weight: Closest 70% / Random 30%
@@ -422,7 +417,7 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 	// It gets the attempt of what should be the closest grid point to the target.
 	int32 ClosestDistance = PossiblePositions[AttemptIndex].Distance;
 
-	// This for loop checks the distances and if the closest distance has similar ones, It will choose one at random to be a little more dynmaic
+	// This for loop checks the distances and if the closest distance has similar ones, It will choose one at random to be a little more dynamic
 	TArray<FIntPoint> TempSimilarDistances;
 	for (const FCandidatePathway Pos : PossiblePositions)
 	{
@@ -437,7 +432,7 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 	const FIntPoint TargetCoordinatesForMove = PossiblePositions[RandIndex].GridPoint;
 	UE_LOG(LogTemp, Error, TEXT("Movement Target: %i, %i"), TargetCoordinatesForMove.X, TargetCoordinatesForMove.Y);
 
-	// Calculates a valid path to that point. If it cannot be reached it isnt valid
+	// Calculates a valid path to that point. If it cannot be reached, it isn't valid
 	TArray<FIntPoint> PathToFollow;
 	if (FindPathUsingAStar(CurrentGridCoordinates, TargetCoordinatesForMove, PathToFollow))
 	{
@@ -474,19 +469,17 @@ int32 UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordin
 
 FIntPoint UCharacterCombatData::CalculateTargetMovementPiece() const
 {
-	if (!CombatInterfacePlayer) return FIntPoint(1,1);
-	
-	if (!CombatInterfaceGamemode) return FIntPoint(1,1);
+	if (!CombatInterfacePlayer || !CombatInterfaceGamemode) return FIntPoint(1,1);
 
 	const FIntPoint PlayerCoordinates = CombatInterfacePlayer->GetGridCoordinates();
 	FIntPoint TargetCoordinates = PlayerCoordinates;
 
-	const FIntPoint DirToPlayer = FIntPoint(PlayerCoordinates.X - CurrentGridCoordinates.X, PlayerCoordinates.Y - CurrentGridCoordinates.Y);
+	const FIntPoint DirToTarget = FIntPoint(PlayerCoordinates.X - CurrentGridCoordinates.X, PlayerCoordinates.Y - CurrentGridCoordinates.Y);
 
 	// Calculates which piece should be the target of this actor. 
-	if (FMath::Abs(DirToPlayer.X) > FMath::Abs(DirToPlayer.Y))
+	if (FMath::Abs(DirToTarget.X) > FMath::Abs(DirToTarget.Y))
 	{
-		if (DirToPlayer.X < 0)
+		if (DirToTarget.X < 0)
 		{
 			// Player is to the left of this enemy, move target to the right of player.
 			TargetCoordinates.X += 1;
@@ -516,7 +509,7 @@ FIntPoint UCharacterCombatData::CalculateTargetMovementPiece() const
 	}
 	else
 	{
-		if (DirToPlayer.Y < 0)
+		if (DirToTarget.Y < 0)
 		{
 			// The Player is below this enemy, move target to above the player.
 			TargetCoordinates.Y += 1;
@@ -788,20 +781,6 @@ bool UCharacterCombatData::IsGridPieceActive(const FIntPoint GridCoordinates) co
 	return State != EPieceState::Occupied && State != EPieceState::Disabled;
 }
 
-bool UCharacterCombatData::CalculatePathToPosition(FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const
-{
-	// Tries to calculate a path to the target, based on the least amount of steps it will take to reach.
-	TArray<FIntPoint> Path;
-	if (!FindPathUsingAStar(Start, Target, Path))
-	{
-		return false;
-	}
-
-	// Takes the amount of steps, considers the start is the actors location so -1 step.
-	OutSteps = FMath::Max(0, Path.Num() - 1);
-	return true;
-}
-
 bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords,
 	TArray<FIntPoint>& OutPath) const
 {
@@ -841,7 +820,7 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 	StartGrid.Heuristic = GetGridDistanceAllDir(StartCoords, TargetCoords);
 	
 	ToAttempt.Add(StartGrid); // The initial attempt, starting from the pos and the cost it will take. 
-	ToAttempt.Heapify(AStarHeapLess);
+	ToAttempt.Heapify(AStarHeapCheck);
 
 	// Stores the adjoining grid points to the current grid point attempt. 
 	TArray<FIntPoint> AdjacentPoints;
@@ -851,13 +830,15 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 	{
 		// Sets up the current grid position, we will attempt this iteration. 
 		FAStarGrid CurrentGridPos;
-		ToAttempt.HeapPop(CurrentGridPos, AStarHeapLess);
+		ToAttempt.HeapPop(CurrentGridPos, AStarHeapCheck);
 
 		FIntPoint CurrentCoordinates = CurrentGridPos.GridPoint;
 
+		// If the coordinate has already been checked, do the next. 
 		if (Finished.Contains(CurrentCoordinates))
 		{continue;}
 
+		// If it has reached the target coordinates, it will add it to the path and then reverse it so it can create a stable pathway.
 		if (CurrentCoordinates == TargetCoords)
 		{
 			FIntPoint Step = TargetCoords;
@@ -884,10 +865,25 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 		{
 			if (Finished.Contains(Point)) continue;
 			if (!DoesGridCoordinatesExist(Point)) continue;
+
+			// This section is to check if there is a blocked part if the character is trying to go diagonal. 
+			int32 DeltaX = Point.X - CurrentCoordinates.X;
+			int32 DeltaY = Point.Y - CurrentCoordinates.Y;
+
+			if (DeltaX != 0 && DeltaY != 0)
+			{
+				// Checks each side from the current path part so that it can check if either or is blocked. 
+				FIntPoint SideA(CurrentCoordinates.X + DeltaX, CurrentCoordinates.Y);
+				FIntPoint SideB(CurrentCoordinates.X, CurrentCoordinates.Y + DeltaY);
+
+				// Performs the checks, will not add this to the path if it is blocked and will go around obstacles instead of cutting through them.
+				if (!DoesGridCoordinatesExist(SideA) || !DoesGridCoordinatesExist(SideB)) continue;
+				if (!IsGridPieceActive(SideA) || !IsGridPieceActive(SideB)) continue;
+			}
+			
 			if (!IsGridPieceActive(Point)) continue;
 
 			int32 PossibleCost = CurrentCost + 1;
-
 			int32* ExistingCost = DistanceCost.Find(Point);
 
 			if (!ExistingCost || PossibleCost < *ExistingCost)
@@ -900,7 +896,7 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 				Grid.Cost = PossibleCost;
 				Grid.Heuristic = GetGridDistanceAllDir(Point, TargetCoords);
 				
-				ToAttempt.HeapPush(Grid, AStarHeapLess);
+				ToAttempt.HeapPush(Grid, AStarHeapCheck);
 			}
 		}
 	}
@@ -936,11 +932,22 @@ void UCharacterCombatData::MoveToNextGridPos()
 	{
 		// Attack;
 
-		// Makes sure that when the AI finishes its movement phase, it is looking at the target. 
-		GetOwner()->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(),
+		// Makes sure that when the AI finishes its movement phase, it is looking at the target.
+		if (CurrentTarget)
+		{
+			GetOwner()->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(),
 			CurrentTarget->GetActorLocation()));
+		}
+
+		// TODO - Move this to attack pattern instead
 		
-		EndThisActorTurn();
+		// TESTING. If It's not the player, ends the turn. Until attack is implemented.
+		if (EntityCombatConfiguration->FactionID == EFactionID::BlackLine)
+		{
+			EndThisActorTurn();
+			return;
+		}
+		
 		return;
 	}
 

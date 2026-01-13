@@ -26,7 +26,7 @@ struct FAStarGrid
 	int32 Final() const {return Cost + Heuristic;}
 };
 
-static bool AStarHeapLess(const FAStarGrid& PointA, const FAStarGrid& PointB)
+static bool AStarHeapCheck(const FAStarGrid& PointA, const FAStarGrid& PointB)
 {
 	const int32 AFinal = PointA.Final();
 	const int32 BFinal = PointB.Final();
@@ -97,7 +97,6 @@ public:
 	// AI movement functions
 	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor);
 	TArray<FIntPoint> ChooseValidMovementPath(const TArray<FCandidatePathway>& PossiblePositions, int32 PathwayAttemptModifier);
-	bool CalculatePathToPosition(FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const;
 	bool FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const;
 
 	UFUNCTION()
