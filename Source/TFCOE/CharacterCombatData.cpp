@@ -9,6 +9,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/GameMode.h"
 #include "Algo/Reverse.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UCharacterCombatData::UCharacterCombatData()
 {
@@ -52,26 +53,21 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
 	
 	// Step 3: Check if the actor should move
-	if (CheckShouldMove(CurrentAttack, CurrentTarget))
+  	if (CheckShouldMove(CurrentAttack, CurrentTarget))
 	{
-		// Step 4: Movement
-		const FIntPoint TargetCoordinatesForMove = ChooseMovementPosition(CurrentTarget);
-		UE_LOG(LogTemp, Error, TEXT("Movement Target: %i, %i"), TargetCoordinatesForMove.X, TargetCoordinatesForMove.Y);
+		// Step 3.5: Movement
+		const TArray<FCandidatePathway> PossibleLocations = GetReachableMovementPositions(CurrentTarget);
+		const TArray<FIntPoint> CalculatedPathway = ChooseValidMovementPath(PossibleLocations, 0);
 
-		// Move
-		TArray<FIntPoint> PathToFollow;
-		if (FindPathUsingAStar(CurrentGridCoordinates, TargetCoordinatesForMove, PathToFollow))
-		{
-			StartMovementAlongGridPath(PathToFollow);
-			return;
-		}
+		StartMovementAlongGridPath(CalculatedPathway);
+		return;
+	}
 
-		
-	}
-	else
-	{
-		// Step 5: Attack
-	}
+	// Step 4: Attack
+
+	
+	EndThisActorTurn();
+	return;
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
@@ -354,21 +350,22 @@ FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType 
 	return &CachedAttacks[RandIndex];
 }
 
-FIntPoint UCharacterCombatData::ChooseMovementPosition(AActor* TargetActor)
+TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor)
 {
+	TArray<FCandidatePathway> FailsafeStruct = {{CurrentGridCoordinates, 0}};
+	
 	if (!TargetActor || !EntityCombatConfiguration)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Movement Position - Reference fail"));
-		return CurrentGridCoordinates;
+		return FailsafeStruct;
 	}
 
 	// Gets the interface for the target
 	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(TargetActor);
-	if (!CombatInterfaceTarget) return CurrentGridCoordinates;
+	if (!CombatInterfaceTarget) return FailsafeStruct;
 
 	// Gets the coordinates of the grid the target is stood on
    	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
-	int32 MovementRange = EntityCombatConfiguration->CombatConfiguration.MovementRange;
 
 	// Sets an array to check whether 
 	TArray<FIntPoint> CoordinatesToAttempt;
@@ -376,7 +373,7 @@ FIntPoint UCharacterCombatData::ChooseMovementPosition(AActor* TargetActor)
 
 	// Populates the array with the grid pieces around the 
 	GetGridAdjacentAllDir(TargetCoordinates, CoordinatesToAttempt);
-	if (CoordinatesToAttempt.IsEmpty()) return CurrentGridCoordinates;
+	if (CoordinatesToAttempt.IsEmpty()) return FailsafeStruct;
 
 	// Sorts through the coordinates to check to see which
 	for (auto Coordinates : CoordinatesToAttempt)
@@ -388,44 +385,78 @@ FIntPoint UCharacterCombatData::ChooseMovementPosition(AActor* TargetActor)
 		SuccessfulCandidates.Add(Coordinates);
 	}
 
-	if (SuccessfulCandidates.IsEmpty()) return CurrentGridCoordinates;
-
-	// Creates a struct to store how the reachable grid points and how many steps it will take to get there.
-	struct FCandidatePathway
-	{
-		FIntPoint GridPoint;
-		int32 Steps = 0;
-	};
+	if (SuccessfulCandidates.IsEmpty()) return FailsafeStruct;
 
 	// Creates an array of those structs to prepare for storage
-	TArray<FCandidatePathway> ReachableGridPositions;
+ 	TArray<FCandidatePathway> ReachableGridPositions;
 	ReachableGridPositions.Reserve(SuccessfulCandidates.Num());
 
 	// Calculates a path to the position and how many steps it will take to reach that. Then store it in the array.
 	for (FIntPoint& Candidate : SuccessfulCandidates)
 	{
-		int32 Steps = 0;
-		if (CalculatePathToPosition(CurrentGridCoordinates, Candidate, Steps))
-		{
-			if (Steps <= MovementRange)
-			{
-				ReachableGridPositions.Add({Candidate, Steps});
-			}
-		}
+		int32 Distance = GetGridDistanceAllDir(CurrentGridCoordinates, Candidate);
+		ReachableGridPositions.Add({Candidate, Distance});
 	}
 
-	if (ReachableGridPositions.IsEmpty()) return CurrentGridCoordinates;
+	if (ReachableGridPositions.IsEmpty()) return FailsafeStruct;
 
-	// Sorts the structs based on how less steps it will take to reach, the less, the lower in the array.
+	// Sorts the structs based on how fewer steps it will take to reach, the less, the lower in the array.
 	ReachableGridPositions.Sort([](const FCandidatePathway& PathA, const FCandidatePathway& PathB)
 	{
-		if (PathA.Steps != PathB.Steps) return PathA.Steps < PathB.Steps;
+		if (PathA.Distance != PathB.Distance) return PathA.Distance < PathB.Distance;
 		if (PathA.GridPoint.X != PathB.GridPoint.X) return PathA.GridPoint.X < PathB.GridPoint.X;
 		return PathA.GridPoint.Y < PathB.GridPoint.Y;
 	});
 
 	// Returns the struct with the least amount of steps,
-	return ReachableGridPositions[0].GridPoint;
+	return ReachableGridPositions;
+}
+
+TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCandidatePathway>& PossiblePositions, const int32 PathwayAttemptModifier)
+{
+	if (PossiblePositions.IsEmpty()) return {CurrentGridCoordinates};
+
+	// This is the current attempt of tries
+	int32 AttemptIndex = PathwayAttemptModifier;
+
+	// It gets the attempt of what should be the closest grid point to the target.
+	int32 ClosestDistance = PossiblePositions[AttemptIndex].Distance;
+
+	// This for loop checks the distances and if the closest distance has similar ones, It will choose one at random to be a little more dynmaic
+	TArray<FIntPoint> TempSimilarDistances;
+	for (const FCandidatePathway Pos : PossiblePositions)
+	{
+		if (Pos.Distance == ClosestDistance)
+		{
+			TempSimilarDistances.Add(Pos.GridPoint);
+		}
+	}
+
+	// Then gets a random one from that array to look into. 
+	int32 RandIndex = FMath::RandRange(0, TempSimilarDistances.Num() - 1);
+	const FIntPoint TargetCoordinatesForMove = PossiblePositions[RandIndex].GridPoint;
+	UE_LOG(LogTemp, Error, TEXT("Movement Target: %i, %i"), TargetCoordinatesForMove.X, TargetCoordinatesForMove.Y);
+
+	// Calculates a valid path to that point. If it cannot be reached it isnt valid
+	TArray<FIntPoint> PathToFollow;
+	if (FindPathUsingAStar(CurrentGridCoordinates, TargetCoordinatesForMove, PathToFollow))
+	{
+		//Testing//
+		int32 Index = 1;
+		for (auto ToFollow : PathToFollow)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Location %i is %i, %i"), Index, ToFollow.X, ToFollow.Y);
+			Index++;
+		}
+
+		return PathToFollow;
+	}
+
+	// If this location did not have a valid path, then try again. Will iterate through the entire array of possibilities, otherwise don't move. 
+	AttemptIndex++;
+	if (AttemptIndex >= PossiblePositions.Num()) return {CurrentGridCoordinates};
+
+	return ChooseValidMovementPath(PossiblePositions, AttemptIndex);
 }
 
 int32 UCharacterCombatData::CalculateMovementCost(const FIntPoint CurrentCoordinates,
@@ -776,39 +807,47 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 {
 	OutPath.Reset();
 
+	// If the start is the target, it's the current pos already, so just return and don't move.
 	if (StartCoords == TargetCoords)
 	{
 		OutPath.Add(StartCoords);
 		return true;
 	}
 
+	// Another check if the grid position is a valid position for movement. 
 	if (!DoesGridCoordinatesExist(TargetCoords) || !IsGridPieceActive(TargetCoords))
 	{
 		return false;
 	}
 
-	TArray<FAStarNode> ToAttempt;
-	ToAttempt.Reserve(64);
+	// An array of structs to store the grid positions that will be attempted to sorted through. 
+	TArray<FCandidatePathway> ToAttempt;
 
-	TMap<FIntPoint, int32> CostCache;
+	// A map that stores the coordinates and the cost it will take to move there
+	TMap<FIntPoint, int32> DistanceCost;
 
+	// A map of previously attempted grid positions, stores the previous location to the current.
 	TMap<FIntPoint, FIntPoint> PathAttempted;
 
+	// A set of the grid position that have been finalised. 
 	TSet<FIntPoint> Finished;
 
-	CostCache.Add(StartCoords, 0);
-	ToAttempt.Add({StartCoords, GetGridDistanceAllDir(StartCoords, TargetCoords)});
+	
+	DistanceCost.Add(StartCoords, 0); // Starting with the current pos of the character.
+	ToAttempt.Add({StartCoords, GetGridDistanceAllDir(StartCoords, TargetCoords)}); // The initial attempt, starting from the pos and the cost it will take. 
 	ToAttempt.Heapify(AStarHeapLess);
 
+	// Stores the adjoining grid points to the current grid point attempt. 
 	TArray<FIntPoint> AdjacentPoints;
 	AdjacentPoints.Reserve(8);
 
 	while (ToAttempt.Num() > 0)
 	{
-		FAStarNode CurrentNode;
-		ToAttempt.HeapPop(CurrentNode, AStarHeapLess);
+		// Sets up the current grid position, we will attempt this iteration. 
+		FCandidatePathway CurrentGridPos;
+		ToAttempt.HeapPop(CurrentGridPos, AStarHeapLess);
 
-		FIntPoint CurrentCoordinates = CurrentNode.Coordinates;
+		FIntPoint CurrentCoordinates = CurrentGridPos.GridPoint;
 
 		if (Finished.Contains(CurrentCoordinates))
 		{continue;}
@@ -830,9 +869,10 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 
 		Finished.Add(CurrentCoordinates);
 
+		AdjacentPoints.Reset();
 		GetGridAdjacentAllDir(CurrentCoordinates, AdjacentPoints);
 
-		int32 CurrentCost = CostCache[CurrentCoordinates];
+		int32 CurrentCost = DistanceCost[CurrentCoordinates];
 
 		for (FIntPoint& Point : AdjacentPoints)
 		{
@@ -842,15 +882,15 @@ bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FInt
 
 			int32 PossibleCost = CurrentCost + 1;
 
-			int32* ExistingCost = CostCache.Find(Point);
+			int32* ExistingCost = DistanceCost.Find(Point);
 
 			if (!ExistingCost || PossibleCost < * ExistingCost)
 			{
 				PathAttempted.Add(Point, CurrentCoordinates);
-				CostCache.Add(Point, PossibleCost);
+				DistanceCost.Add(Point, PossibleCost);
 
 				int32 F = PossibleCost + GetGridDistanceAllDir(Point, TargetCoords);
-				ToAttempt.HeapPush(FAStarNode{Point, F}, AStarHeapLess);
+				ToAttempt.HeapPush(FCandidatePathway{Point, F}, AStarHeapLess);
 			}
 		}
 	}
@@ -885,6 +925,10 @@ void UCharacterCombatData::MoveToNextGridPos()
 	if (TurnPathIndex >= TurnPath.Num())
 	{
 		// Attack;
+
+		// Makes sure that when the AI finishes its movement phase, it is looking at the target. 
+		GetOwner()->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(),
+			CurrentTarget->GetActorLocation()));
 		
 		EndThisActorTurn();
 		return;

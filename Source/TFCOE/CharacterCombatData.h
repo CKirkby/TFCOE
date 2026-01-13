@@ -12,15 +12,16 @@ struct FAIRequestID;
 class ICombatInterface;
 class UEnemyBehaviour;
 
-struct FAStarNode
+struct FCandidatePathway
 {
-	FIntPoint Coordinates;
-	int32 TotalCost = 0;
+	FIntPoint GridPoint;
+	int32 Distance = 0;
 };
 
-static bool AStarHeapLess(const FAStarNode& PointA, const FAStarNode& PointB)
+static bool AStarHeapLess(const FCandidatePathway& PointA, const FCandidatePathway& PointB)
 {
-	return PointA.TotalCost > PointB.TotalCost;
+	if (PointA.Distance != PointB.Distance) return PointA.Distance > PointB.Distance;
+	return PointA.Distance > PointB.Distance;
 }
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -83,7 +84,8 @@ public:
 	FAttackConfiguration* GetAttackFromType(EAttackType AttackType) const;
 
 	// AI movement functions
-	FIntPoint ChooseMovementPosition(AActor* TargetActor);
+	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor);
+	TArray<FIntPoint> ChooseValidMovementPath(const TArray<FCandidatePathway>& PossiblePositions, int32 PathwayAttemptModifier);
 	bool CalculatePathToPosition(FIntPoint& Start, const FIntPoint& Target, int& OutSteps) const;
 	bool FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const;
 
