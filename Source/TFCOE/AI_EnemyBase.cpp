@@ -5,10 +5,19 @@
 
 #include "AIController.h"
 #include "CharacterCombatData.h"
+#include "HealthComponent.h"
 
 AAI_EnemyBase::AAI_EnemyBase()
 {
 	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+}
+
+void AAI_EnemyBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitialiseHealth();
 }
 
 // Interface call to move the current character
@@ -46,4 +55,10 @@ EEnemyTier AAI_EnemyBase::GetActorFactionRank()
 	}
 
 	return EEnemyTier::Grunt;
+}
+
+void AAI_EnemyBase::InitialiseHealth() const
+{
+	// Gets the set health from the enemy configuration and inputs it into the health comp.
+	HealthComp->InitialiseHealth(CombatData->GetHealthConfig());
 }

@@ -157,4 +157,14 @@ public:
 	{ 
 		TimePoints = MaxTimePoints;
 	}
+
+	int GetHealthConfig() const
+	{
+		if (EntityCombatConfiguration)
+		{
+			return EntityCombatConfiguration->CombatConfiguration.Health;
+		}
+		
+		return 1;
+	}
 };

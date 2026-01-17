@@ -5,6 +5,7 @@
 #include "AIController.h"
 #include "BoardPiece.h"
 #include "CombatInterface.h"
+#include "HealthInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameMode.h"
@@ -30,6 +31,11 @@ void UCharacterCombatData::BeginPlay()
 
 void UCharacterCombatData::ExecuteCurrentTurn()
 {
+	// Testing for printing health //
+	IHealthInterface* HealthInterfaceTest = Cast<IHealthInterface>(GetOwner());
+	UE_LOG(LogTemp, Error, TEXT("Enemy Health this turn: %i"), HealthInterfaceTest->GetHealth());
+	
+	
 	// Step 1: Select Target for this turn.
 	CurrentTarget = SelectTargetForTurn();
 	if (!CurrentTarget)

@@ -7,13 +7,16 @@
 #include "CoreMinimal.h"
 #include "CharacterCombatData.h"
 #include "CombatManager.h"
+#include "HealthComponent.h"
+#include "HealthInterface.h"
 #include "PaperZDCharacter.h"
 #include "AI_PlayerCombatant.generated.h"
 
+class UHealthComponent;
 class UCharacterCombatData;
 
 UCLASS()
-class TFCOE_API AAI_PlayerCombatant : public APaperZDCharacter, public ICombatInterface
+class TFCOE_API AAI_PlayerCombatant : public APaperZDCharacter, public ICombatInterface, public IHealthInterface
 {
 private:
 	GENERATED_BODY()
@@ -26,8 +29,11 @@ protected:
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UCharacterCombatData* CombatData = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UHealthComponent* HealthComp = nullptr;
 	
 	virtual void BeginPlay() override;
+	void InitialiseHealth() const;
 
 public:
 	
@@ -38,6 +44,13 @@ public:
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override;
 	virtual FIntPoint GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
 	virtual void MoveAI_Character(FVector Location) override;
+
+	// Health Interface
+	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}
+	virtual void TakeDamage(int IncomingDamage) override {HealthComp->TakeDamage(IncomingDamage);}
+	virtual void AddHealth(int IncomingHealth) override {HealthComp->AddHealth(IncomingHealth);}
+	virtual int GetHealth() override {return HealthComp->GetHealth();}
+	virtual bool IsDead() override {return HealthComp->IsDead();}
 
 	// Unneeded Interface Implementations
 	// Player

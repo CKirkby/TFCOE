@@ -6,6 +6,7 @@
 #include "AIController.h"
 
 #include "CharacterCombatData.h"
+#include "HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -14,11 +15,20 @@ AAI_PlayerCombatant::AAI_PlayerCombatant()
 	PrimaryActorTick.bCanEverTick = true;
 
 	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
+	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 }
 
 void AAI_PlayerCombatant::BeginPlay()
 {
 	Super::BeginPlay();
+
+	InitialiseHealth();
+}
+
+void AAI_PlayerCombatant::InitialiseHealth() const
+{
+	// Gets the set health from the enemy configuration and inputs it into the health comp.
+	HealthComp->InitialiseHealth(CombatData->GetHealthConfig());
 }
 
 void AAI_PlayerCombatant::Tick(float DeltaTime)
@@ -26,6 +36,8 @@ void AAI_PlayerCombatant::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	GEngine->AddOnScreenDebugMessage(-1, 0.005f,FColor::Orange, TEXT("Current Time Points: " + FString::FromInt(CombatData->GetTimePoints())));
+	
+	GEngine->AddOnScreenDebugMessage(-1, 0.005f, FColor::Green, TEXT("Player Health: " + FString::FromInt(GetHealth())));
 }
 
 // An interface function to initiate movement 

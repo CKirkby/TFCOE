@@ -5,28 +5,36 @@
 #include "CoreMinimal.h"
 #include "CharacterCombatData.h"
 #include "CombatInterface.h"
+#include "HealthComponent.h"
+#include "HealthInterface.h"
 #include "PaperZDCharacter.h"
 #include "AI_EnemyBase.generated.h"
 
+class UHealthComponent;
 class UCharacterCombatData;
 /**
  * 
  */
 UCLASS()
-class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface
+class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface, public IHealthInterface
 {
-
 private:
 	GENERATED_BODY()
 
 public:
 	AAI_EnemyBase();
 
+	void InitialiseHealth() const;
+
 protected:
+
+	virtual void BeginPlay() override;
 	
 	// Components
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UCharacterCombatData* CombatData = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UHealthComponent* HealthComp = nullptr;
 
 	// Interface Implementation
 	virtual FIntPoint GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
@@ -35,6 +43,13 @@ protected:
 	virtual void BeginTurnPhase() override;
 	virtual EFactionID GetActorFactionID() override;
 	virtual EEnemyTier GetActorFactionRank() override;
+
+	// Health Interface function
+	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}
+	virtual void TakeDamage(int IncomingDamage) override {HealthComp->TakeDamage(IncomingDamage);}
+	virtual void AddHealth(int IncomingHealth) override {HealthComp->AddHealth(IncomingHealth);}
+	virtual int GetHealth() override {return HealthComp->GetHealth();}
+	virtual bool IsDead() override {return HealthComp->IsDead();}
 
 	// Unneeded Interface Implementations
 	virtual void NotifyEndIndividualTurn() override {}
