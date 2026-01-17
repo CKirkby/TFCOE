@@ -27,6 +27,8 @@ public:
 
 	void InitialiseHealth(const int NewHealth);
 
+	// Getter and Setter //
+
 	void SetHealth(const int NewHealth)
 	{
 		Health = NewHealth;
@@ -50,5 +52,10 @@ public:
 	bool IsDead() const
 	{
 		return Health >= 0;
+	}
+
+	void ResetHealth()
+	{
+		Health = MaxHealth;
 	}
 };
