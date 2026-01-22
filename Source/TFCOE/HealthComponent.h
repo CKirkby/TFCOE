@@ -14,6 +14,10 @@ class TFCOE_API UHealthComponent : public UActorComponent
 
 public:	
 	UHealthComponent();
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTakeDamage);
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnTakeDamage OnTakeDamage;
 
 protected:
 	virtual void BeginPlay() override;
@@ -22,21 +26,21 @@ protected:
 	int Health = 5;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	int MaxHealth = 5;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	UMaterialInstance* OnDamageMaterial = nullptr;
 
 public:
 
 	void InitialiseHealth(const int NewHealth);
+	UFUNCTION(BlueprintCallable) // For testing, doesnt need to be blueprint callable in future
+	void TakeDamage(const int Damage);
 
 	// Getter and Setter //
 
 	void SetHealth(const int NewHealth)
 	{
 		Health = NewHealth;
-	}
-
-	void TakeDamage(const int Damage)
-	{
-		Health -= Damage;
 	}
 
 	void AddHealth(const int NewHealth)

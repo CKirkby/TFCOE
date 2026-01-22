@@ -2,6 +2,7 @@
 
 #include "HealthComponent.h"
 
+#include "AI_PlayerCombatant.h"
 #include "CombatInterface.h"
 
 UHealthComponent::UHealthComponent()
@@ -26,3 +27,9 @@ void UHealthComponent::InitialiseHealth(const int NewHealth)
 	}
 }
 
+void UHealthComponent::TakeDamage(const int Damage)
+{
+	Health -= Damage;
+	
+	OnTakeDamage.Broadcast();
+}
