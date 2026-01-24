@@ -119,6 +119,9 @@ public:
 	TArray<AActor*> SortCombatantsByDistance(const TArray<AActor*>& Combatants) const;
 	TArray<AActor*> GetCombatantsByFaction(TArray<AActor*> CombatantsToCheck, EFactionID FactionToCheck);
 	AActor* GetTargetFromClosestOrRandom(TArray<AActor*> PotentialTargets, float Weight) const;
+	
+	// Combat Functionality
+	bool CheckIfShouldAttack(AActor* TargetActor) const;
 
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
 

@@ -659,6 +659,16 @@ AActor* UCharacterCombatData::GetTargetFromClosestOrRandom(TArray<AActor*> Poten
 	return nullptr;
 }
 
+bool UCharacterCombatData::CheckIfShouldAttack(AActor* TargetActor) const
+{
+	if (!TargetActor) return false;
+	
+	ICombatInterface* CombInterTarget = Cast<ICombatInterface>(TargetActor);
+	if (!CombInterTarget) return false;
+	
+	FIntPoint TargetCoordinates = CombInterTarget->GetGridCoordinates();
+}
+
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
 {
 	TWeakObjectPtr<UCharacterCombatData> SafeThis = this;

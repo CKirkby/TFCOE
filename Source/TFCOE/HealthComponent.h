@@ -33,7 +33,7 @@ protected:
 public:
 
 	void InitialiseHealth(const int NewHealth);
-	UFUNCTION(BlueprintCallable) // For testing, doesnt need to be blueprint callable in future
+	UFUNCTION(BlueprintCallable) // For testing, doesn't need to be blueprinted callable in future
 	void TakeDamage(const int Damage);
 
 	// Getter and Setter //
