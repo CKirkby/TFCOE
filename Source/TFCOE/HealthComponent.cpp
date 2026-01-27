@@ -1,9 +1,7 @@
 // Created by Snow Paw Games
 
 #include "HealthComponent.h"
-
-#include "AI_PlayerCombatant.h"
-#include "CombatInterface.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UHealthComponent::UHealthComponent()
 {
@@ -13,6 +11,17 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UHealthComponent::LerpActorLocation(AActor* TargetActor, const FVector PointA, const FVector PointB, float Alpha)
+{
+	if (!TargetActor)
+	{
+		TargetActor = GetOwner();
+		if (!TargetActor) return;
+	}
+	
+	TargetActor->SetActorLocation(UKismetMathLibrary::VLerp(PointA, PointB, Alpha));
 }
 
 void UHealthComponent::InitialiseHealth(const int NewHealth)

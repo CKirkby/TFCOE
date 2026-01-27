@@ -29,11 +29,13 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	UMaterialInstance* OnDamageMaterial = nullptr;
+	
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void LerpActorLocation(AActor* TargetActor, FVector PointA, FVector PointB, float Alpha);
 
 public:
 
 	void InitialiseHealth(const int NewHealth);
-	UFUNCTION(BlueprintCallable) // For testing, doesn't need to be blueprinted callable in future
 	void TakeDamage(const int Damage);
 
 	// Getter and Setter //

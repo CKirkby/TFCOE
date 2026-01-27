@@ -54,6 +54,7 @@ protected:
 	AActor* CurrentTarget = nullptr;
 	UPROPERTY()
 	AActor* PreviousAttacker = nullptr;
+	FAttackConfiguration* CurrentAttack = nullptr;
 	bool AttackedLastTurn = false;
 	
 	// Action Points
@@ -78,7 +79,7 @@ public:
 
 	// Activates this characters turn. 
 	void ExecuteCurrentTurn();
-	void EndThisActorTurn() const;
+	void EndActorTurn() const;
 
 	// If AI, it will select a character to target. Most of the time it will be the player. 
 	AActor* SelectTargetForTurn();
@@ -88,15 +89,17 @@ public:
 	bool CheckIsAdjacent(FIntPoint& PointA, FIntPoint& PointB) const;
 	int32 GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const;
 	int32 GetGridDistanceCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
-	bool IsAlignedCardinal(FIntPoint& PointA, FIntPoint& PointB) const;
-	bool IsAlignedAllDir(FIntPoint& PointA, FIntPoint& PointB) const;
+	int32 GetGridDistanceOrdinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	bool IsAlignedCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	bool IsAlignedAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	bool IsAlignedOrdinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
 
 	// Stores a chosen attack.
-	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor) const;
+	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor);
 	FAttackConfiguration* GetAttackFromType(EAttackType AttackType) const;
 
 	// AI movement functions
-	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor);
+	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack);
 	TArray<FIntPoint> ChooseValidMovementPath(const TArray<FCandidatePathway>& PossiblePositions, int32 PathwayAttemptModifier);
 	bool FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords, TArray<FIntPoint>& OutPath) const;
 
@@ -119,9 +122,11 @@ public:
 	TArray<AActor*> SortCombatantsByDistance(const TArray<AActor*>& Combatants) const;
 	TArray<AActor*> GetCombatantsByFaction(TArray<AActor*> CombatantsToCheck, EFactionID FactionToCheck);
 	AActor* GetTargetFromClosestOrRandom(TArray<AActor*> PotentialTargets, float Weight) const;
+
+	FIntPoint GetCurrentTargetCoords(AActor* Target);
 	
 	// Combat Functionality
-	bool CheckIfShouldAttack(AActor* TargetActor) const;
+	bool CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB);
 
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
 

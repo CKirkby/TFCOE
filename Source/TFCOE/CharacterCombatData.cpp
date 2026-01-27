@@ -35,12 +35,11 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	IHealthInterface* HealthInterfaceTest = Cast<IHealthInterface>(GetOwner());
 	UE_LOG(LogTemp, Error, TEXT("Enemy Health this turn: %i"), HealthInterfaceTest->GetHealth());
 	
-	
 	// Step 1: Select Target for this turn.
 	CurrentTarget = SelectTargetForTurn();
 	if (!CurrentTarget)
 	{
-		EndThisActorTurn();
+		EndActorTurn();
 		return;
 	}
 
@@ -48,10 +47,10 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
 
 	// Step 2: Choose an attack
-	FAttackConfiguration* CurrentAttack = ChooseAttackForTurn(CurrentTarget);
+	CurrentAttack = ChooseAttackForTurn(CurrentTarget);
 	if (!CurrentAttack)
 	{
-		EndThisActorTurn();
+		EndActorTurn();
 		return;
 	}
 
@@ -62,13 +61,26 @@ void UCharacterCombatData::ExecuteCurrentTurn()
   	if (CheckShouldMove(CurrentAttack, CurrentTarget))
 	{
 		// Step 3.5: Movement
-		const TArray<FCandidatePathway> PossibleLocations = GetReachableMovementPositions(CurrentTarget);
+		const TArray<FCandidatePathway> PossibleLocations = GetReachableMovementPositions(CurrentTarget, CurrentAttack);
 		const TArray<FIntPoint> CalculatedPathway = ChooseValidMovementPath(PossibleLocations, 0);
 
 		StartMovementAlongGridPath(CalculatedPathway);
 	}
-
-	// Step 4: Attack
+    else
+    {
+    	// Step 4: Attack
+    	if (CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
+    	{
+    		// Attack
+    		UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
+    		EndActorTurn(); // Testing
+    	}
+    	else
+    	{
+    		UE_LOG(LogTemp, Error, TEXT("Cannot Attack this turn, ending turn"))
+    		EndActorTurn();
+    	}
+    }
 }
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
@@ -237,11 +249,8 @@ bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAtt
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: CheckShouldMove - Reference failure"));
 		return false;
 	}
-
-	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(ChosenTarget);
-	if (CombatInterfaceTarget == nullptr) return false;
 	
-	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+	FIntPoint TargetCoordinates = GetCurrentTargetCoords(ChosenTarget);
 	int DistToTarget = GetGridDistanceAllDir(CurrentGridCoordinates, TargetCoordinates);
 
 	// Checks if this attack requires alignment, if it does then it will immediately tell it to move
@@ -273,7 +282,7 @@ bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAtt
 	return false;
 }
 
-FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetActor) const
+FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetActor)
 {
 	if (!TargetActor || !EntityCombatConfiguration || EntityCombatConfiguration->AttackConfigurations.IsEmpty())
 	{
@@ -281,12 +290,8 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 		return nullptr;
 	}
 
-	// Gets the targets interface to get the grid coordinates.
-	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(TargetActor);
-	if (!CombatInterfaceTarget) return nullptr;
-
 	// Gets the targets coordinates. 
-	const FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+	const FIntPoint TargetCoordinates = GetCurrentTargetCoords(TargetActor);
 
 	// Gets these actors preferred combat style. 
 	const ECombatStyle PreferredCombatStyle = EntityCombatConfiguration->PreferredCombatStyle;
@@ -351,22 +356,18 @@ FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType 
 	return &CachedAttacks[RandIndex];
 }
 
-TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor)
+TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)
 {
 	TArray<FCandidatePathway> FailsafeStruct = {{CurrentGridCoordinates, 0}};
 	
-	if (!TargetActor || !EntityCombatConfiguration)
+	if (!TargetActor || !EntityCombatConfiguration || !ChosenAttack)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Movement Position - Reference fail"));
 		return FailsafeStruct;
 	}
 
-	// Gets the interface for the target
-	ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(TargetActor);
-	if (!CombatInterfaceTarget) return FailsafeStruct;
-
 	// Gets the coordinates of the grid the target is stood on
-   	FIntPoint TargetCoordinates = CombatInterfaceTarget->GetGridCoordinates();
+   	FIntPoint TargetCoordinates = GetCurrentTargetCoords(TargetActor);
 
 	// Sets an array to check whether 
 	TArray<FIntPoint> CoordinatesToAttempt;
@@ -395,7 +396,13 @@ TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AA
 	// Calculates a path to the position and how many steps it will take to reach that. Then store it in the array.
 	for (FIntPoint& Candidate : SuccessfulCandidates)
 	{
-		int32 Distance = GetGridDistanceAllDir(CurrentGridCoordinates, Candidate);
+		// Checks if this is a valid position to be able to attack from
+		if (!CanAttackFromPosition(ChosenAttack, Candidate, TargetCoordinates))
+		{
+			continue;
+		}
+
+		const int32 Distance = GetGridDistanceAllDir(CurrentGridCoordinates, Candidate);
 		ReachableGridPositions.Add({Candidate, Distance});
 	}
 
@@ -425,7 +432,7 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 	int32 ClosestDistance = PossiblePositions[AttemptIndex].Distance;
 
 	// This for loop checks the distances and if the closest distance has similar ones, It will choose one at random to be a little more dynamic
-	TArray<FIntPoint> TempSimilarDistances;
+	/*TArray<FIntPoint> TempSimilarDistances;
 	for (const FCandidatePathway Pos : PossiblePositions)
 	{
 		if (Pos.Distance == ClosestDistance)
@@ -436,7 +443,8 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 
 	// Then gets a random one from that array to look into. 
 	int32 RandIndex = FMath::RandRange(0, TempSimilarDistances.Num() - 1);
-	const FIntPoint TargetCoordinatesForMove = PossiblePositions[RandIndex].GridPoint;
+	const FIntPoint TargetCoordinatesForMove = PossiblePositions[RandIndex].GridPoint;*/
+	const FIntPoint TargetCoordinatesForMove = PossiblePositions[AttemptIndex].GridPoint;
 	UE_LOG(LogTemp, Error, TEXT("Movement Target: %i, %i"), TargetCoordinatesForMove.X, TargetCoordinatesForMove.Y);
 
 	// Calculates a valid path to that point. If it cannot be reached, it isn't valid
@@ -659,14 +667,55 @@ AActor* UCharacterCombatData::GetTargetFromClosestOrRandom(TArray<AActor*> Poten
 	return nullptr;
 }
 
-bool UCharacterCombatData::CheckIfShouldAttack(AActor* TargetActor) const
+
+bool UCharacterCombatData::CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB)
 {
-	if (!TargetActor) return false;
+	if (!ChosenAttack)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: Check should attack - Reference Fail"))
+		EndActorTurn();
+		return false;
+	}
 	
-	ICombatInterface* CombInterTarget = Cast<ICombatInterface>(TargetActor);
-	if (!CombInterTarget) return false;
+	const int AttackRange = ChosenAttack->AttackRange;
 	
-	FIntPoint TargetCoordinates = CombInterTarget->GetGridCoordinates();
+	if (!ChosenAttack->RequiresAlignment)
+	{
+		//If it's an attack that doesn't require an attack range, then it should just be allowed to execute
+		return true;
+	}
+	
+
+	switch (ChosenAttack->RangeType)
+	{
+	case EAttackRangeType::Cardinal:
+		// If It's cardinal, check if its aligned and in the attack range, then it can attack
+		if (IsAlignedCardinal(PointA, PointB) && GetGridDistanceCardinal(PointA, PointB) <= AttackRange)
+		{
+			return true;
+		}
+		return false;
+		
+	case EAttackRangeType::Ordinal:
+		// If It's ordinal, check if its aligned and in the attack range, then it can attack
+		if (IsAlignedOrdinal(PointA, PointB) && GetGridDistanceOrdinal(PointA, PointB) <= AttackRange)
+		{
+			return true;
+		}
+		return false;
+		
+	case EAttackRangeType::Both:
+		// If It's any dir, check if its aligned and in the attack range, then it can attack
+		if (IsAlignedAllDir(PointA, PointB) && GetGridDistanceAllDir(PointA, PointB) <= AttackRange)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	
+	// If all else fails, return false
+	return false;
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
@@ -701,7 +750,7 @@ bool UCharacterCombatData::CheckCanAffordMovement(const FIntPoint CurrentCoordin
 	return false;
 }
 
-void UCharacterCombatData::EndThisActorTurn() const
+void UCharacterCombatData::EndActorTurn() const
 {
 	// Tells the gamemode that this actor has finished its turn and to then cycle to the next enemy turn.
 	if (CombatInterfaceGamemode)
@@ -728,17 +777,36 @@ int32 UCharacterCombatData::GetGridDistanceCardinal(const FIntPoint& PointA, con
 	return FMath::Abs(PointA.X - PointB.X) + FMath::Abs(PointA.Y - PointB.Y);
 }
 
-bool UCharacterCombatData::IsAlignedCardinal(FIntPoint& PointA, FIntPoint& PointB) const
+int32 UCharacterCombatData::GetGridDistanceOrdinal(const FIntPoint& PointA, const FIntPoint& PointB) const
+{
+	const int32 DeltaX = FMath::Abs(PointA.X - PointB.X);
+	const int32 DeltaY = FMath::Abs(PointA.Y - PointB.Y);
+	
+	// If it is not diagonal, return an invalid number, as it won't be needed
+	if (DeltaX != DeltaY)
+	{
+		return -1;
+	}
+	
+	return DeltaX;
+}
+
+bool UCharacterCombatData::IsAlignedCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const
 {
 	return (PointA.X == PointB.X || PointA.Y == PointB.Y);
 }
 
-bool UCharacterCombatData::IsAlignedAllDir(FIntPoint& PointA, FIntPoint& PointB) const
+bool UCharacterCombatData::IsAlignedAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const
 {
 	const int32 DeltaX = FMath::Abs(PointA.X - PointB.X);
 	const int32 DeltaY = FMath::Abs(PointA.Y - PointB.Y);
 
 	return (DeltaX == 0) || (DeltaY == 0) || (DeltaX == DeltaY);
+}
+
+bool UCharacterCombatData::IsAlignedOrdinal(const FIntPoint& PointA, const FIntPoint& PointB) const
+{
+	return (FMath::Abs(PointA.X - PointB.X) == FMath::Abs(PointA.Y - PointB.Y));
 }
 
 FVector UCharacterCombatData::GetGridPosition(const FIntPoint& Coordinates) const
@@ -934,7 +1002,7 @@ void UCharacterCombatData::OnMovementComplete(FAIRequestID RequestID, EPathFollo
 	// If movement for some reason fails, end the turn. 
 	if (Result != EPathFollowingResult::Success)
 	{
-		EndThisActorTurn();
+		EndActorTurn();
 		return;
 	}
 	
@@ -955,22 +1023,34 @@ void UCharacterCombatData::MoveToNextGridPos()
 {
 	if (TurnPathIndex >= TurnPath.Num())
 	{
+		if (EntityCombatConfiguration->FactionID == EFactionID::Player)
+		{
+			return;
+		}
+		
+		if (!CurrentAttack)
+		{
+			EndActorTurn();
+		}
+		
 		// Attack;
+		if (CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
+		{
+			// Attack
+			UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
+			EndActorTurn(); // Testing
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Cannot Attack this turn, ending turn"))
+			EndActorTurn();
+		}
 
 		// Makes sure that when the AI finishes its movement phase, it is looking at the target.
 		if (CurrentTarget)
 		{
 			GetOwner()->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(),
 			CurrentTarget->GetActorLocation()));
-		}
-
-		// TODO - Move this to attack pattern instead
-		
-		// TESTING. If It's not the player, ends the turn. Until attack is implemented.
-		if (EntityCombatConfiguration->FactionID == EFactionID::BlackLine)
-		{
-			EndThisActorTurn();
-			return;
 		}
 		
 		return;
@@ -993,5 +1073,19 @@ void UCharacterCombatData::MoveToNextGridPos()
 			AIController->MoveToLocation(NextMovementLocation, 5.0f, false);
 		}
 	}
+}
+
+FIntPoint UCharacterCombatData::GetCurrentTargetCoords(AActor* Target)
+{
+	if (!Target)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: Get Dist To Target - Ref Fail"))
+		return FIntPoint::ZeroValue;
+	}
+
+	ICombatInterface* CombatInterface = Cast<ICombatInterface>(Target);
+	if (!CombatInterface) return FIntPoint::ZeroValue;
+	
+	return CombatInterface->GetGridCoordinates();
 }
 

@@ -12,6 +12,14 @@ enum class EAttackType : uint8
 	Ranged UMETA(DisplayName = "Ranged Combat")
 };
 
+UENUM(BlueprintType)
+enum class EAttackRangeType : uint8
+{
+	Cardinal UMETA(DisplayName = "Cardinal"),
+	Ordinal UMETA(DisplayName = "Ordinal"),
+	Both UMETA(DisplayName = "Both")
+};
+
 USTRUCT(BlueprintType)
 struct FAttackConfiguration
 {
@@ -25,6 +33,9 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	bool RequiresAlignment = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	EAttackRangeType RangeType = EAttackRangeType::Both;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (ClampMin = "1"))
 	int AttackRange = 1;
