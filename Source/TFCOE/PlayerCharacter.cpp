@@ -419,7 +419,7 @@ void APlayerCharacter::BeginTurnPhase()
 		FTimerHandle InitialisationDelayHandle;
 		TWeakObjectPtr<APlayerCharacter> SafeThis = this;
 		
-		// If this is on its inital turn it adds a small initialisation timer so that it can make sure the AI has spawned before it uses it.
+		// If this is on its initial turn it adds a small initialization timer so that it can make sure the AI has spawned before it uses it.
 		GetWorld()->GetTimerManager().SetTimer(InitialisationDelayHandle, [SafeThis]
 		{
 			if (!SafeThis.IsValid())
