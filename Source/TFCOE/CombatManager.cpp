@@ -106,7 +106,7 @@ void UCombatManager::ExecuteTurnFunctionality(ETurnOrder NewTurn)
 		//Tells the player to begin their turn phase.
 		if (ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
 		{
-			//CombatInterfacePlayer->BeginTurnPhase();
+			CombatInterfacePlayer->BeginTurnPhase();
 		}
 		
 		break;

@@ -69,6 +69,9 @@ protected:
 	AActor* AIPlayerDummy = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	ACombatCameraOperator* CameraOperator = nullptr;
+	
+	// Combat functionality
+	bool InitialTurn = true;
 
 	// Components
 	UPROPERTY()
@@ -162,6 +165,7 @@ protected:
 	virtual FIntPoint GetGridCoordinates() override;
 	virtual EFactionID GetActorFactionID() override {return FactionID;}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Player;}
+	virtual void BeginTurnPhase() override;
 
 	// Unneeded Interface Implementations
 	// Player
@@ -173,7 +177,6 @@ protected:
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override {return nullptr;}
-	virtual void BeginTurnPhase() override {}
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}
 

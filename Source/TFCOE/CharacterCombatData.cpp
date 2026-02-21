@@ -31,6 +31,14 @@ void UCharacterCombatData::BeginPlay()
 
 void UCharacterCombatData::ExecuteCurrentTurn()
 {
+	if (UpdatePlayerTurn())
+	{
+		// Checks and updates timepoints in function then finishes full functionality.
+		return;
+	}
+	
+  	UE_LOG(LogTemp, Error, TEXT("<-- New Turn Start -->"));
+	
 	// Testing for printing health //
 	IHealthInterface* HealthInterfaceTest = Cast<IHealthInterface>(GetOwner());
 	UE_LOG(LogTemp, Error, TEXT("Enemy Health this turn: %i"), HealthInterfaceTest->GetHealth());
@@ -240,6 +248,25 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	
 	// If all of this functionality fails, default to targeting the player character.
 	return PlayerCombatant;
+}
+
+bool UCharacterCombatData::UpdatePlayerTurn()
+{
+	// Checks if the current turn is the players, if it is, reset the time points and continue. 
+	if (EntityCombatConfiguration)
+	{
+		EFactionID FactionID = EntityCombatConfiguration->FactionID;
+		if (FactionID == EFactionID::Player || FactionID == EFactionID::PlayerParty)
+		{
+			ResetTimePoints();
+			return true;
+		}
+		
+		return false;
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Execute Turn, No combat configuration detected"));
+	return false;
 }
 
 bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAttack, AActor* ChosenTarget)

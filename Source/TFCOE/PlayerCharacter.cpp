@@ -409,3 +409,33 @@ FIntPoint APlayerCharacter::GetGridCoordinates()
 	UE_LOG(LogTemp, Error, TEXT("Player Character: Get Grid Coords - AI Actor ref fail"))
 	return FIntPoint::ZeroValue;
 }
+
+void APlayerCharacter::BeginTurnPhase()
+{
+	// Sends the order to the AI Dummy to execute its turn functionality.
+	
+	if (InitialTurn)
+	{
+		FTimerHandle InitialisationDelayHandle;
+		TWeakObjectPtr<APlayerCharacter> SafeThis = this;
+		
+		// If this is on its inital turn it adds a small initialisation timer so that it can make sure the AI has spawned before it uses it.
+		GetWorld()->GetTimerManager().SetTimer(InitialisationDelayHandle, [SafeThis]
+		{
+			if (!SafeThis.IsValid())
+			{
+				if (AActor* PlayerAI = SafeThis->GetPlayerAI_Dummy())
+				{
+					ICombatInterface* CombatInterface = Cast<ICombatInterface>(PlayerAI);
+					CombatInterface->BeginTurnPhase();
+				}
+			}
+		}, 0.5f, false);
+		
+		InitialTurn = false;
+		return;
+	}
+	
+	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
+	CombatInterface->BeginTurnPhase();
+}

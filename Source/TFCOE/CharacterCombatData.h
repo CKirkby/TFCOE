@@ -83,6 +83,7 @@ public:
 
 	// If AI, it will select a character to target. Most of the time it will be the player. 
 	AActor* SelectTargetForTurn();
+	bool UpdatePlayerTurn();
 
 	// Checks if the character should actually move, is it already next to target etc...
 	bool CheckShouldMove(const FAttackConfiguration* ChosenAttack, AActor* ChosenTarget);

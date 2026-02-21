@@ -44,6 +44,7 @@ public:
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override;
 	virtual FIntPoint GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
 	virtual void MoveAI_Character(FVector Location) override;
+	virtual void BeginTurnPhase() override;
 
 	// Health Interface
 	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}
@@ -63,7 +64,6 @@ public:
 	virtual void NotifyEndTurnTriggered() override {}
 	virtual ETurnOrder GetCurrentTurnOrder() override {return ETurnOrder();}
 	virtual AActor* GetGridPieceFromCoordinates(FIntPoint Coordinates) override {return nullptr;}
-	virtual void BeginTurnPhase() override {}
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EFactionID GetActorFactionID() override {return EFactionID::None;}
 	virtual EEnemyTier GetActorFactionRank() override {return EEnemyTier::Grunt;}

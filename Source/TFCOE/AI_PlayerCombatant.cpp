@@ -84,3 +84,8 @@ void AAI_PlayerCombatant::MoveAI_Character(const FVector Location)
 	}
 }
 
+void AAI_PlayerCombatant::BeginTurnPhase()
+{
+	CombatData->ExecuteCurrentTurn();
+}
+
