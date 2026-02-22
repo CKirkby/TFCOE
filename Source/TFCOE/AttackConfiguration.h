@@ -37,14 +37,22 @@ struct FAttackConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	EAttackRangeType RangeType = EAttackRangeType::Both;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	int AttackDamage = 1;
+		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (ClampMin = "1"))
 	int AttackRange = 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackType == EAttackType::Ranged", EditConditionHides, Clamp = "1"))
 	int MaxAttackRange = 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	int AttackCooldown = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	float BaseHitChance = 80.0f;
+	
+	
 	//Attack Grid coords. Direction based? Tarray intpoints?
-	//Damage
-	//Cooldown
 	
 };

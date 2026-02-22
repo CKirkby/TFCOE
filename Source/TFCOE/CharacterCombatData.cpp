@@ -81,6 +81,7 @@ void UCharacterCombatData::ExecuteCurrentTurn()
     	{
     		// Attack
     		UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
+    		PerformAttack(CurrentAttack);
     		EndActorTurn(); // Testing
     	}
     	else
@@ -743,6 +744,38 @@ bool UCharacterCombatData::CanAttackFromPosition(FAttackConfiguration* ChosenAtt
 	
 	// If all else fails, return false
 	return false;
+}
+
+void UCharacterCombatData::PerformAttack(FAttackConfiguration* ChosenAttack)
+{
+	if (!CurrentTarget || !ChosenAttack)
+	{
+		EndActorTurn();
+		return;
+	}
+		
+	UE_LOG(LogTemp, Error, TEXT("Attack Commencing"));
+	
+	// Sets the owners rotation to be that of the target. 
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(), CurrentTarget->GetActorLocation());
+	GetOwner()->SetActorRotation(TargetRotation);
+	
+	bool AttackHitSuccess = false; // Reports whether the attack successfully hit
+	float AttackHitChance = ChosenAttack->BaseHitChance / 100; // Converts percent to decimal (80 - 0.8)
+	
+	if (UKismetMathLibrary::RandomBoolWithWeight(AttackHitChance))
+	{
+		AttackHitSuccess = true;
+		
+		IHealthInterface* HealthInterface = Cast<IHealthInterface>(CurrentTarget);
+		if (!HealthInterface) return;
+	
+		HealthInterface->TakeDamage(ChosenAttack->AttackDamage);
+	}
+	
+	OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
+	
+	// TODO - Add cooldown functionality. 
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)

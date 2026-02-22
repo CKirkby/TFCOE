@@ -43,6 +43,10 @@ class TFCOE_API UCharacterCombatData : public UActorComponent
 
 public:	
 	UCharacterCombatData();
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackCommence, EAttackType, AttackType, bool, HitSuccessful);
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnAttackCommence OnAttackCommence;
 
 protected:
 
@@ -128,7 +132,7 @@ public:
 	
 	// Combat Functionality
 	bool CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB);
-
+	void PerformAttack(FAttackConfiguration* ChosenAttack);
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
 
 	// Grid Piece checker
