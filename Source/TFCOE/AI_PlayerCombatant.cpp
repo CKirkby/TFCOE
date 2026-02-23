@@ -89,3 +89,11 @@ void AAI_PlayerCombatant::BeginTurnPhase()
 	CombatData->ExecuteCurrentTurn();
 }
 
+void AAI_PlayerCombatant::SetAttackerReference(AActor* AttackerReference)
+{
+	if (AttackerReference && CombatData)
+	{
+		CombatData->SetPreviousAttacker(AttackerReference);
+	}
+}
+

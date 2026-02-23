@@ -192,10 +192,39 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	{
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
 		{
+			ExitHoverMode();
+			
 			// If it can, tells the AI player so that it can initiate movement.
 			CombatInterface->NotifyMovementRequirementsMet(BoardPiece);
 		}
 	}
+}
+
+void APlayerCharacter::EnterHoverMode()
+{
+	HoverModeActive = true;
+	
+	// Sets a timer to check if what I need is currently being hovered over, eg.g possible movement, attack positions. 
+	GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover, 0.03f, true);
+}
+
+void APlayerCharacter::CheckHover()
+{
+	// Checks what the mouse is clicking on, the aim is to detect board pieces only
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
+
+	if (HitResult.bBlockingHit)
+	{
+		// TODO - Start a hover mode
+	}
+}
+
+void APlayerCharacter::ExitHoverMode()
+{
+	HoverModeActive = false;
+	
+	GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
 }
 
 void APlayerCharacter::EndTurnTrigger()
@@ -438,4 +467,13 @@ void APlayerCharacter::BeginTurnPhase()
 	
 	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
 	CombatInterface->BeginTurnPhase();
+}
+
+void APlayerCharacter::SetAttackerReference(AActor* AttackerReference)
+{
+	if (AIPlayerDummy)
+	{
+		ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy);
+		CombatInterface->SetAttackerReference(AttackerReference);
+	}
 }

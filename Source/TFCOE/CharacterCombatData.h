@@ -134,6 +134,7 @@ public:
 	bool CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB);
 	void PerformAttack(FAttackConfiguration* ChosenAttack);
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
+	void SetAttackerReference();
 
 	// Grid Piece checker
 	bool DoesGridCoordinatesExist(const FIntPoint GridCoordinates) const;
@@ -179,5 +180,15 @@ public:
 		}
 		
 		return 1;
+	}
+	
+	void SetPreviousAttacker(AActor* AttackerReference)
+	{
+		PreviousAttacker = AttackerReference;
+	}
+	
+	void ClearPreviousAttacker()
+	{
+		PreviousAttacker = nullptr;
 	}
 };

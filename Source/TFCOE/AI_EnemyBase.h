@@ -18,6 +18,7 @@ class UCharacterCombatData;
 UCLASS()
 class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface, public IHealthInterface
 {
+
 private:
 	GENERATED_BODY()
 
@@ -43,6 +44,7 @@ protected:
 	virtual void BeginTurnPhase() override;
 	virtual EFactionID GetActorFactionID() override;
 	virtual EEnemyTier GetActorFactionRank() override;
+	virtual void SetAttackerReference(AActor* AttackerReference) override;
 
 	// Health Interface function
 	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}

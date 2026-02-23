@@ -143,4 +143,5 @@ public:
 	virtual EEnemyTier GetActorFactionRank() override { return EEnemyTier::Grunt;}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
+	virtual void SetAttackerReference(AActor* AttackerReference) override {}
 };

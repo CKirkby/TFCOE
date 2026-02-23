@@ -18,6 +18,7 @@ class UCharacterCombatData;
 UCLASS()
 class TFCOE_API AAI_PlayerCombatant : public APaperZDCharacter, public ICombatInterface, public IHealthInterface
 {
+
 private:
 	GENERATED_BODY()
 
@@ -45,6 +46,7 @@ public:
 	virtual FIntPoint GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}
 	virtual void MoveAI_Character(FVector Location) override;
 	virtual void BeginTurnPhase() override;
+	virtual void SetAttackerReference(AActor* AttackerReference) override;
 
 	// Health Interface
 	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}

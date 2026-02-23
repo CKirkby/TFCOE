@@ -136,7 +136,6 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 			// Returns the previous attacker as the new target if this entity is set to prioritise those attackers. 
 			if (PreviousAttacker)
 			{
-				// TODO - Make function to set previous attacker
 				return PreviousAttacker;
 			}
 			UE_LOG(LogTemp, Warning, TEXT("Combat Data: Select Target For Turn - No previous Attacker ref set. Auto setting to player combatant"))
@@ -746,7 +745,7 @@ bool UCharacterCombatData::CanAttackFromPosition(FAttackConfiguration* ChosenAtt
 	return false;
 }
 
-void UCharacterCombatData::PerformAttack(FAttackConfiguration* ChosenAttack)
+void UCharacterCombatData::  PerformAttack(FAttackConfiguration* ChosenAttack)
 {
 	if (!CurrentTarget || !ChosenAttack)
 	{
@@ -760,17 +759,25 @@ void UCharacterCombatData::PerformAttack(FAttackConfiguration* ChosenAttack)
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(), CurrentTarget->GetActorLocation());
 	GetOwner()->SetActorRotation(TargetRotation);
 	
+	// Sets the Targets rotation to face the attacker
+	FRotator Target_TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentTarget->GetActorLocation(), GetOwner()->GetActorLocation());
+	CurrentTarget->SetActorRotation(Target_TargetRotation);
+	
 	bool AttackHitSuccess = false; // Reports whether the attack successfully hit
 	float AttackHitChance = ChosenAttack->BaseHitChance / 100; // Converts percent to decimal (80 - 0.8)
 	
 	if (UKismetMathLibrary::RandomBoolWithWeight(AttackHitChance))
 	{
+		// Attack was successful, process functionality. 
 		AttackHitSuccess = true;
 		
+		// Functionality to remove health. 
 		IHealthInterface* HealthInterface = Cast<IHealthInterface>(CurrentTarget);
 		if (!HealthInterface) return;
-	
 		HealthInterface->TakeDamage(ChosenAttack->AttackDamage);
+		
+		// Sets the attacker reference of the target to this attacker
+		SetAttackerReference();
 	}
 	
 	OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
@@ -793,6 +800,18 @@ void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> 
 		Function();
 		
 	},DelayTime, false);
+}
+
+void UCharacterCombatData::SetAttackerReference()
+{
+	AActor* Owner = GetOwner();
+	if (CurrentTarget && Owner)
+	{
+		ICombatInterface* CombatInterface = Cast<ICombatInterface>(CurrentTarget);
+		if (!CombatInterface) return;
+		
+		CombatInterface->SetAttackerReference(Owner);
+	}
 }
 
 bool UCharacterCombatData::CheckCanAffordMovement(const FIntPoint CurrentCoordinates, const FIntPoint TargetCoordinates)

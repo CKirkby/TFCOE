@@ -72,6 +72,8 @@ protected:
 	
 	// Combat functionality
 	bool InitialTurn = true;
+	bool HoverModeActive = false;
+	FTimerHandle HoverModeHandle;
 
 	// Components
 	UPROPERTY()
@@ -98,6 +100,11 @@ protected:
 	bool CheckIsPlayersTurn() const;
 	bool CheckGridSlotAvailable(AActor* BoardPieceActor);
 	void OnBoardPieceClicked(AActor* BoardPiece);
+	
+	// Hover Functionality
+	void EnterHoverMode();
+	void CheckHover();
+	void ExitHoverMode();
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void UpdatePlayerCombatState(bool CombatEnabled);
@@ -166,6 +173,7 @@ protected:
 	virtual EFactionID GetActorFactionID() override {return FactionID;}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Player;}
 	virtual void BeginTurnPhase() override;
+	virtual void SetAttackerReference(AActor* AttackerReference) override;
 
 	// Unneeded Interface Implementations
 	// Player

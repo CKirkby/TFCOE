@@ -57,6 +57,14 @@ EEnemyTier AAI_EnemyBase::GetActorFactionRank()
 	return EEnemyTier::Grunt;
 }
 
+void AAI_EnemyBase::SetAttackerReference(AActor* AttackerReference)
+{
+	if (AttackerReference && CombatData)
+	{
+		CombatData->SetPreviousAttacker(AttackerReference);
+	}
+}
+
 void AAI_EnemyBase::InitialiseHealth() const
 {
 	// Gets the set health from the enemy configuration and inputs it into the health comp.

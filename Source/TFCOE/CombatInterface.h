@@ -51,4 +51,5 @@ class TFCOE_API ICombatInterface
 	// General
 	virtual void MoveAI_Character(FVector Location) = 0;
 	virtual void BeginTurnPhase() = 0;
+	virtual void SetAttackerReference(AActor* AttackerReference) = 0;
 };
