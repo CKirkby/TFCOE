@@ -169,7 +169,7 @@ void APlayerCharacter::InteractTrigger()
 
 void APlayerCharacter::CombatClickTrigger()
 {
-	if (PlayerController)
+	if (PlayerController && CombatModeActivated)
 	{
 		// Checks what the mouse is clicking on, the aim is to detect board pieces only
 		FHitResult HitResult;
@@ -188,7 +188,7 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	if (!BoardPiece) return;
 
 	// Checking if the player can initiate movement
-	if (CombatModeActivated && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))
+	if (CombatModeActivated && MovementModeActive && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))
 	{
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
 		{
@@ -235,6 +235,10 @@ void APlayerCharacter::EndTurnTrigger()
 		{
 			CombatInterface->NotifyEndTurnTriggered();
 		}
+		
+		// Turns off combat modes on end turn. 
+		MovementModeActive = false;
+		AttackModeActive = false;
 	}
 }
 

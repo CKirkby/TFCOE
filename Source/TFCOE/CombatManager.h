@@ -40,6 +40,10 @@ private:
 
 public:	
 	UCombatManager();
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNewTurnBegin, EFactionID, FactionTurn);
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnNewTurnBegin OnNewTurnBegin;
 
 protected:
 	virtual void BeginPlay() override;
@@ -130,6 +134,16 @@ public:
 	TArray<AActor*> GetActiveCombatants() const
 	{
 		return ActiveCombatantRoster;
+	}
+	
+	UFUNCTION(blueprintCallable, Category="CombatManager")
+	UUserWidget* GetCombatHUD() const
+	{
+		if (CombatHUD)
+		{
+			return CombatHUD;
+		}
+		return nullptr;
 	}
 
 	// Interface Implementation

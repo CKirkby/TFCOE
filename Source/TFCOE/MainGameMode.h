@@ -44,6 +44,13 @@ public:
 	void MovePlayerToStartingPos();
 	void MoveEnemiesToStartingPos(TMap<AActor*, ABoardPiece*> NewCombatants);
 	
+	// Getter and Setter // 
+	
+	UCombatManager* GetCombatManager() const
+	{
+		return CombatManager;
+	}
+	
 	// Interface Implementations
 
 	// Encounter Interface

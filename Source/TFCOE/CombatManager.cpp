@@ -160,6 +160,9 @@ void UCombatManager::ExecuteTurnFunctionality(ETurnOrder NewTurn)
 			CombatInterfacePlayer->BeginTurnPhase();
 		}
 		
+		// Tells blueprints that a new turn has begun
+		OnNewTurnBegin.Broadcast(EFactionID::Player);
+		
 		break;
 		
 	case Enemy:
@@ -169,6 +172,10 @@ void UCombatManager::ExecuteTurnFunctionality(ETurnOrder NewTurn)
 		break;
 		
 	case Companion:
+		
+		// Tells blueprints that a new turn has begun, companions
+		OnNewTurnBegin.Broadcast(EFactionID::PlayerParty);
+		
 		break;
 		
 	case None:
@@ -300,6 +307,9 @@ void UCombatManager::ExecuteIndividualEnemyTurn()
 
 	EFactionID CurrentFactionTurn = FactionTurnOrder[CurrentFactionTurnIndex];
 	FFactionTierContainer& FactionContainer = FactionTurnGroups.FindOrAdd(CurrentFactionTurn);
+	
+	// Tells blueprints that a new turn has begun with specific faction ID
+	OnNewTurnBegin.Broadcast(CurrentFactionTurn);
 
 	// This is to get the current factions rank list of enemies. 
 	TArray<AActor*>* PoppedFactionRanksToAct = nullptr;

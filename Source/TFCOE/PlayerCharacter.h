@@ -72,6 +72,8 @@ protected:
 	
 	// Combat functionality
 	bool InitialTurn = true;
+	bool MovementModeActive = false;
+	bool AttackModeActive = false;
 	bool HoverModeActive = false;
 	FTimerHandle HoverModeHandle;
 
@@ -162,6 +164,17 @@ protected:
 	bool GetCombatModeActivated() const
 	{
 		return CombatModeActivated;
+	}
+	
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void SetCombatTurnMode(const bool MovementMode, const bool AttackMode)
+	{
+		MovementModeActive = MovementMode;
+		AttackModeActive = AttackMode;
+		
+		// Fall back to make sure only one is true. 
+		if (MovementModeActive) AttackModeActive = false;
+		if (AttackModeActive) MovementModeActive = false;
 	}
 
 	// Interface Implementation

@@ -1102,7 +1102,7 @@ void UCharacterCombatData::MoveToNextGridPos()
 {
 	if (TurnPathIndex >= TurnPath.Num())
 	{
-		if (EntityCombatConfiguration->FactionID == EFactionID::Player)
+		if (EntityCombatConfiguration->FactionID == EFactionID::Player || EntityCombatConfiguration->FactionID == EFactionID::PlayerParty)
 		{
 			return;
 		}
@@ -1149,7 +1149,7 @@ void UCharacterCombatData::MoveToNextGridPos()
 			AIController->ReceiveMoveCompleted.AddDynamic(this, &UCharacterCombatData::OnMovementComplete);
 
 			// Triggers the movement code. 
-			AIController->MoveToLocation(NextMovementLocation, 5.0f, false);
+			AIController->MoveToLocation(NextMovementLocation, 10.0f, false);
 		}
 	}
 }
