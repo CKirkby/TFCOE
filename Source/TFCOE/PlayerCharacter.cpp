@@ -216,7 +216,7 @@ void APlayerCharacter::CheckHover()
 
 	if (HitResult.bBlockingHit)
 	{
-		// TODO - Start a hover mode
+		// TODO - Start a hover mode  
 	}
 }
 
@@ -275,13 +275,16 @@ void APlayerCharacter::ExitCombatMode()
 void APlayerCharacter::AsyncLoadDummy()
 {
 	// Async loads the dummy player character for use with the combat systems. 
-	UAssetManager::GetStreamableManager().RequestAsyncLoad(AIPlayerDummyClass.ToSoftObjectPath(), FStreamableDelegate::CreateLambda([this]
+	TWeakObjectPtr<APlayerCharacter> SafeThis(this);
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(AIPlayerDummyClass.ToSoftObjectPath(), FStreamableDelegate::CreateLambda([SafeThis]
 	{
-		if (UClass* LoadedClass = Cast<UClass>(AIPlayerDummyClass.Get()))
+		if (!SafeThis.IsValid()) return;
+		
+		if (UClass* LoadedClass = Cast<UClass>(SafeThis->AIPlayerDummyClass.Get()))
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			AIPlayerDummy = GetWorld()->SpawnActor<AActor>(LoadedClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+			SafeThis->AIPlayerDummy = SafeThis->GetWorld()->SpawnActor<AActor>(LoadedClass, SafeThis->GetActorLocation(), SafeThis->GetActorRotation(), SpawnParams);
 		}
 		else
 		{

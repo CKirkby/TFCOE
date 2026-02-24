@@ -60,6 +60,11 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combatants")
 	TArray<AActor*> ActiveCombatantRoster = {};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|UI")
+	TSoftClassPtr<UUserWidget> CombatHUD_Class;
+	UPROPERTY()
+	UUserWidget* CombatHUD;
+
 	// The map that contains the inner scope of the turn order for each faction, based on the actors rank within that faction.
 	TMap<EFactionID, FFactionTierContainer> FactionTurnGroups = {};
 
@@ -71,8 +76,6 @@ protected:
 	TArray<EFactionID> FactionTurnOrder = {};
 	EEnemyTier CurrentFactionRankTurn;
 	int CurrentFactionTurnIndex = 0;
-
-	
 
 public:	
 	
@@ -89,6 +92,8 @@ public:
 	void EndCurrentTurn();
 	void ExecuteTurnFunctionality(ETurnOrder NewTurn);
 	void EndCombat();
+	
+	void UpdateCombatUI(int CombatState);
 
 	void SetActiveCombatants(const TArray<AActor*>& NewCombatants);
 	void AddActiveCombatant(AActor* NewCombatant);

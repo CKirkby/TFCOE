@@ -2,8 +2,11 @@
 
 #include "CombatManager.h"
 #include "CombatInterface.h"
+#include "Blueprint/UserWidget.h"
+#include "Engine/AssetManager.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/StreamableManager.h"
 
 
 UCombatManager::UCombatManager()
@@ -14,6 +17,48 @@ UCombatManager::UCombatManager()
 void UCombatManager::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UCombatManager::UpdateCombatUI(const int CombatState)
+{
+	switch (CombatState)
+	{
+		// 0 -> Disengaged
+		// 1 -> Engaged
+		
+		case 0:
+			{
+				// Removes the combat HUD
+				if (CombatHUD)
+				{
+					CombatHUD->RemoveFromParent();
+					CombatHUD = nullptr;
+				}
+			}
+		break;
+		
+		case 1:
+			{
+				// Loads the combat HUD. 
+				TWeakObjectPtr<UCombatManager> SafeThis(this);
+				UAssetManager::GetStreamableManager().RequestAsyncLoad(CombatHUD_Class.ToSoftObjectPath(), FStreamableDelegate::CreateLambda([SafeThis]
+				{
+					if (!SafeThis.IsValid()) return;
+				
+					if (UClass* LoadedClass = Cast<UClass>(SafeThis->CombatHUD_Class.Get()))
+					{
+						SafeThis->CombatHUD = CreateWidget(SafeThis->GetWorld(), LoadedClass);
+						if (SafeThis->CombatHUD)
+						{
+							SafeThis->CombatHUD->AddToViewport();
+						}
+					}
+				}));
+				break;
+			}
+		
+		default: ;
+	}
 }
 
 void UCombatManager::SetCombatState(const int CombatState)
@@ -29,6 +74,9 @@ void UCombatManager::SetCombatState(const int CombatState)
 		// Notifies the player character of combat end
 		NotifyPlayerOfCombatStatus(0);
 		
+		// Removes the combat UI
+		UpdateCombatUI(0);
+		
 		// Ends the combat resetting the values
 		EndCombat();
 		
@@ -37,6 +85,9 @@ void UCombatManager::SetCombatState(const int CombatState)
 	case 1:
 		// Notifies the player character of combat start
 		NotifyPlayerOfCombatStatus(1);
+		
+		// Spawns the combat UI 
+		UpdateCombatUI(1);
 		
 		// Starts the combat and sets the turn order to the first. 
 		SetTurnOrder(1);

@@ -33,9 +33,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UBoardManager* BoardManager = nullptr;
 
-	
-
-
 public:
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
