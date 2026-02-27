@@ -14,6 +14,5 @@ class TFCOE_API UCombatHUD : public UUserWidget
 {
 	GENERATED_BODY()
 	
-	virtual void NativeConstruct() override;
 	
 };

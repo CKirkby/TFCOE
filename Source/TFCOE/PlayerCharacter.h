@@ -24,8 +24,6 @@ private:
 	GENERATED_BODY()
 
 	APlayerCharacter();
-
-public:
 	
 protected:
 
@@ -52,6 +50,8 @@ protected:
 	float WalkSpeed = 400.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Movement")
 	float SprintSpeed = 700.0f;
+	
+	int CurrentTimePoints = 10;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Configuration")
 	EEntityID EntityID = EEntityID::Player;
@@ -193,6 +193,7 @@ protected:
 	virtual void NotifyEndIndividualTurn() override {}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
+	virtual int GetTimePoints() override {return 0;}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

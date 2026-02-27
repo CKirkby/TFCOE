@@ -1081,6 +1081,14 @@ void UCharacterCombatData::OnMovementComplete(FAIRequestID RequestID, EPathFollo
 	// If movement for some reason fails, end the turn. 
 	if (Result != EPathFollowingResult::Success)
 	{
+		// Checks to make sure that it isnt a controllable character.
+		if (EntityCombatConfiguration && EntityCombatConfiguration->FactionID == EFactionID::Player || 
+			EntityCombatConfiguration->FactionID == EFactionID::PlayerParty)
+		{
+			return;
+		}
+		
+		// Execute non controllable characters code 
 		EndActorTurn();
 		return;
 	}

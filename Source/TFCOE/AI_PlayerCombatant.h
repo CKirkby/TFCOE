@@ -47,6 +47,7 @@ public:
 	virtual void MoveAI_Character(FVector Location) override;
 	virtual void BeginTurnPhase() override;
 	virtual void SetAttackerReference(AActor* AttackerReference) override;
+	virtual int GetTimePoints() override {return CombatData->GetTimePoints();}
 
 	// Health Interface
 	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}

@@ -204,6 +204,10 @@ void APlayerCharacter::EnterHoverMode()
 {
 	HoverModeActive = true;
 	
+	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
+	if (!CombatInterface) return;
+	CurrentTimePoints = CombatInterface->GetTimePoints();
+	
 	// Sets a timer to check if what I need is currently being hovered over, eg.g possible movement, attack positions. 
 	GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover, 0.03f, true);
 }
@@ -216,6 +220,8 @@ void APlayerCharacter::CheckHover()
 
 	if (HitResult.bBlockingHit)
 	{
+		
+		
 		// TODO - Start a hover mode  
 	}
 }
