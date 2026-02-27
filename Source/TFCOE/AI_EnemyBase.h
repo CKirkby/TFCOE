@@ -68,6 +68,6 @@ protected:
 	virtual TArray<AActor*> GetActiveCombatantRoster() override {return TArray<AActor*>();}
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
-	
+	virtual int GetTimePoints() override {return 0;}
 	
 };

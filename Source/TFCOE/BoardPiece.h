@@ -130,6 +130,7 @@ public:
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {};
 	virtual void NotifyCombatStatus(int CombatState) override {}
+	virtual int GetTimePoints() override {return 0;}
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 
 	// Gamemode

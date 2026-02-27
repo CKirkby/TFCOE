@@ -188,7 +188,7 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	if (!BoardPiece) return;
 
 	// Checking if the player can initiate movement
-	if (CombatModeActivated && MovementModeActive && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))
+	if (CombatModeActivated && CurrentPlayerTurnState == EPlayerTurnState::MovementMode && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))
 	{
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
 		{
@@ -220,7 +220,12 @@ void APlayerCharacter::CheckHover()
 
 	if (HitResult.bBlockingHit)
 	{
-		
+		AActor* HitTarget = HitResult.GetActor();
+		if (!HitTarget)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
+			return;
+		}
 		
 		// TODO - Start a hover mode  
 	}
@@ -243,9 +248,14 @@ void APlayerCharacter::EndTurnTrigger()
 		}
 		
 		// Turns off combat modes on end turn. 
-		MovementModeActive = false;
-		AttackModeActive = false;
+		CurrentPlayerTurnState = EPlayerTurnState::Neutral;
 	}
+}
+
+int32 APlayerCharacter::GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB)
+{
+	// Uses the Chebyshev method to include Diagonals into the movement consideration
+	return FMath::Max(FMath::Abs(PointA.X - PointB.X), FMath::Abs(PointA.Y - PointB.Y));
 }
 
 void APlayerCharacter::EnterCombatMode()

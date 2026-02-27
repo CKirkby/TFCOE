@@ -115,6 +115,8 @@ public:
 	FVector GetGridPosition(const FIntPoint& Coordinates) const;
     void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;
 	
+	TArray<FIntPoint> GetPlayerMovementPositions();
+	
 	// Used to check if the actor has enough action points to move to that spot.
 	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
 

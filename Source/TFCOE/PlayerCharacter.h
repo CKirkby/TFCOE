@@ -13,6 +13,16 @@
 
 class ACombatCameraOperator;
 class UCharacter_Inventory;
+
+UENUM(BlueprintType)
+enum class EPlayerTurnState : uint8
+{
+	Neutral UMETA(DisplayName="Neutral"),
+	MovementMode UMETA(DisplayName="MovementMode"),
+	CombatMode UMETA(DisplayName="CombatMode")
+};
+
+
 /**
  * 
  */
@@ -72,10 +82,10 @@ protected:
 	
 	// Combat functionality
 	bool InitialTurn = true;
-	bool MovementModeActive = false;
-	bool AttackModeActive = false;
 	bool HoverModeActive = false;
 	FTimerHandle HoverModeHandle;
+	
+	EPlayerTurnState CurrentPlayerTurnState = EPlayerTurnState::Neutral;
 
 	// Components
 	UPROPERTY()
@@ -120,7 +130,9 @@ protected:
 	void InteractTrigger();
 	void CombatClickTrigger();
 	void EndTurnTrigger();
-
+	
+	int32 GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB);
+	
 	// Getter & Setter
 	UCharacter_Inventory* GetInventory() const
 	{
@@ -167,14 +179,9 @@ protected:
 	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	void SetCombatTurnMode(const bool MovementMode, const bool AttackMode)
+	void SetCombatTurnMode(EPlayerTurnState NewTurnState)
 	{
-		MovementModeActive = MovementMode;
-		AttackModeActive = AttackMode;
-		
-		// Fall back to make sure only one is true. 
-		if (MovementModeActive) AttackModeActive = false;
-		if (AttackModeActive) MovementModeActive = false;
+		CurrentPlayerTurnState = NewTurnState;
 	}
 
 	// Interface Implementation
