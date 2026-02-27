@@ -174,4 +174,14 @@ bool AMainGameMode::DoesGridContainCoordinate(FIntPoint CoordsToCheck)
 	return BoardManager->DoesGridCoordinatesExist(CoordsToCheck);
 }
 
+void AMainGameMode::SetReachableMovementPositionsVisible(TArray<FIntPoint> Positions)
+{
+	if (!BoardManager) return;
+}
+
+void AMainGameMode::SetAttackPositionsVisible(TArray<FIntPoint> Positions)
+{
+	if (!BoardManager) return;
+}
+
 
