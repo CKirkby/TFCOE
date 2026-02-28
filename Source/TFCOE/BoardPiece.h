@@ -5,6 +5,7 @@
 #include "CombatInterface.h"
 
 #include "CoreMinimal.h"
+#include "BoardControllerInterface.h"
 #include "CombatManager.h"
 #include "GameFramework/Actor.h"
 #include "BoardPiece.generated.h"
@@ -20,7 +21,7 @@ enum EPieceState
 };
 
 UCLASS()
-class TFCOE_API ABoardPiece : public AActor, public ICombatInterface
+class TFCOE_API ABoardPiece : public AActor, public ICombatInterface, public IBoardControllerInterface
 {
 
 private:
@@ -49,6 +50,8 @@ protected:
 	UMaterialInterface* OriginalMaterial = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Materials")
 	UMaterialInterface* MovementClickMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Materials")
+	UMaterialInterface* ReachableMovementMaterial = nullptr;
 
 	UPROPERTY()
 	AActor* CurrentOccupier = nullptr;
@@ -117,11 +120,18 @@ public:
 		}
 	}
 
+	
+	
+	
+	
+	
 	// Interface Implementations
 	virtual void NotifyPieceClicked() override;
 	virtual FVector GetBoardPieceLocation() override;
 	virtual EPieceState GetCurrentPieceState() override {return CurrentPieceState;}
 	virtual FIntPoint GetGridCoordinates() override {return GridPosition;};
+	
+	virtual void NotifyHighlightBoardPiece(EHighlightType Type) override;
 
 	// Unneeded Interface Implementations
 	// Player
@@ -145,4 +155,10 @@ public:
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
 	virtual void SetAttackerReference(AActor* AttackerReference) override {}
+	
+	// Board Controller 
+	virtual void SetReachableMovementPositionsVisible(bool Active) override {}
+	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) override {}
+	virtual TArray<FIntPoint> GetAllBoardPieces() override {return TArray<FIntPoint>();}
+	virtual void ResetHighlightedPieces() override {}
 };

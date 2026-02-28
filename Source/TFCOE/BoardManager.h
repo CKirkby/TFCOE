@@ -21,6 +21,9 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings")
 	TMap<FIntPoint, AActor*> GridPairing;
+	
+	UPROPERTY()
+	TArray<AActor*> CachedReachablePieces;
 
 	UPROPERTY()
 	AActor* CurrentStartingPiece = nullptr;
@@ -34,6 +37,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	AActor* GetGridPiece(FIntPoint GridCoordinates) const;
+	
+	TArray<FIntPoint> GetAllGridCoordinates() const;
+	TArray<AActor*> GetAllReachablePieces();
+	
+	void HighlightAllReachablePositions(bool ActivateHighlight);
+	void ResetHighlightedPositions();
 
 	void ClearActiveBoard();
 	
@@ -48,5 +57,6 @@ public:
 	}
 
 	bool DoesGridCoordinatesExist(FIntPoint Coords) const;
+	bool IsGridPieceActive(FIntPoint GridCoordinates) const;
 	
 };

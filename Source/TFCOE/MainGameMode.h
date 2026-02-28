@@ -7,6 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "BoardControllerInterface.h"
+#include "BoardManager.h"
 #include "CombatManager.h"
 #include "GameFramework/GameModeBase.h"
 #include "MainGameMode.generated.h"
@@ -19,7 +20,6 @@ class UCombatManager;
 UCLASS()
 class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface, public IBoardControllerInterface
 {
-
 private:
 	GENERATED_BODY()
 
@@ -68,8 +68,11 @@ public:
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override;
 	
 	// Board Controller Interface
-	virtual void SetReachableMovementPositionsVisible(TArray<FIntPoint> Positions) override;
+	virtual void SetReachableMovementPositionsVisible(bool Active) override;
 	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) override;
+	virtual TArray<FIntPoint> GetAllBoardPieces() override;
+	virtual void NotifyHighlightBoardPiece(EHighlightType Type) override {}
+	virtual void ResetHighlightedPieces() override {BoardManager->ResetHighlightedPositions();}
 
 	// Unneeded Interface Implementations
 	// Player

@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "BoardControllerInterface.h"
 #include "BoardPiece.h"
 #include "Character_Inventory.h"
 #include "CombatCameraOperator.h"
@@ -192,10 +193,24 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	{
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
 		{
-			ExitHoverMode();
+			// Do not want it to immediately end hover on movement, only if else or timepoints ends. 
+			int RemainingTimePoints = CombatInterface->GetTimePoints();
+			if (CurrentPlayerTurnState != EPlayerTurnState::MovementMode || RemainingTimePoints <= 0)
+			{
+				ExitHoverMode();
+			}
 			
 			// If it can, tells the AI player so that it can initiate movement.
 			CombatInterface->NotifyMovementRequirementsMet(BoardPiece);
+			
+			// Notifies delegates of successful movement.
+			OnSuccessfulMovementTriggered();
+		}
+		
+		// Resets any and all highlighted movement pieces on successful click.
+		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			BC_Interface->ResetHighlightedPieces();
 		}
 	}
 }
@@ -204,15 +219,30 @@ void APlayerCharacter::EnterHoverMode()
 {
 	HoverModeActive = true;
 	
-	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
-	if (!CombatInterface) return;
-	CurrentTimePoints = CombatInterface->GetTimePoints();
+	IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!BC_Interface) return;
+	
+	switch (CurrentPlayerTurnState)
+	{
+	case EPlayerTurnState::Neutral:
+		// Return on neutral, do not want any functionality.
+		return;
+		
+	case EPlayerTurnState::MovementMode:
+		// Calculate Movement squares for visuals.
+		BC_Interface->SetReachableMovementPositionsVisible(true);
+		break;
+		
+	case EPlayerTurnState::CombatMode:
+		// Calculate visible combat squares
+		break;
+	}
 	
 	// Sets a timer to check if what I need is currently being hovered over, eg.g possible movement, attack positions. 
-	GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover, 0.03f, true);
+	//GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover, 0.03f, true);
 }
 
-void APlayerCharacter::CheckHover()
+/*void APlayerCharacter::CheckHover()
 {
 	// Checks what the mouse is clicking on, the aim is to detect board pieces only
 	FHitResult HitResult;
@@ -229,13 +259,21 @@ void APlayerCharacter::CheckHover()
 		
 		// TODO - Start a hover mode  
 	}
-}
+}*/
 
 void APlayerCharacter::ExitHoverMode()
 {
 	HoverModeActive = false;
 	
+	// Calls the functionality to turn off any and all hovers if need be. 
+	IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!BC_Interface) return;
+	BC_Interface->SetReachableMovementPositionsVisible(false);
+	
 	GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
+	
+	// Turns off combat modes on end turn. 
+	CurrentPlayerTurnState = EPlayerTurnState::Neutral;
 }
 
 void APlayerCharacter::EndTurnTrigger()
@@ -413,6 +451,24 @@ bool APlayerCharacter::CheckGridSlotAvailable(AActor* BoardPieceActor)
 	return false;
 }
 
+void APlayerCharacter::SetCombatTurnMode(EPlayerTurnState NewTurnState)
+{
+	CurrentPlayerTurnState = NewTurnState;
+	
+	switch (CurrentPlayerTurnState)
+	{
+	case EPlayerTurnState::Neutral:
+		ExitHoverMode();
+		break;
+	case EPlayerTurnState::MovementMode:
+		EnterHoverMode();
+		break;
+	case EPlayerTurnState::CombatMode:
+		EnterHoverMode();
+		break;
+	}
+}
+
 // An interface call to either start or end combat for the player
 void APlayerCharacter::NotifyCombatStatus(int CombatState)
 {
@@ -499,4 +555,14 @@ void APlayerCharacter::SetAttackerReference(AActor* AttackerReference)
 		ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy);
 		CombatInterface->SetAttackerReference(AttackerReference);
 	}
+}
+
+int APlayerCharacter::GetTimePoints()
+{
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
+	{
+		return CombatInterface->GetTimePoints();
+	}
+	
+	return 0;
 }

@@ -174,14 +174,33 @@ bool AMainGameMode::DoesGridContainCoordinate(FIntPoint CoordsToCheck)
 	return BoardManager->DoesGridCoordinatesExist(CoordsToCheck);
 }
 
-void AMainGameMode::SetReachableMovementPositionsVisible(TArray<FIntPoint> Positions)
+void AMainGameMode::SetReachableMovementPositionsVisible(bool Active)
 {
 	if (!BoardManager) return;
+	if (Active)
+	{
+		BoardManager->HighlightAllReachablePositions(true);
+	}
+	else
+	{
+		BoardManager->HighlightAllReachablePositions(false);
+	}
 }
 
 void AMainGameMode::SetAttackPositionsVisible(TArray<FIntPoint> Positions)
 {
 	if (!BoardManager) return;
+}
+
+TArray<FIntPoint> AMainGameMode::GetAllBoardPieces()
+{
+	if (BoardManager)
+	{
+		return BoardManager->GetAllGridCoordinates();
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("GameMode - Get All Board pieces, no board manager registered"))
+	return TArray<FIntPoint>();
 }
 
 

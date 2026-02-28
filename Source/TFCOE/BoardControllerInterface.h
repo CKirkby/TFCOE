@@ -5,6 +5,13 @@
 #include "CoreMinimal.h"
 #include "BoardControllerInterface.generated.h"
 
+enum class EHighlightType
+{
+	None UMETA(DisplayName = "None"),
+	Movement UMETA(DisplayName = "Movement"),
+	Attack UMETA(DisplayName = "Attack")
+};
+
 /**
  * 
  */
@@ -20,7 +27,13 @@ class TFCOE_API IBoardControllerInterface
 	
 public:
 	
-	virtual void SetReachableMovementPositionsVisible(TArray<FIntPoint> Positions) = 0;
+	virtual void SetReachableMovementPositionsVisible(bool Active) = 0;
 	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) = 0;
+	
+	// Tells to highlight the board piece in a specific fashion, red for combat, green for movement etc...
+	virtual void NotifyHighlightBoardPiece(EHighlightType Type) = 0;
+	virtual void ResetHighlightedPieces() = 0;
+	
+	virtual TArray<FIntPoint> GetAllBoardPieces() = 0;
 	
 };

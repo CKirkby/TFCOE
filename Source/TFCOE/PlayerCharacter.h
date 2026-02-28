@@ -34,6 +34,11 @@ private:
 	GENERATED_BODY()
 
 	APlayerCharacter();
+
+public:
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnSuccessfulMovementTriggered();
 	
 protected:
 
@@ -115,7 +120,7 @@ protected:
 	
 	// Hover Functionality
 	void EnterHoverMode();
-	void CheckHover();
+	//void CheckHover();
 	void ExitHoverMode();
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
@@ -179,10 +184,8 @@ protected:
 	}
 	
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	void SetCombatTurnMode(EPlayerTurnState NewTurnState)
-	{
-		CurrentPlayerTurnState = NewTurnState;
-	}
+	void SetCombatTurnMode(EPlayerTurnState NewTurnState);
+	
 
 	// Interface Implementation
 	virtual void NotifyCombatStatus(int CombatState) override;
@@ -194,13 +197,13 @@ protected:
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Player;}
 	virtual void BeginTurnPhase() override;
 	virtual void SetAttackerReference(AActor* AttackerReference) override;
+	virtual int GetTimePoints() override;
 
 	// Unneeded Interface Implementations
 	// Player
 	virtual void NotifyEndIndividualTurn() override {}
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override {}
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
-	virtual int GetTimePoints() override {return 0;}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

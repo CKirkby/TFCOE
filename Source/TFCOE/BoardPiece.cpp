@@ -78,6 +78,31 @@ FVector ABoardPiece::GetBoardPieceLocation()
 	return FVector::ZeroVector;
 }
 
+void ABoardPiece::NotifyHighlightBoardPiece(EHighlightType Type)
+{
+	switch (Type)
+	{
+	case EHighlightType::None:
+		{
+			//Resets the material to its default state
+			ResetMaterial();
+			break;
+		}
+		
+	case EHighlightType::Movement:
+		{
+			// Creates the material instance for the reachable movement position material. 
+			UMaterialInstanceDynamic* MovementHighlightMat = UMaterialInstanceDynamic::Create(ReachableMovementMaterial, this);
+			StaticMesh->SetMaterial(0, MovementHighlightMat);
+			break;
+		}
+		
+	case EHighlightType::Attack:
+		
+		break;
+	}
+}
+
 void ABoardPiece::ResetMaterial()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Green, TEXT("This fired"));
