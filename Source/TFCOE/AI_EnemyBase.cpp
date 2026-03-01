@@ -13,7 +13,7 @@ AAI_EnemyBase::AAI_EnemyBase()
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 	
 	// Makes sure all enemies of this type have the tag
-	this->Tags.Add(FName("Enemy"));
+	Tags.Add(FName("Enemy"));
 }
 
 void AAI_EnemyBase::BeginPlay()
