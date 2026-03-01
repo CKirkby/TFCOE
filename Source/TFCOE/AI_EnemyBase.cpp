@@ -11,9 +11,6 @@ AAI_EnemyBase::AAI_EnemyBase()
 {
 	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
-	
-	// Makes sure all enemies of this type have the tag
-	Tags.Add(FName("Enemy"));
 }
 
 void AAI_EnemyBase::BeginPlay()
