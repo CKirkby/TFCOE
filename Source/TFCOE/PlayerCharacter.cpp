@@ -222,6 +222,8 @@ void APlayerCharacter::EnterHoverMode()
 	IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!BC_Interface) return;
 	
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	
 	switch (CurrentPlayerTurnState)
 	{
 	case EPlayerTurnState::Neutral:
@@ -231,18 +233,27 @@ void APlayerCharacter::EnterHoverMode()
 	case EPlayerTurnState::MovementMode:
 		// Calculate Movement squares for visuals.
 		BC_Interface->SetReachableMovementPositionsVisible(true);
+		
+		// Checks that there isn't a timer active
+		if (TimerManager.TimerExists(HoverModeHandle)) TimerManager.ClearTimer(HoverModeHandle);
+		
+		// Sets a timer to check for grid pieces
+		GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover_Movement, 0.03f, true);
 		break;
 		
 	case EPlayerTurnState::CombatMode:
 		// Calculate visible combat squares
+		// Code here
+		
+		// Checks that there isn't a timer active
+		if (TimerManager.TimerExists(HoverModeHandle)) TimerManager.ClearTimer(HoverModeHandle);
+		
+		GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover_Enemy, 0.03f, true);
 		break;
 	}
-	
-	// Sets a timer to check if what I need is currently being hovered over, eg.g possible movement, attack positions. 
-	GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover, 0.03f, true);
 }
 
-void APlayerCharacter::CheckHover()
+void APlayerCharacter::CheckHover_Movement()
 {
 	// Checks what the mouse is clicking on, the aim is to detect board pieces only
 	/*FHitResult HitResult;
@@ -259,6 +270,30 @@ void APlayerCharacter::CheckHover()
 		
 		// TODO - Start a hover mode  
 	}*/
+}
+
+void APlayerCharacter::CheckHover_Enemy()
+{
+	// Checks what the mouse is hovering over, the aim is to detect enemies.
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursorByChannel(
+		UEngineTypes::ConvertToTraceType(ECC_Pawn),false,HitResult);
+	
+	if (HitResult.bBlockingHit)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		if (!HitActor)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
+			return;
+		}
+		
+		if (HitActor->ActorHasTag("Enemy"))
+		{
+			// Execute stuff here
+			UE_LOG(LogTemp, Warning, TEXT("Hit an enemy in hover mode!"))
+		}
+	}
 }
 
 void APlayerCharacter::ExitHoverMode()

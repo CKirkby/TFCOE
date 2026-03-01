@@ -120,7 +120,8 @@ protected:
 	
 	// Hover Functionality
 	void EnterHoverMode();
-	void CheckHover();
+	void CheckHover_Movement();
+	void CheckHover_Enemy();
 	void ExitHoverMode();
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
