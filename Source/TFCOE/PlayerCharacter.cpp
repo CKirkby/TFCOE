@@ -255,6 +255,10 @@ void APlayerCharacter::EnterHoverMode()
 
 void APlayerCharacter::CheckHover_Movement()
 {
+	// TODO - Make sure you cannot target a non highlighted target. 
+	// TODO - Make sure the combat board highlights DOESN'T get turned off on move.
+	// TODO - Make sure the indicator DOES get turned off on move. 
+	
 	// Checks what the mouse is clicking on, the aim is to detect board pieces only
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
