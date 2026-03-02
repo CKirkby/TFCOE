@@ -85,6 +85,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	ACombatCameraOperator* CameraOperator = nullptr;
 	
+	// Hover References
+	UPROPERTY() AActor* LastGridPieceHovered = nullptr;
+	UPROPERTY() AActor* LastTargetHovered = nullptr;
+	
 	// Combat functionality
 	bool InitialTurn = true;
 	bool HoverModeActive = false;
@@ -123,6 +127,9 @@ protected:
 	void CheckHover_Movement();
 	void CheckHover_Enemy();
 	void ExitHoverMode();
+	void ClearCachedHover();
+	
+	void NotifyGridOnHoverEnd() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void UpdatePlayerCombatState(bool CombatEnabled);

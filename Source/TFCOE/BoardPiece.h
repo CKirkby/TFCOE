@@ -10,6 +10,7 @@
 #include "GameFramework/Actor.h"
 #include "BoardPiece.generated.h"
 
+class UWidgetComponent;
 class UBoxComponent;
 
 UENUM(BlueprintType)
@@ -23,7 +24,7 @@ enum EPieceState
 UCLASS()
 class TFCOE_API ABoardPiece : public AActor, public ICombatInterface, public IBoardControllerInterface
 {
-
+	
 private:
 	GENERATED_BODY()
 
@@ -39,6 +40,8 @@ protected:
 	UBoxComponent* BoxCollision = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	USceneComponent* CharacterPosition = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UWidgetComponent* TargetIndicatorWidget = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	FIntPoint GridPosition;
@@ -131,7 +134,9 @@ public:
 	virtual EPieceState GetCurrentPieceState() override {return CurrentPieceState;}
 	virtual FIntPoint GetGridCoordinates() override {return GridPosition;};
 	
-	virtual void NotifyHighlightBoardPiece(EHighlightType Type) override;
+	virtual void NotifyBoardPieceHighlight(EHighlightType Type) override;
+	virtual void NotifyBoardPieceOnHover() override;
+	virtual void NotifyBoardPieceOnHoverEnd() override;
 
 	// Unneeded Interface Implementations
 	// Player
@@ -161,4 +166,6 @@ public:
 	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) override {}
 	virtual TArray<FIntPoint> GetAllBoardPieces() override {return TArray<FIntPoint>();}
 	virtual void ResetHighlightedPieces() override {}
+	virtual void NotifyTargetOnHover() override {}
+	virtual void NotifyTargetOnHoverEnd() override {}
 };

@@ -71,7 +71,7 @@ public:
 	virtual void SetReachableMovementPositionsVisible(bool Active) override;
 	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) override;
 	virtual TArray<FIntPoint> GetAllBoardPieces() override;
-	virtual void NotifyHighlightBoardPiece(EHighlightType Type) override {}
+	virtual void NotifyBoardPieceHighlight(EHighlightType Type) override {}
 	virtual void ResetHighlightedPieces() override {BoardManager->ResetHighlightedPositions();}
 
 	// Unneeded Interface Implementations
@@ -96,5 +96,9 @@ public:
 	virtual void NotifyPieceClicked() override {}
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
+	virtual void NotifyBoardPieceOnHoverEnd() override {}
+	virtual void NotifyTargetOnHover() override {}
+	virtual void NotifyTargetOnHoverEnd() override {}
+	virtual void NotifyBoardPieceOnHover() override {}
 	
 };

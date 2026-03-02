@@ -2,6 +2,7 @@
 
 #include "BoardPiece.h"
 #include "Components/PrimitiveComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Engine/World.h"
 
 ABoardPiece::ABoardPiece()
@@ -12,7 +13,13 @@ ABoardPiece::ABoardPiece()
 	StaticMesh->SetupAttachment(RootComponent);
 	
 	CharacterPosition = CreateDefaultSubobject<USceneComponent>(TEXT("Character Position"));
-	CharacterPosition->SetupAttachment(StaticMesh);		
+	CharacterPosition->SetupAttachment(StaticMesh);
+	
+	// Reminder to set the material to translucent or the animation doesn't work
+	TargetIndicatorWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Target Indicator Widget"));
+	TargetIndicatorWidget->SetupAttachment(GetRootComponent());
+	TargetIndicatorWidget->SetWidgetSpace(EWidgetSpace::World);
+	TargetIndicatorWidget->SetHiddenInGame(true);
 }
 
 void ABoardPiece::BeginPlay()
@@ -78,7 +85,7 @@ FVector ABoardPiece::GetBoardPieceLocation()
 	return FVector::ZeroVector;
 }
 
-void ABoardPiece::NotifyHighlightBoardPiece(EHighlightType Type)
+void ABoardPiece::NotifyBoardPieceHighlight(EHighlightType Type)
 {
 	switch (Type)
 	{
@@ -103,11 +110,26 @@ void ABoardPiece::NotifyHighlightBoardPiece(EHighlightType Type)
 	}
 }
 
+void ABoardPiece::NotifyBoardPieceOnHover()
+{
+	if (TargetIndicatorWidget)
+	{
+		TargetIndicatorWidget->SetHiddenInGame(false);
+	}
+}
+
+void ABoardPiece::NotifyBoardPieceOnHoverEnd()
+{
+	if (TargetIndicatorWidget)
+	{
+		TargetIndicatorWidget->SetHiddenInGame(true);
+	}
+}
+
 void ABoardPiece::ResetMaterial()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Green, TEXT("This fired"));
-	UMaterialInstanceDynamic* OrginalMat = UMaterialInstanceDynamic::Create(OriginalMaterial, this);
-	StaticMesh->SetMaterial(0, OrginalMat);
+	UMaterialInstanceDynamic* OriginalMat = UMaterialInstanceDynamic::Create(OriginalMaterial, this);
+	StaticMesh->SetMaterial(0, OriginalMat);
 }
 
 void ABoardPiece::SetGridCoordinates(const FIntPoint NewCoordinates)

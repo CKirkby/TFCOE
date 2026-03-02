@@ -147,12 +147,12 @@ void UBoardManager::HighlightAllReachablePositions(const bool ActivateHighlight)
 			if (ActivateHighlight)
 			{
 				// Notify individual piece of highlighting functionality inbound
-				BC_Interface->NotifyHighlightBoardPiece(EHighlightType::Movement);
+				BC_Interface->NotifyBoardPieceHighlight(EHighlightType::Movement);
 			}
 			else
 			{
 				// Turns off the highlighted pieces manually.
-				BC_Interface->NotifyHighlightBoardPiece(EHighlightType::None);
+				BC_Interface->NotifyBoardPieceHighlight(EHighlightType::None);
 			}
 		}
 	}
@@ -167,7 +167,7 @@ void UBoardManager::ResetHighlightedPositions()
 	{
 		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(Piece))
 		{
-			BC_Interface->NotifyHighlightBoardPiece(EHighlightType::None);		
+			BC_Interface->NotifyBoardPieceHighlight(EHighlightType::None);		
 		}
 	}
 }

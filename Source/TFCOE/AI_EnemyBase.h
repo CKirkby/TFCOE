@@ -12,6 +12,7 @@
 
 class UHealthComponent;
 class UCharacterCombatData;
+class UWidgetComponent;
 /**
  * 
  */
@@ -36,6 +37,8 @@ protected:
 	UCharacterCombatData* CombatData = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UHealthComponent* HealthComp = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UWidgetComponent* TargetIndicatorWidget = nullptr;
 
 	// Interface Implementation
 	virtual FIntPoint GetGridCoordinates() override {return CombatData->GetCurrentGridCoordinates();}

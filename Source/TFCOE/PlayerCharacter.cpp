@@ -256,7 +256,7 @@ void APlayerCharacter::EnterHoverMode()
 void APlayerCharacter::CheckHover_Movement()
 {
 	// Checks what the mouse is clicking on, the aim is to detect board pieces only
-	/*FHitResult HitResult;
+	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
 
 	if (HitResult.bBlockingHit)
@@ -268,8 +268,32 @@ void APlayerCharacter::CheckHover_Movement()
 			return;
 		}
 		
-		// TODO - Start a hover mode  
-	}*/
+		if (HitTarget->ActorHasTag("Grid"))
+		{
+			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitTarget);
+			if (!BC_InterfaceTarget) return;
+			
+			if (!LastGridPieceHovered || HitTarget != LastGridPieceHovered)
+			{
+				NotifyGridOnHoverEnd();
+				
+				// Set the current hovered piece to the current hovered
+				LastGridPieceHovered = HitTarget;
+				
+				// Notify the piece of hovering
+				BC_InterfaceTarget->NotifyBoardPieceOnHover();
+			}
+		}
+		else
+		{
+			NotifyGridOnHoverEnd();
+		}
+	}
+	else
+	{
+		// If the mouse loses blocking, remove the movement indicator
+		NotifyGridOnHoverEnd();
+	}
 }
 
 void APlayerCharacter::CheckHover_Enemy()
@@ -309,6 +333,41 @@ void APlayerCharacter::ExitHoverMode()
 	
 	// Turns off combat modes on end turn. 
 	CurrentPlayerTurnState = EPlayerTurnState::Neutral;
+	
+	// Clears any cached references to last hovered actors 
+	ClearCachedHover();
+}
+
+void APlayerCharacter::ClearCachedHover()
+{
+	if (LastGridPieceHovered)
+	{
+		NotifyGridOnHoverEnd();
+		
+		LastGridPieceHovered = nullptr;
+	}
+	
+	if (LastTargetHovered)
+	{
+		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(LastTargetHovered))
+		{
+			BC_Interface->NotifyTargetOnHoverEnd();
+		}
+		
+		LastTargetHovered = nullptr;
+	}
+}
+
+void APlayerCharacter::NotifyGridOnHoverEnd() const
+{
+	if (LastGridPieceHovered)
+	{
+		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(LastGridPieceHovered);
+		if (!BC_InterfaceCurrent) return;
+					
+		// If there was already a grid piece hovered then that means a new hover has been done, notify no longer hovering
+		BC_InterfaceCurrent->NotifyBoardPieceOnHoverEnd();
+	}
 }
 
 void APlayerCharacter::EndTurnTrigger()

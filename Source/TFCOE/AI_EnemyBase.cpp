@@ -6,11 +6,19 @@
 #include "AIController.h"
 #include "CharacterCombatData.h"
 #include "HealthComponent.h"
+#include "Components/WidgetComponent.h"
 
 AAI_EnemyBase::AAI_EnemyBase()
 {
 	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
 	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	
+	
+	// Reminder to set the material to translucent or the animation doesn't work
+	TargetIndicatorWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Target Indicator Widget"));
+	TargetIndicatorWidget->SetupAttachment(GetRootComponent());
+	TargetIndicatorWidget->SetWidgetSpace(EWidgetSpace::World);
+	TargetIndicatorWidget->SetHiddenInGame(true);
 }
 
 void AAI_EnemyBase::BeginPlay()

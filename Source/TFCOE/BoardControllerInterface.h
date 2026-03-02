@@ -31,8 +31,14 @@ public:
 	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) = 0;
 	
 	// Tells to highlight the board piece in a specific fashion, red for combat, green for movement etc...
-	virtual void NotifyHighlightBoardPiece(EHighlightType Type) = 0;
+	virtual void NotifyBoardPieceHighlight(EHighlightType Type) = 0;
 	virtual void ResetHighlightedPieces() = 0;
+	
+	virtual void NotifyBoardPieceOnHover() = 0;
+	virtual void NotifyBoardPieceOnHoverEnd() = 0;
+	
+	virtual void NotifyTargetOnHover() = 0;
+	virtual void NotifyTargetOnHoverEnd() = 0;
 	
 	virtual TArray<FIntPoint> GetAllBoardPieces() = 0;
 	
