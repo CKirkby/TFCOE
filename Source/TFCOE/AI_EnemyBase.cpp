@@ -77,6 +77,7 @@ void AAI_EnemyBase::NotifyTargetOnHover()
 {
 	if (TargetIndicatorWidget)
 	{
+		UE_LOG(LogTemp, Error, TEXT("On Hover is being hit"))
 		TargetIndicatorWidget->SetHiddenInGame(false);
 	}
 }
@@ -85,6 +86,7 @@ void AAI_EnemyBase::NotifyTargetOnHoverEnd()
 {
 	if (TargetIndicatorWidget)
 	{
+		UE_LOG(LogTemp, Error, TEXT("On hover end is triggered"))
 		TargetIndicatorWidget->SetHiddenInGame(true);
 	}
 }

@@ -14,7 +14,6 @@
 #include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "CollisionQueryParams.h"
 #include "GameFramework/Character.h"
 
 
@@ -246,6 +245,8 @@ void APlayerCharacter::EnterHoverMode()
 		// Calculate Movement squares for visuals.
 		BC_Interface->SetReachableMovementPositionsVisible(true);
 		
+		// TODO - Highlight functions not working
+		
 		// Checks that there isn't a timer active
 		if (TimerManager.TimerExists(HoverModeHandle)) TimerManager.ClearTimer(HoverModeHandle);
 		
@@ -267,7 +268,6 @@ void APlayerCharacter::EnterHoverMode()
 
 void APlayerCharacter::CheckHover_Movement()
 {
-	// TODO - Highlight function not working properly
 	// Checks what the mouse is clicking on, the aim is to detect board pieces only
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
@@ -275,10 +275,7 @@ void APlayerCharacter::CheckHover_Movement()
 	if (HitResult.bBlockingHit)
 	{
 		AActor* HitTarget = HitResult.GetActor();
-		if (!HitTarget)
-		{
-			return;
-		}
+		if (!HitTarget) return;
 		
 		if (HitTarget->ActorHasTag("Grid"))
 		{
@@ -288,6 +285,7 @@ void APlayerCharacter::CheckHover_Movement()
 				if (LastGridPieceHovered)
 				{
 					NotifyGridOnHoverEnd();
+					LastGridPieceHovered = nullptr;
 				}
 				
 				return;
@@ -321,8 +319,7 @@ void APlayerCharacter::CheckHover_Movement()
 
 void APlayerCharacter::CheckHover_Enemy()
 {
-	// TODO - I Broke it
-	
+	 //TODO - Doesnt turn off
 	// Checks what the mouse is hovering over, the aim is to detect enemies.
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(
@@ -331,32 +328,31 @@ void APlayerCharacter::CheckHover_Enemy()
 	if (HitResult.bBlockingHit)
 	{
 		AActor* HitActor = HitResult.GetActor();
-		if (!HitActor)
-		{
-			return;
-		}
+		if (!HitActor) return;
 		
 		if (HitActor->ActorHasTag("Enemy"))
 		{
 			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitActor);
 			if (!BC_InterfaceTarget) return;
-			
+
 			if (!LastTargetHovered || HitActor != LastTargetHovered)
 			{
 				// Set the current hovered piece to the current hovered
 				LastTargetHovered = HitActor;
-				
+
 				// Notify the piece of hovering
-				BC_InterfaceTarget->NotifyBoardPieceOnHover();
+				BC_InterfaceTarget->NotifyTargetOnHover();
 			}
 		}
 		else
 		{
+			LastTargetHovered = nullptr;
 			NotifyTargetOnHoverEnd();
 		}
 	}
 	else
 	{
+		LastTargetHovered = nullptr;
 		NotifyTargetOnHoverEnd();
 	}
 }
