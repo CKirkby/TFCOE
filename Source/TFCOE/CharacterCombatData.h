@@ -142,6 +142,8 @@ public:
 	bool DoesGridCoordinatesExist(const FIntPoint GridCoordinates) const;
 	bool IsGridPieceActive(const FIntPoint GridCoordinates) const;
 	
+	void CheckToResetMovementHighlights() const;
+	
 	// Getter and Setter //
 	
 	UFUNCTION(BlueprintCallable, Category = "CombatData")

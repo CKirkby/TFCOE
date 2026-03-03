@@ -6,6 +6,7 @@
 #include "BoardPiece.h"
 #include "CombatInterface.h"
 #include "HealthInterface.h"
+#include "PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameMode.h"
@@ -952,8 +953,20 @@ bool UCharacterCombatData::IsGridPieceActive(const FIntPoint GridCoordinates) co
 	return State != EPieceState::Occupied && State != EPieceState::Disabled;
 }
 
+void UCharacterCombatData::CheckToResetMovementHighlights() const
+{
+	if (TimePoints > 0)
+	{
+		// Calls the player to enter hover mode once more to if movement was used. 
+		if (CombatInterfacePlayer)
+		{
+			CombatInterfacePlayer->SetPlayerHoverMovementModeActive(true);
+		}
+	}
+}
+
 bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords,
-	TArray<FIntPoint>& OutPath) const
+                                              TArray<FIntPoint>& OutPath) const
 {
 	OutPath.Reset();
 	
@@ -1085,6 +1098,7 @@ void UCharacterCombatData::OnMovementComplete(FAIRequestID RequestID, EPathFollo
 		if (EntityCombatConfiguration && EntityCombatConfiguration->FactionID == EFactionID::Player || 
 			EntityCombatConfiguration->FactionID == EFactionID::PlayerParty)
 		{
+			CheckToResetMovementHighlights();
 			return;
 		}
 		
@@ -1112,6 +1126,7 @@ void UCharacterCombatData::MoveToNextGridPos()
 	{
 		if (EntityCombatConfiguration->FactionID == EFactionID::Player || EntityCombatConfiguration->FactionID == EFactionID::PlayerParty)
 		{
+			CheckToResetMovementHighlights();
 			return;
 		}
 		

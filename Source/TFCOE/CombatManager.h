@@ -159,6 +159,7 @@ public:
 	virtual void NotifyCombatStatus(int CombatState) override {}
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 	virtual int GetTimePoints() override {return 0;}
+	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 
 	// Gamemode
 	virtual FIntPoint GetGridCoordinates() override {return FIntPoint::ZeroValue;}

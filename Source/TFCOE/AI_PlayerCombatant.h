@@ -62,6 +62,7 @@ public:
 	virtual FVector GetCombatPlayerLocation() override {return FVector::ZeroVector;}
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyCombatStatus(int CombatState) override {}
+	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

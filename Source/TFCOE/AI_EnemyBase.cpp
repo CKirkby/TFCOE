@@ -73,6 +73,22 @@ void AAI_EnemyBase::SetAttackerReference(AActor* AttackerReference)
 	}
 }
 
+void AAI_EnemyBase::NotifyTargetOnHover()
+{
+	if (TargetIndicatorWidget)
+	{
+		TargetIndicatorWidget->SetHiddenInGame(false);
+	}
+}
+
+void AAI_EnemyBase::NotifyTargetOnHoverEnd()
+{
+	if (TargetIndicatorWidget)
+	{
+		TargetIndicatorWidget->SetHiddenInGame(true);
+	}
+}
+
 void AAI_EnemyBase::InitialiseHealth() const
 {
 	// Gets the set health from the enemy configuration and inputs it into the health comp.

@@ -2,13 +2,11 @@
 
 #pragma once
 
-#include "CombatInterface.h"
-
 #include "CoreMinimal.h"
-#include "CombatManager.h"
 #include "PaperZDCharacter.h"
 #include "EnhancedInputSubsystems.h"
 #include "EntityID.h"
+#include "CombatInterface.h"
 #include "PlayerCharacter.generated.h"
 
 class ACombatCameraOperator;
@@ -29,9 +27,9 @@ enum class EPlayerTurnState : uint8
 UCLASS()
 class TFCOE_API APlayerCharacter : public APaperZDCharacter, public ICombatInterface
 {
-
-private:
 	GENERATED_BODY()
+	
+private:
 
 	APlayerCharacter();
 
@@ -95,6 +93,7 @@ protected:
 	FTimerHandle HoverModeHandle;
 	
 	EPlayerTurnState CurrentPlayerTurnState = EPlayerTurnState::Neutral;
+	EPlayerTurnState LastTurnStateUsed;
 
 	// Components
 	UPROPERTY()
@@ -122,14 +121,16 @@ protected:
 	bool CheckGridSlotAvailable(AActor* BoardPieceActor);
 	void OnBoardPieceClicked(AActor* BoardPiece);
 	
+	bool CheckGridPieceActive(AActor* TargetPiece);
+	
 	// Hover Functionality
 	void EnterHoverMode();
 	void CheckHover_Movement();
 	void CheckHover_Enemy();
 	void ExitHoverMode();
 	void ClearCachedHover();
-	
 	void NotifyGridOnHoverEnd() const;
+	void NotifyTargetOnHoverEnd() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void UpdatePlayerCombatState(bool CombatEnabled);
@@ -206,6 +207,7 @@ protected:
 	virtual void BeginTurnPhase() override;
 	virtual void SetAttackerReference(AActor* AttackerReference) override;
 	virtual int GetTimePoints() override;
+	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override;
 
 	// Unneeded Interface Implementations
 	// Player

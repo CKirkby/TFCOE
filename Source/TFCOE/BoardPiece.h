@@ -147,6 +147,7 @@ public:
 	virtual void NotifyCombatStatus(int CombatState) override {}
 	virtual int GetTimePoints() override {return 0;}
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
+	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

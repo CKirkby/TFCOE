@@ -193,13 +193,6 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	{
 		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
 		{
-			// Do not want it to immediately end hover on movement, only if else or timepoints ends. 
-			int RemainingTimePoints = CombatInterface->GetTimePoints();
-			if (CurrentPlayerTurnState != EPlayerTurnState::MovementMode || RemainingTimePoints <= 0)
-			{
-				ExitHoverMode();
-			}
-			
 			// If it can, tells the AI player so that it can initiate movement.
 			CombatInterface->NotifyMovementRequirementsMet(BoardPiece);
 			
@@ -210,9 +203,28 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 		// Resets any and all highlighted movement pieces on successful click.
 		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
+			// Turns off all the systems relating to movement whilst the player is moving, turn back on, on complete. 
+			ExitHoverMode();
+			NotifyGridOnHoverEnd();
 			BC_Interface->ResetHighlightedPieces();
 		}
 	}
+}
+
+bool APlayerCharacter::CheckGridPieceActive(AActor* TargetPiece)
+{
+	// Performs a check to make sure it is targetable
+	if (!TargetPiece) return false;
+	
+	if (ICombatInterface* CombatInterfaceGrid = Cast<ICombatInterface>(TargetPiece))
+	{
+		const EPieceState State = CombatInterfaceGrid->GetCurrentPieceState();
+	
+		// Checks the piece isn't occupied or non-walkable.
+		return State != EPieceState::Occupied && State != EPieceState::Disabled;
+	}
+	
+	return false;
 }
 
 void APlayerCharacter::EnterHoverMode()
@@ -255,10 +267,7 @@ void APlayerCharacter::EnterHoverMode()
 
 void APlayerCharacter::CheckHover_Movement()
 {
-	// TODO - Make sure you cannot target a non highlighted target. 
-	// TODO - Make sure the combat board highlights DOESN'T get turned off on move.
-	// TODO - Make sure the indicator DOES get turned off on move. 
-	
+	// TODO - Highlight function not working properly
 	// Checks what the mouse is clicking on, the aim is to detect board pieces only
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
@@ -268,12 +277,22 @@ void APlayerCharacter::CheckHover_Movement()
 		AActor* HitTarget = HitResult.GetActor();
 		if (!HitTarget)
 		{
-			GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
 			return;
 		}
 		
 		if (HitTarget->ActorHasTag("Grid"))
 		{
+			// Does a check to make sure the target piece is actually walkable, dont want to target inactive grid pieces.
+			if (!CheckGridPieceActive(HitTarget))
+			{
+				if (LastGridPieceHovered)
+				{
+					NotifyGridOnHoverEnd();
+				}
+				
+				return;
+			}
+			
 			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitTarget);
 			if (!BC_InterfaceTarget) return;
 			
@@ -302,6 +321,8 @@ void APlayerCharacter::CheckHover_Movement()
 
 void APlayerCharacter::CheckHover_Enemy()
 {
+	// TODO - I Broke it
+	
 	// Checks what the mouse is hovering over, the aim is to detect enemies.
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(
@@ -312,15 +333,31 @@ void APlayerCharacter::CheckHover_Enemy()
 		AActor* HitActor = HitResult.GetActor();
 		if (!HitActor)
 		{
-			GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
 			return;
 		}
 		
 		if (HitActor->ActorHasTag("Enemy"))
 		{
-			// Execute stuff here
-			UE_LOG(LogTemp, Warning, TEXT("Hit an enemy in hover mode!"))
+			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitActor);
+			if (!BC_InterfaceTarget) return;
+			
+			if (!LastTargetHovered || HitActor != LastTargetHovered)
+			{
+				// Set the current hovered piece to the current hovered
+				LastTargetHovered = HitActor;
+				
+				// Notify the piece of hovering
+				BC_InterfaceTarget->NotifyBoardPieceOnHover();
+			}
 		}
+		else
+		{
+			NotifyTargetOnHoverEnd();
+		}
+	}
+	else
+	{
+		NotifyTargetOnHoverEnd();
 	}
 }
 
@@ -336,6 +373,7 @@ void APlayerCharacter::ExitHoverMode()
 	GetWorld()->GetTimerManager().ClearTimer(HoverModeHandle);
 	
 	// Turns off combat modes on end turn. 
+	LastTurnStateUsed = CurrentPlayerTurnState;
 	CurrentPlayerTurnState = EPlayerTurnState::Neutral;
 	
 	// Clears any cached references to last hovered actors 
@@ -371,6 +409,18 @@ void APlayerCharacter::NotifyGridOnHoverEnd() const
 					
 		// If there was already a grid piece hovered then that means a new hover has been done, notify no longer hovering
 		BC_InterfaceCurrent->NotifyBoardPieceOnHoverEnd();
+	}
+}
+
+void APlayerCharacter::NotifyTargetOnHoverEnd() const
+{
+	if (LastTargetHovered)
+	{
+		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(LastGridPieceHovered);
+		if (!BC_InterfaceCurrent) return;
+					
+		// If there was already a grid piece hovered then that means a new hover has been done, notify no longer hovering
+		BC_InterfaceCurrent->NotifyTargetOnHoverEnd();
 	}
 }
 
@@ -549,7 +599,7 @@ bool APlayerCharacter::CheckGridSlotAvailable(AActor* BoardPieceActor)
 	return false;
 }
 
-void APlayerCharacter::SetCombatTurnMode(EPlayerTurnState NewTurnState)
+void APlayerCharacter::SetCombatTurnMode(const EPlayerTurnState NewTurnState)
 {
 	CurrentPlayerTurnState = NewTurnState;
 	
@@ -558,9 +608,11 @@ void APlayerCharacter::SetCombatTurnMode(EPlayerTurnState NewTurnState)
 	case EPlayerTurnState::Neutral:
 		ExitHoverMode();
 		break;
+		
 	case EPlayerTurnState::MovementMode:
 		EnterHoverMode();
 		break;
+		
 	case EPlayerTurnState::CombatMode:
 		EnterHoverMode();
 		break;
@@ -663,4 +715,12 @@ int APlayerCharacter::GetTimePoints()
 	}
 	
 	return 0;
+}
+
+void APlayerCharacter::SetPlayerHoverMovementModeActive(bool IsActivate)
+{
+	if (LastTurnStateUsed == EPlayerTurnState::MovementMode)
+	{
+		SetCombatTurnMode(EPlayerTurnState::MovementMode);
+	}
 }

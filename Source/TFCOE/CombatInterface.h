@@ -32,6 +32,7 @@ class TFCOE_API ICombatInterface
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) = 0;
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) = 0;
 	virtual int GetTimePoints() = 0;
+	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) = 0;
 
 	// Gamemode
 	virtual FIntPoint GetGridCoordinates() = 0;

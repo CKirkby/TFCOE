@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BoardControllerInterface.h"
 #include "CharacterCombatData.h"
 #include "CombatInterface.h"
 #include "HealthComponent.h"
@@ -17,7 +18,7 @@ class UWidgetComponent;
  * 
  */
 UCLASS()
-class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface, public IHealthInterface
+class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface, public IHealthInterface, public IBoardControllerInterface
 {
 
 private:
@@ -55,6 +56,19 @@ protected:
 	virtual void AddHealth(int IncomingHealth) override {HealthComp->AddHealth(IncomingHealth);}
 	virtual int GetHealth() override {return HealthComp->GetHealth();}
 	virtual bool IsDead() override {return HealthComp->IsDead();}
+	
+	// Board Controller Interface Implementation
+	virtual void NotifyTargetOnHover() override;
+	virtual void NotifyTargetOnHoverEnd() override;
+	
+	// Board Controller Interface Unneeded
+	virtual void SetReachableMovementPositionsVisible(bool Active) override {}
+	virtual void SetAttackPositionsVisible(TArray<FIntPoint> Positions) override {}
+	virtual void NotifyBoardPieceHighlight(EHighlightType Type) override {}
+	virtual void ResetHighlightedPieces() override {}
+	virtual void NotifyBoardPieceOnHover() override {}
+	virtual void NotifyBoardPieceOnHoverEnd() override {}
+	virtual TArray<FIntPoint> GetAllBoardPieces() override {return TArray<FIntPoint>();}
 
 	// Unneeded Interface Implementations
 	virtual void NotifyEndIndividualTurn() override {}
@@ -72,5 +86,6 @@ protected:
 	virtual EEntityID GetActorEntityID() override {return EEntityID::Uninitialized_ID;}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
 	virtual int GetTimePoints() override {return 0;}
+	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 	
 };
