@@ -9,6 +9,7 @@
 #include "CombatInterface.h"
 #include "PlayerCharacter.generated.h"
 
+class UCharacterCombatData;
 class ACombatCameraOperator;
 class UCharacter_Inventory;
 
@@ -102,6 +103,8 @@ protected:
 	UCharacter_Inventory* CharacterInventory = nullptr;
 	UPROPERTY()
 	APlayerController* PlayerController = nullptr;
+	UPROPERTY()
+	UCharacterCombatData* CombatData = nullptr;
 	
 	// Functions
 	virtual void BeginPlay() override;
@@ -120,6 +123,7 @@ protected:
 	bool CheckIsPlayersTurn() const;
 	bool CheckGridSlotAvailable(AActor* BoardPieceActor);
 	void OnBoardPieceClicked(AActor* BoardPiece);
+	void OnTargetCombatantClicked(const AActor* Target);
 	
 	bool CheckGridPieceActive(AActor* TargetPiece);
 	

@@ -134,7 +134,7 @@ public:
 	
 	// Combat Functionality
 	bool CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB);
-	void PerformAttack(FAttackConfiguration* ChosenAttack);
+	void PerformAttack(const FAttackConfiguration* ChosenAttack);
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
 	void SetAttackerReference();
 

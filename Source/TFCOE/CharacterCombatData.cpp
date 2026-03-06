@@ -746,7 +746,7 @@ bool UCharacterCombatData::CanAttackFromPosition(FAttackConfiguration* ChosenAtt
 	return false;
 }
 
-void UCharacterCombatData::  PerformAttack(FAttackConfiguration* ChosenAttack)
+void UCharacterCombatData::  PerformAttack(const FAttackConfiguration* ChosenAttack)
 {
 	if (!CurrentTarget || !ChosenAttack)
 	{

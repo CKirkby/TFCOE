@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "AI_EnemyBase.h"
 #include "BoardControllerInterface.h"
 #include "BoardPiece.h"
 #include "Character_Inventory.h"
@@ -20,6 +21,7 @@
 APlayerCharacter::APlayerCharacter()
 {
 	CharacterInventory = CreateDefaultSubobject<UCharacter_Inventory>(TEXT("Character Inventory"));
+	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -189,9 +191,10 @@ void APlayerCharacter::CombatClickTrigger()
 			break;
 			
 		case EPlayerTurnState::CombatMode:
-			if (CurrentTargetHovered)
+			if (CurrentTargetHovered && IsTargetWithinRange(CurrentTargetHovered))
 			{
 				// Broadcast to Attack Enemy
+				
 			}
 			
 			break;
@@ -213,6 +216,32 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 			
 			// Notifies delegates of successful movement.
 			OnSuccessfulMovementTriggered();
+		}
+		
+		// Resets any and all highlighted movement pieces on successful click.
+		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			// Turns off all the systems relating to movement whilst the player is moving, turn back on, on complete. 
+			ExitHoverMode();
+			NotifyGridOnHoverEnd();
+			BC_Interface->ResetHighlightedPieces();
+		}
+	}
+}
+
+void APlayerCharacter::OnTargetCombatantClicked(const AActor* Target)
+{
+	// TODO - Make On Combat Clicked Function
+	// Checking if the player can initiate movement
+	if (CombatModeActivated && CurrentPlayerTurnState == EPlayerTurnState::CombatMode && CheckIsPlayersTurn() && Target)
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
+		{
+			// Interface function to check for target attack ^^
+			
+			// Notifies delegates of successful Attack.
+			// OnSuccessfulAttack()
+			
 		}
 		
 		// Resets any and all highlighted movement pieces on successful click.
