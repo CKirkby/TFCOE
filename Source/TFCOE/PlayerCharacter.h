@@ -84,8 +84,8 @@ protected:
 	ACombatCameraOperator* CameraOperator = nullptr;
 	
 	// Hover References
-	UPROPERTY() AActor* LastGridPieceHovered = nullptr;
-	UPROPERTY() AActor* LastTargetHovered = nullptr;
+	UPROPERTY() AActor* CurrentGridPieceHovered = nullptr;
+	UPROPERTY() AActor* CurrentTargetHovered = nullptr;
 	
 	// Combat functionality
 	bool InitialTurn = true;
@@ -146,6 +146,7 @@ protected:
 	void EndTurnTrigger();
 	
 	int32 GetGridDistanceAllDir(const FIntPoint& PointA, const FIntPoint& PointB);
+	bool IsTargetWithinRange(AActor* Target);
 	
 	// Getter & Setter
 	UCharacter_Inventory* GetInventory() const

@@ -171,14 +171,30 @@ void APlayerCharacter::CombatClickTrigger()
 {
 	if (PlayerController && CombatModeActivated)
 	{
-		// Checks what the mouse is clicking on, the aim is to detect board pieces only
 		FHitResult HitResult;
-		PlayerController->GetHitResultUnderCursorByChannel(static_cast<ETraceTypeQuery>(ECC_GameTraceChannel1), false, HitResult);
-
-		if (HitResult.bBlockingHit)
+		
+		switch (CurrentPlayerTurnState)
 		{
-			// Broadcasts back to blueprints which was hit, where then I can do checks etc...
-			OnBoardPieceClicked(HitResult.GetActor());
+		case EPlayerTurnState::Neutral:
+			break;
+			
+		case EPlayerTurnState::MovementMode:
+			
+			if (CurrentGridPieceHovered)
+			{
+				// Broadcasts back to blueprints which was hit, where then I can do checks etc...
+				OnBoardPieceClicked(CurrentGridPieceHovered);	
+			}
+			
+			break;
+			
+		case EPlayerTurnState::CombatMode:
+			if (CurrentTargetHovered)
+			{
+				// Broadcast to Attack Enemy
+			}
+			
+			break;
 		}
 	}
 }
@@ -282,10 +298,10 @@ void APlayerCharacter::CheckHover_Movement()
 			// Does a check to make sure the target piece is actually walkable, dont want to target inactive grid pieces.
 			if (!CheckGridPieceActive(HitTarget))
 			{
-				if (LastGridPieceHovered)
+				if (CurrentGridPieceHovered)
 				{
 					NotifyGridOnHoverEnd();
-					LastGridPieceHovered = nullptr;
+					CurrentGridPieceHovered = nullptr;
 				}
 				
 				return;
@@ -294,12 +310,12 @@ void APlayerCharacter::CheckHover_Movement()
 			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitTarget);
 			if (!BC_InterfaceTarget) return;
 			
-			if (!LastGridPieceHovered || HitTarget != LastGridPieceHovered)
+			if (!CurrentGridPieceHovered || HitTarget != CurrentGridPieceHovered)
 			{
 				NotifyGridOnHoverEnd();
 				
 				// Set the current hovered piece to the current hovered
-				LastGridPieceHovered = HitTarget;
+				CurrentGridPieceHovered = HitTarget;
 				
 				// Notify the piece of hovering
 				BC_InterfaceTarget->NotifyBoardPieceOnHover();
@@ -334,10 +350,10 @@ void APlayerCharacter::CheckHover_Enemy()
 			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitActor);
 			if (!BC_InterfaceTarget) return;
 
-			if (!LastTargetHovered || HitActor != LastTargetHovered)
+			if (!CurrentTargetHovered || HitActor != CurrentTargetHovered)
 			{
 				// Set the current hovered piece to the current hovered
-				LastTargetHovered = HitActor;
+				CurrentTargetHovered = HitActor;
 
 				// Notify the piece of hovering
 				BC_InterfaceTarget->NotifyTargetOnHover();
@@ -346,13 +362,13 @@ void APlayerCharacter::CheckHover_Enemy()
 		else
 		{
 			NotifyTargetOnHoverEnd();
-			LastTargetHovered = nullptr;
+			CurrentTargetHovered = nullptr;
 		}
 	}
 	else
 	{
 		NotifyTargetOnHoverEnd();
-		LastTargetHovered = nullptr;
+		CurrentTargetHovered = nullptr;
 	}
 }
 
@@ -377,29 +393,29 @@ void APlayerCharacter::ExitHoverMode()
 
 void APlayerCharacter::ClearCachedHover()
 {
-	if (LastGridPieceHovered)
+	if (CurrentGridPieceHovered)
 	{
 		NotifyGridOnHoverEnd();
 		
-		LastGridPieceHovered = nullptr;
+		CurrentGridPieceHovered = nullptr;
 	}
 	
-	if (LastTargetHovered)
+	if (CurrentTargetHovered)
 	{
-		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(LastTargetHovered))
+		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(CurrentTargetHovered))
 		{
 			BC_Interface->NotifyTargetOnHoverEnd();
 		}
 		
-		LastTargetHovered = nullptr;
+		CurrentTargetHovered = nullptr;
 	}
 }
 
 void APlayerCharacter::NotifyGridOnHoverEnd() const
 {
-	if (LastGridPieceHovered)
+	if (CurrentGridPieceHovered)
 	{
-		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(LastGridPieceHovered);
+		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(CurrentGridPieceHovered);
 		if (!BC_InterfaceCurrent) return;
 					
 		// If there was already a grid piece hovered then that means a new hover has been done, notify no longer hovering
@@ -409,9 +425,9 @@ void APlayerCharacter::NotifyGridOnHoverEnd() const
 
 void APlayerCharacter::NotifyTargetOnHoverEnd() const
 {
-	if (LastTargetHovered)
+	if (CurrentTargetHovered)
 	{
-		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(LastTargetHovered);
+		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(CurrentTargetHovered);
 		if (!BC_InterfaceCurrent) return;
 					
 		// If there was already a grid piece hovered then that means a new hover has been done, notify no longer hovering
@@ -437,6 +453,26 @@ int32 APlayerCharacter::GetGridDistanceAllDir(const FIntPoint& PointA, const FIn
 {
 	// Uses the Chebyshev method to include Diagonals into the movement consideration
 	return FMath::Max(FMath::Abs(PointA.X - PointB.X), FMath::Abs(PointA.Y - PointB.Y));
+}
+
+bool APlayerCharacter::IsTargetWithinRange(AActor* Target)
+{
+	if (!Target) return false;
+	
+	// Gets the interfaces for the player and target
+	ICombatInterface* PlayerInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
+	if (!PlayerInterface) return false;
+	ICombatInterface* TargetInterface = Cast<ICombatInterface>(Target);
+	if (!TargetInterface) return false;
+	
+	// Checks to see if the target is 1 block away, this means they are in melee range.
+	if (GetGridDistanceAllDir(PlayerInterface->GetGridCoordinates(), TargetInterface->GetGridCoordinates()) == 1)
+	{
+		return true;
+	}
+	
+	// If all else fails
+	return false;
 }
 
 void APlayerCharacter::EnterCombatMode()
