@@ -319,7 +319,6 @@ void APlayerCharacter::CheckHover_Movement()
 
 void APlayerCharacter::CheckHover_Enemy()
 {
-	 //TODO - Doesnt turn off
 	// Checks what the mouse is hovering over, the aim is to detect enemies.
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursorByChannel(
@@ -346,14 +345,14 @@ void APlayerCharacter::CheckHover_Enemy()
 		}
 		else
 		{
-			LastTargetHovered = nullptr;
 			NotifyTargetOnHoverEnd();
+			LastTargetHovered = nullptr;
 		}
 	}
 	else
 	{
-		LastTargetHovered = nullptr;
 		NotifyTargetOnHoverEnd();
+		LastTargetHovered = nullptr;
 	}
 }
 
@@ -412,7 +411,7 @@ void APlayerCharacter::NotifyTargetOnHoverEnd() const
 {
 	if (LastTargetHovered)
 	{
-		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(LastGridPieceHovered);
+		IBoardControllerInterface* BC_InterfaceCurrent = Cast<IBoardControllerInterface>(LastTargetHovered);
 		if (!BC_InterfaceCurrent) return;
 					
 		// If there was already a grid piece hovered then that means a new hover has been done, notify no longer hovering
