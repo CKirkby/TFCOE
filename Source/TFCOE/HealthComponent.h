@@ -26,6 +26,9 @@ protected:
 	int Health = 5;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	int MaxHealth = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	bool IsInvulnerable = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
 	UMaterialInstance* OnDamageMaterial = nullptr;
@@ -37,6 +40,7 @@ public:
 
 	void InitialiseHealth(const int NewHealth);
 	void TakeDamage(const int Damage);
+	void DeathCheck() const;
 
 	// Getter and Setter //
 

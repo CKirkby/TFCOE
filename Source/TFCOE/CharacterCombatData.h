@@ -186,6 +186,12 @@ public:
 		return 1;
 	}
 	
+	UFUNCTION(BlueprintCallable, Category = "CombatData")
+	UEnemyBehaviour* GetConfiguration() const
+	{
+		return EntityCombatConfiguration;
+	}
+	
 	void SetPreviousAttacker(AActor* AttackerReference)
 	{
 		PreviousAttacker = AttackerReference;

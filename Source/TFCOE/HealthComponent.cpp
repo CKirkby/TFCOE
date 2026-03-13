@@ -38,7 +38,19 @@ void UHealthComponent::InitialiseHealth(const int NewHealth)
 
 void UHealthComponent::TakeDamage(const int Damage)
 {
+	// Checks to see if the target is invulnerable, if so just return
+	if (IsInvulnerable) return;
+	
 	Health -= Damage;
 	
 	OnTakeDamage.Broadcast();
+}
+
+void UHealthComponent::DeathCheck() const
+{
+	if (Health <= 0)
+	{
+		// Testing for now
+		GetOwner()->Destroy();
+	}
 }

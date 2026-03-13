@@ -1103,7 +1103,7 @@ void UCharacterCombatData::OnMovementComplete(FAIRequestID RequestID, EPathFollo
 		}
 		
 		// Execute non controllable characters code 
-		EndActorTurn();
+		//EndActorTurn();
 		return;
 	}
 	
@@ -1140,6 +1140,7 @@ void UCharacterCombatData::MoveToNextGridPos()
 		{
 			// Attack
 			UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
+			PerformAttack(CurrentAttack);
 			EndActorTurn(); // Testing
 		}
 		else
