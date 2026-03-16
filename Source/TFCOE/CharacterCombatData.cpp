@@ -6,7 +6,6 @@
 #include "BoardPiece.h"
 #include "CombatInterface.h"
 #include "HealthInterface.h"
-#include "PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/GameMode.h"
@@ -40,58 +39,93 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	
   	UE_LOG(LogTemp, Error, TEXT("<-- New Turn Start -->"));
 	
-	// Testing for printing health //
-	IHealthInterface* HealthInterfaceTest = Cast<IHealthInterface>(GetOwner());
-	UE_LOG(LogTemp, Error, TEXT("Enemy Health this turn: %i"), HealthInterfaceTest->GetHealth());
-	
-	// Step 1: Select Target for this turn.
-	CurrentTarget = SelectTargetForTurn();
-	if (!CurrentTarget)
-	{
-		EndActorTurn();
-		return;
-	}
-
-	// FOR TESTING STEP 1 //
-	UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
-
-	// Step 2: Choose an attack
-	CurrentAttack = ChooseAttackForTurn(CurrentTarget);
-	if (!CurrentAttack)
-	{
-		EndActorTurn();
-		return;
-	}
-
-	// TESTING STEP 2 //
-	UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
-	
-	// Step 3: Check if the actor should move
-  	if (CheckShouldMove(CurrentAttack, CurrentTarget))
-	{
-		// Step 3.5: Movement
-		const TArray<FCandidatePathway> PossibleLocations = GetReachableMovementPositions(CurrentTarget, CurrentAttack);
-		const TArray<FIntPoint> CalculatedPathway = ChooseValidMovementPath(PossibleLocations, 0);
-
-		StartMovementAlongGridPath(CalculatedPathway);
-	}
-    else
-    {
-    	// Step 4: Attack
-    	if (CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
-    	{
-    		// Attack
-    		UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
-    		PerformAttack(CurrentAttack);
-    		EndActorTurn(); // Testing
-    	}
-    	else
-    	{
-    		UE_LOG(LogTemp, Error, TEXT("Cannot Attack this turn, ending turn"))
-    		EndActorTurn();
-    	}
-    }
+	StepOne_SelectTarget();
 }
+
+void UCharacterCombatData::StepOne_SelectTarget()
+{
+	DelayLambda(SelectTargetDelay, [this]()
+	{
+		// Step 1: Select Target for this turn.
+		CurrentTarget = SelectTargetForTurn();
+		
+		if (!CurrentTarget)
+		{
+			EndActorTurn();
+			return;
+		}
+		
+		UE_LOG(LogTemp, Error, TEXT("Current Target is: %s"), *CurrentTarget->GetName());
+		
+		// Now continue the turn sequence
+		StepTwo_SelectAttack();
+	});
+}
+
+void UCharacterCombatData::StepTwo_SelectAttack()
+{
+	DelayLambda(SelectAttackDelay, [this]()
+	{
+		// Step 2: Choose an attack
+		CurrentAttack = ChooseAttackForTurn(CurrentTarget);
+		
+		if (!CurrentAttack)
+		{
+			EndActorTurn();
+			return;
+		}
+		
+		UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
+		
+		// Continue the sequence. 
+		StepThree_Movement();
+	});
+}
+
+void UCharacterCombatData::StepThree_Movement()
+{
+	DelayLambda(MovementDelay, [this]()
+	{
+		// Step 3: Check if the actor should move
+		if (CheckShouldMove(CurrentAttack, CurrentTarget))
+		{
+			// Step 3.5: Movement
+			const TArray<FCandidatePathway> PossibleLocations = GetReachableMovementPositions(CurrentTarget, CurrentAttack);
+			const TArray<FIntPoint> CalculatedPathway = ChooseValidMovementPath(PossibleLocations, 0);
+
+			StartMovementAlongGridPath(CalculatedPathway);
+		}
+		else
+		{
+			// Step 4: Attack
+			if (CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
+			{
+				// Attack
+				UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
+				PerformAttack(CurrentAttack);
+				EndActorTurn();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Cannot Attack this turn, ending turn"))
+				EndActorTurn();
+			}
+		}
+	});
+}
+
+void UCharacterCombatData::EndActorTurn()
+{
+	// Tells the gamemode that this actor has finished its turn and to then cycle to the next enemy turn.
+	if (CombatInterfaceGamemode)
+	{
+		DelayLambda(EndTurnDelay, [this]()
+		{
+			CombatInterfaceGamemode->NotifyEndIndividualTurn();
+		});
+	}
+}
+
 
 AActor* UCharacterCombatData::SelectTargetForTurn()
 {	
@@ -746,44 +780,48 @@ bool UCharacterCombatData::CanAttackFromPosition(FAttackConfiguration* ChosenAtt
 	return false;
 }
 
-void UCharacterCombatData::  PerformAttack(const FAttackConfiguration* ChosenAttack)
+void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttack)
 {
 	if (!CurrentTarget || !ChosenAttack)
 	{
 		EndActorTurn();
 		return;
 	}
-		
-	UE_LOG(LogTemp, Error, TEXT("Attack Commencing"));
 	
 	// Sets the owners rotation to be that of the target. 
 	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(), CurrentTarget->GetActorLocation());
 	GetOwner()->SetActorRotation(TargetRotation);
 	
-	// Sets the Targets rotation to face the attacker
-	FRotator Target_TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentTarget->GetActorLocation(), GetOwner()->GetActorLocation());
-	CurrentTarget->SetActorRotation(Target_TargetRotation);
-	
-	bool AttackHitSuccess = false; // Reports whether the attack successfully hit
-	float AttackHitChance = ChosenAttack->BaseHitChance / 100; // Converts percent to decimal (80 - 0.8)
-	
-	if (UKismetMathLibrary::RandomBoolWithWeight(AttackHitChance))
+	DelayLambda(AttackDelay, [this, ChosenAttack]()
 	{
-		// Attack was successful, process functionality. 
-		AttackHitSuccess = true;
+		UE_LOG(LogTemp, Error, TEXT("Attack Commencing"));
 		
-		// Functionality to remove health. 
-		IHealthInterface* HealthInterface = Cast<IHealthInterface>(CurrentTarget);
-		if (!HealthInterface) return;
-		HealthInterface->TakeDamage(ChosenAttack->AttackDamage);
+		// Sets the Targets rotation to face the attacker
+		FRotator Target_TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentTarget->GetActorLocation(), GetOwner()->GetActorLocation());
+		CurrentTarget->SetActorRotation(Target_TargetRotation);
 		
-		// Sets the attacker reference of the target to this attacker
-		SetAttackerReference();
-	}
-	
-	OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
-	
-	// TODO - Add cooldown functionality. 
+		bool AttackHitSuccess = false; // Reports whether the attack successfully hit
+		float AttackHitChance = ChosenAttack->BaseHitChance / 100; // Converts percent to decimal (80 - 0.8)
+		
+		if (UKismetMathLibrary::RandomBoolWithWeight(AttackHitChance))
+		{
+			// Attack was successful, process functionality. 
+			AttackHitSuccess = true;
+			
+			// Functionality to remove health. 
+			IHealthInterface* HealthInterface = Cast<IHealthInterface>(CurrentTarget);
+			if (!HealthInterface) return;
+			HealthInterface->TakeDamage(ChosenAttack->AttackDamage);
+			
+			// Sets the attacker reference of the target to this attacker
+			SetAttackerReference();
+		}
+		
+		OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
+		EndActorTurn();
+		
+		// TODO - Add cooldown functionality. 
+	});
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
@@ -828,15 +866,6 @@ bool UCharacterCombatData::CheckCanAffordMovement(const FIntPoint CurrentCoordin
 	}
 	
 	return false;
-}
-
-void UCharacterCombatData::EndActorTurn() const
-{
-	// Tells the gamemode that this actor has finished its turn and to then cycle to the next enemy turn.
-	if (CombatInterfaceGamemode)
-	{
-		CombatInterfaceGamemode->NotifyEndIndividualTurn();
-	}
 }
 
 bool UCharacterCombatData::CheckIsAdjacent(FIntPoint& PointA, FIntPoint& PointB) const
@@ -1132,11 +1161,11 @@ void UCharacterCombatData::MoveToNextGridPos()
 		
 		if (!CurrentAttack)
 		{
-			EndActorTurn();
+			return;
 		}
 		
 		// Attack;
-		if (CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
+		if (CurrentAttack && CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
 		{
 			// Attack
 			UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))

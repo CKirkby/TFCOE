@@ -71,6 +71,18 @@ protected:
 	FIntPoint CurrentGridCoordinates = FIntPoint::ZeroValue;
 	TArray<FIntPoint> TurnPath;
 	int32 TurnPathIndex = 0;
+	
+	// Turn Phase Settings
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
+	float SelectTargetDelay = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
+	float SelectAttackDelay = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
+	float MovementDelay = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
+	float AttackDelay = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
+	float EndTurnDelay = 0.5f;
 
 	// Interfaces
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
@@ -83,7 +95,10 @@ public:
 
 	// Activates this characters turn. 
 	void ExecuteCurrentTurn();
-	void EndActorTurn() const;
+	void StepOne_SelectTarget();
+	void StepTwo_SelectAttack();
+	void StepThree_Movement();
+	void EndActorTurn();
 
 	// If AI, it will select a character to target. Most of the time it will be the player. 
 	AActor* SelectTargetForTurn();
@@ -114,8 +129,6 @@ public:
 	void MoveToNextGridPos();
 	FVector GetGridPosition(const FIntPoint& Coordinates) const;
     void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;
-	
-	TArray<FIntPoint> GetPlayerMovementPositions();
 	
 	// Used to check if the actor has enough action points to move to that spot.
 	bool CheckCanAffordMovement(FIntPoint CurrentCoordinates, FIntPoint TargetCoordinates);
