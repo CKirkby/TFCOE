@@ -74,9 +74,9 @@ protected:
 	
 	// Turn Phase Settings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
-	float SelectTargetDelay = 0.5f;
+	float SelectTargetDelay = 0.25f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
-	float SelectAttackDelay = 0.5f;
+	float SelectAttackDelay = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")
 	float MovementDelay = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Turn_Phase")

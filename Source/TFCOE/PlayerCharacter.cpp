@@ -3,7 +3,6 @@
 
 #include "PlayerCharacter.h"
 
-#include "AI_EnemyBase.h"
 #include "BoardControllerInterface.h"
 #include "BoardPiece.h"
 #include "Character_Inventory.h"
@@ -21,7 +20,6 @@
 APlayerCharacter::APlayerCharacter()
 {
 	CharacterInventory = CreateDefaultSubobject<UCharacter_Inventory>(TEXT("Character Inventory"));
-	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -209,7 +207,7 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	// Checking if the player can initiate movement
 	if (CombatModeActivated && CurrentPlayerTurnState == EPlayerTurnState::MovementMode && CheckIsPlayersTurn() && CheckGridSlotAvailable(BoardPiece))
 	{
-		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerCombatant_Vague()))
 		{
 			// If it can, tells the AI player so that it can initiate movement.
 			CombatInterface->NotifyMovementRequirementsMet(BoardPiece);
@@ -235,7 +233,7 @@ void APlayerCharacter::OnTargetCombatantClicked(const AActor* Target)
 	// Checking if the player can initiate movement
 	if (CombatModeActivated && CurrentPlayerTurnState == EPlayerTurnState::CombatMode && CheckIsPlayersTurn() && Target)
 	{
-		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy()))
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerCombatant_Vague()))
 		{
 			// Interface function to check for target attack ^^
 			
@@ -489,7 +487,7 @@ bool APlayerCharacter::IsTargetWithinRange(AActor* Target)
 	if (!Target) return false;
 	
 	// Gets the interfaces for the player and target
-	ICombatInterface* PlayerInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
+	ICombatInterface* PlayerInterface = Cast<ICombatInterface>(GetPlayerCombatant_Vague());
 	if (!PlayerInterface) return false;
 	ICombatInterface* TargetInterface = Cast<ICombatInterface>(Target);
 	if (!TargetInterface) return false;
@@ -550,7 +548,11 @@ void APlayerCharacter::AsyncLoadDummy()
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			SafeThis->AIPlayerDummy = SafeThis->GetWorld()->SpawnActor<AActor>(LoadedClass, SafeThis->GetActorLocation(), SafeThis->GetActorRotation(), SpawnParams);
+
+			if (AActor* SpawnedCombatant = SafeThis->GetWorld()->SpawnActor<AActor>(LoadedClass, SafeThis->GetActorLocation(), SafeThis->GetActorRotation(), SpawnParams))
+			{
+				SafeThis->PlayerCombatant = Cast<AAI_PlayerCombatant>(SpawnedCombatant);
+			}
 		}
 		else
 		{
@@ -584,12 +586,13 @@ void APlayerCharacter::SetMainActorHidden(const bool SetHidden)
 void APlayerCharacter::DestroyDummy()
 {
 	// Places the hidden player in the exact spot as the AI dummy so that it can resume control seamlessly
-	if (AIPlayerDummy)
+	if (PlayerCombatant)
 	{
-		SetActorLocation(AIPlayerDummy->GetActorLocation());
-		SetActorRotation(AIPlayerDummy->GetActorRotation());
+		SetActorLocation(PlayerCombatant->GetActorLocation());
+		SetActorRotation(PlayerCombatant->GetActorRotation());
 
-		AIPlayerDummy->Destroy();
+		PlayerCombatant->Destroy();
+		PlayerCombatant = nullptr;
 	}
 }
 
@@ -696,15 +699,12 @@ void APlayerCharacter::NotifyCombatStatus(int CombatState)
 	}
 }
 
-void APlayerCharacter::MoveAI_Character(FVector Location)
+void APlayerCharacter::MoveAI_Character(const FVector Location)
 {
-	if (AIPlayerDummy)
+	if (PlayerCombatant)
 	{
 		// Commands the player AI to move from here for ease of access.
-		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
-		{
-			CombatInterface->MoveAI_Character(Location);
-		}
+		PlayerCombatant->MoveAI_Character(Location);
 	}
 	else
 	{
@@ -714,17 +714,12 @@ void APlayerCharacter::MoveAI_Character(FVector Location)
 
 FIntPoint APlayerCharacter::GetGridCoordinates()
 {
-	if (AIPlayerDummy)
+	// Gets the AI Dummies grid coordinates for ease of access through the player 
+	if (PlayerCombatant)
 	{
-		// Gets the AI Dummies grid coordinates for ease of access through the player 
-		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
-		{
-			return CombatInterface->GetGridCoordinates();
-		}
-		return FIntPoint::ZeroValue;
+		return PlayerCombatant->GetGridCoordinates();
 	}
-
-	UE_LOG(LogTemp, Error, TEXT("Player Character: Get Grid Coords - AI Actor ref fail"))
+	
 	return FIntPoint::ZeroValue;
 }
 
@@ -742,10 +737,9 @@ void APlayerCharacter::BeginTurnPhase()
 		{
 			if (!SafeThis.IsValid())
 			{
-				if (AActor* PlayerAI = SafeThis->GetPlayerAI_Dummy())
+				if (SafeThis->PlayerCombatant)
 				{
-					ICombatInterface* CombatInterface = Cast<ICombatInterface>(PlayerAI);
-					CombatInterface->BeginTurnPhase();
+					SafeThis->PlayerCombatant->BeginTurnPhase();
 				}
 			}
 		}, 0.5f, false);
@@ -754,24 +748,25 @@ void APlayerCharacter::BeginTurnPhase()
 		return;
 	}
 	
-	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerAI_Dummy());
-	CombatInterface->BeginTurnPhase();
+	if (PlayerCombatant)
+	{
+		PlayerCombatant->BeginTurnPhase();
+	}
 }
 
 void APlayerCharacter::SetAttackerReference(AActor* AttackerReference)
 {
-	if (AIPlayerDummy)
+	if (PlayerCombatant)
 	{
-		ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy);
-		CombatInterface->SetAttackerReference(AttackerReference);
+		PlayerCombatant->SetAttackerReference(AttackerReference);
 	}
 }
 
 int APlayerCharacter::GetTimePoints()
 {
-	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(AIPlayerDummy))
+	if (PlayerCombatant)
 	{
-		return CombatInterface->GetTimePoints();
+		return PlayerCombatant->GetTimePoints();
 	}
 	
 	return 0;

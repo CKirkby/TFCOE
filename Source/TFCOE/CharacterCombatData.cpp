@@ -34,6 +34,7 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	if (UpdatePlayerTurn())
 	{
 		// Checks and updates timepoints in function then finishes full functionality.
+		UE_LOG(LogTemp, Error, TEXT("Player Turn detected, Returning"))
 		return;
 	}
 	

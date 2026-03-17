@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AI_PlayerCombatant.h"
 #include "PaperZDCharacter.h"
 #include "EnhancedInputSubsystems.h"
 #include "EntityID.h"
 #include "CombatInterface.h"
 #include "PlayerCharacter.generated.h"
 
+class AAI_PlayerCombatant;
 class UCharacterCombatData;
 class ACombatCameraOperator;
 class UCharacter_Inventory;
@@ -80,7 +82,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Combat")
 	bool CombatModeActivated = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
-	AActor* AIPlayerDummy = nullptr;
+	AAI_PlayerCombatant* PlayerCombatant = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Settings|Combat")
 	ACombatCameraOperator* CameraOperator = nullptr;
 	
@@ -103,8 +105,6 @@ protected:
 	UCharacter_Inventory* CharacterInventory = nullptr;
 	UPROPERTY()
 	APlayerController* PlayerController = nullptr;
-	UPROPERTY()
-	UCharacterCombatData* CombatData = nullptr;
 	
 	// Functions
 	virtual void BeginPlay() override;
@@ -166,22 +166,31 @@ protected:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	AActor* GetPlayerAI_Dummy() const
+	AActor* GetPlayerCombatant_Vague() const
 	{
-		if (AIPlayerDummy)
+		if (PlayerCombatant)
 		{
-			return AIPlayerDummy;
+			AActor* CombatantActor = PlayerCombatant;
+			return  CombatantActor;
 		}
+		
 		return nullptr;
+	}
+	
+	UFUNCTION()
+	AAI_PlayerCombatant* GetPlayerCombatant_Ref() const
+	{
+		return PlayerCombatant ? PlayerCombatant : nullptr;
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Player")
-	FVector GetAI_DummyLocation() const
+	FVector GetPlayerCombatantLocation() const
 	{
-		if (AIPlayerDummy)
+		if (PlayerCombatant)
 		{
-			return AIPlayerDummy->GetActorLocation();
+			return PlayerCombatant->GetActorLocation();
 		}
+		
 		return FVector::ZeroVector;
 	}
 
@@ -203,8 +212,8 @@ protected:
 
 	// Interface Implementation
 	virtual void NotifyCombatStatus(int CombatState) override;
-	virtual AActor* GetPlayerCombatant() override {return GetPlayerAI_Dummy();}
-	virtual FVector GetCombatPlayerLocation() override {return AIPlayerDummy->GetActorLocation();}
+	virtual AActor* GetPlayerCombatant() override {return GetPlayerCombatant_Vague();}
+	virtual FVector GetCombatPlayerLocation() override {return PlayerCombatant->GetActorLocation();}
 	virtual void MoveAI_Character(FVector Location) override;
 	virtual FIntPoint GetGridCoordinates() override;
 	virtual EFactionID GetActorFactionID() override {return FactionID;}
