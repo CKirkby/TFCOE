@@ -30,8 +30,9 @@ enum class EPlayerTurnState : uint8
 UCLASS()
 class TFCOE_API APlayerCharacter : public APaperZDCharacter, public ICombatInterface
 {
+private:
 	GENERATED_BODY()
-	
+
 private:
 
 	APlayerCharacter();
@@ -40,6 +41,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnSuccessfulMovementTriggered();
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnNewCameraTargetSelected(AActor* Target);
 	
 protected:
 
@@ -222,6 +226,7 @@ protected:
 	virtual void SetAttackerReference(AActor* AttackerReference) override;
 	virtual int GetTimePoints() override;
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override;
+	virtual void NotifyNewCameraFocus(AActor* Target) override;
 
 	// Unneeded Interface Implementations
 	// Player

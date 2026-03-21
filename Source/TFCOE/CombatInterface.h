@@ -30,6 +30,7 @@ class TFCOE_API ICombatInterface
 	virtual FVector GetCombatPlayerLocation() = 0;
 	virtual AActor* GetPlayerCombatant() = 0;
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) = 0;
+	virtual void NotifyNewCameraFocus(AActor* Target) = 0;
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) = 0;
 	virtual int GetTimePoints() = 0;
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) = 0;

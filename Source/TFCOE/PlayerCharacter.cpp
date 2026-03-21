@@ -779,3 +779,10 @@ void APlayerCharacter::SetPlayerHoverMovementModeActive(bool IsActivate)
 		SetCombatTurnMode(EPlayerTurnState::MovementMode);
 	}
 }
+
+void APlayerCharacter::NotifyNewCameraFocus(AActor* Target)
+{
+	if (!CameraOperator || !Target) return;
+	
+	OnNewCameraTargetSelected(Target);
+}

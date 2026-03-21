@@ -17,6 +17,9 @@ UCombatManager::UCombatManager()
 void UCombatManager::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// Stores the player interface for future use. 
+	CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 }
 
 void UCombatManager::UpdateCombatUI(const int CombatState)
@@ -155,7 +158,7 @@ void UCombatManager::ExecuteTurnFunctionality(ETurnOrder NewTurn)
 	case Player:
 		
 		//Tells the player to begin their turn phase.
-		if (ICombatInterface* CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+		if (CombatInterfacePlayer)
 		{
 			CombatInterfacePlayer->BeginTurnPhase();
 		}
@@ -360,7 +363,14 @@ void UCombatManager::ExecuteIndividualEnemyTurn()
 
 	if (ICombatInterface* CombatInterfaceEnemy = Cast<ICombatInterface>(NextEnemy))
 	{
+		// Notifies the target their turn has begun
 		CombatInterfaceEnemy->BeginTurnPhase();
+		
+		// Sets camera focus to this new target on their turn
+		if (CombatInterfacePlayer)
+		{
+			CombatInterfacePlayer->NotifyNewCameraFocus(NextEnemy);
+		}
 	}
 }
 

@@ -87,5 +87,6 @@ protected:
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
 	virtual int GetTimePoints() override {return 0;}
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
+	virtual void NotifyNewCameraFocus(AActor* Target) override {}
 	
 };

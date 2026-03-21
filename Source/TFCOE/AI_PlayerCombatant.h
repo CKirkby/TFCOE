@@ -63,6 +63,7 @@ public:
 	virtual AActor* GetPlayerCombatant() override {return nullptr;}
 	virtual void NotifyCombatStatus(int CombatState) override {}
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
+	virtual void NotifyNewCameraFocus(AActor* Target) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

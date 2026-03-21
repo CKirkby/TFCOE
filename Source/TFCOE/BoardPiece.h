@@ -148,6 +148,7 @@ public:
 	virtual int GetTimePoints() override {return 0;}
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
+	virtual void NotifyNewCameraFocus(AActor* Target) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

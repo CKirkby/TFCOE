@@ -34,7 +34,6 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	if (UpdatePlayerTurn())
 	{
 		// Checks and updates timepoints in function then finishes full functionality.
-		UE_LOG(LogTemp, Error, TEXT("Player Turn detected, Returning"))
 		return;
 	}
 	
@@ -104,7 +103,6 @@ void UCharacterCombatData::StepThree_Movement()
 				// Attack
 				UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
 				PerformAttack(CurrentAttack);
-				EndActorTurn();
 			}
 			else
 			{
@@ -295,9 +293,11 @@ bool UCharacterCombatData::UpdatePlayerTurn()
 		if (FactionID == EFactionID::Player || FactionID == EFactionID::PlayerParty)
 		{
 			ResetTimePoints();
+			UE_LOG(LogTemp, Warning, TEXT("Update Player turn, returned true"))
 			return true;
 		}
-		
+
+		UE_LOG(LogTemp, Warning, TEXT("Update player turn, returned false"))
 		return false;
 	}
 	
