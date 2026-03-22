@@ -10,6 +10,7 @@
 #include "CombatInterface.h"
 #include "PlayerCharacter.generated.h"
 
+class UAttackController;
 class AAI_PlayerCombatant;
 class UCharacterCombatData;
 class ACombatCameraOperator;
@@ -44,6 +45,9 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnNewCameraTargetSelected(AActor* Target);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
+	void OnPerformAttack();
 	
 protected:
 
@@ -105,10 +109,14 @@ protected:
 	// Components
 	UPROPERTY()
 	UCharacterMovementComponent* MovementComponent = nullptr;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UCharacter_Inventory* CharacterInventory = nullptr;
 	UPROPERTY()
 	APlayerController* PlayerController = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCharacter_Inventory* CharacterInventory = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UCharacterCombatData* CombatData = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UAttackController* AttackController = nullptr;
 	
 	// Functions
 	virtual void BeginPlay() override;
@@ -127,9 +135,10 @@ protected:
 	bool CheckIsPlayersTurn() const;
 	bool CheckGridSlotAvailable(AActor* BoardPieceActor);
 	void OnBoardPieceClicked(AActor* BoardPiece);
-	void OnTargetCombatantClicked(const AActor* Target);
+	void OnTargetCombatantClicked(AActor* Target);
 	
 	bool CheckGridPieceActive(AActor* TargetPiece);
+	FAttackConfiguration* GetAttackConfig(FName AttackID) const;
 	
 	// Hover Functionality
 	void EnterHoverMode();

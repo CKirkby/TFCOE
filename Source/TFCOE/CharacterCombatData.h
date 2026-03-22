@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EnemyBehaviour.h"
+#include "UnitConfiguration.h"
 #include "Components/ActorComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "CharacterCombatData.generated.h"
 
 struct FAIRequestID;
 class ICombatInterface;
-class UEnemyBehaviour;
+class UUnitConfiguration;
 
 struct FCandidatePathway
 {
@@ -51,7 +51,7 @@ public:
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	UEnemyBehaviour* EntityCombatConfiguration;
+	UUnitConfiguration* UnitCombatConfiguration;
 
 	// The target the AI Will pursue. Not necessary for player
 	UPROPERTY()
@@ -191,18 +191,18 @@ public:
 
 	int GetHealthConfig() const
 	{
-		if (EntityCombatConfiguration)
+		if (UnitCombatConfiguration)
 		{
-			return EntityCombatConfiguration->CombatConfiguration.Health;
+			return UnitCombatConfiguration->CombatConfiguration.Health;
 		}
 		
 		return 1;
 	}
 	
 	UFUNCTION(BlueprintCallable, Category = "CombatData")
-	UEnemyBehaviour* GetConfiguration() const
+	UUnitConfiguration* GetUnitConfiguration() const
 	{
-		return EntityCombatConfiguration;
+		return UnitCombatConfiguration;
 	}
 	
 	void SetPreviousAttacker(AActor* AttackerReference)

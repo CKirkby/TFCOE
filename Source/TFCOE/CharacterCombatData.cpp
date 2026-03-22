@@ -137,14 +137,14 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	if (!PlayerCombatant) return nullptr;
 
 	// Checks if the characters combat config settings are present, if not just default target the player.
-	if (!EntityCombatConfiguration)
+	if (!UnitCombatConfiguration)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Select Target for Turn - Combat Configuration Missing / Not set"))
 		return PlayerCombatant;
 	}
 	
 	// Gets preferred target faction from config
-	const EFactionID PreferredFaction = EntityCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
+	const EFactionID PreferredFaction = UnitCombatConfiguration->CombatConfiguration.PreferredTargetFaction;
 	
 	// Gets the current combats combatants from the gamemode
 	TArray<AActor*> CachedActiveCombatants = CombatInterfaceGamemode->GetActiveCombatantRoster();
@@ -165,7 +165,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	if (AttackedLastTurn)
 	{
 		// This actor is set to prioritise the attackers so it will automatically target those.
-		if (EntityCombatConfiguration->CombatConfiguration.bAttackerTakesTargetPriority)
+		if (UnitCombatConfiguration->CombatConfiguration.bAttackerTakesTargetPriority)
 		{
 			// Returns the previous attacker as the new target if this entity is set to prioritise those attackers. 
 			if (PreviousAttacker)
@@ -177,7 +177,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 		}
 
 		// Chance to keep attacking target, If the entity has focused aggression, very little chance to change target, otherwise normal chance
-		float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.30f;
+		float ChanceToChangeTarget = UnitCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.30f;
 		bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 		if (CurrentTarget && !bShouldChangeTarget)
 		{
@@ -236,7 +236,7 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 	}
 	
 	// Was not attacked last turn, choose a target.
-	float ChanceToChangeTarget = EntityCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
+	float ChanceToChangeTarget = UnitCombatConfiguration->CombatConfiguration.bFocusedAggression ? 0.05F : 0.15f;
 	bool bShouldChangeTarget = FMath::FRand() < ChanceToChangeTarget;
 	if (CurrentTarget && !bShouldChangeTarget)
 	{
@@ -287,9 +287,9 @@ AActor* UCharacterCombatData::SelectTargetForTurn()
 bool UCharacterCombatData::UpdatePlayerTurn()
 {
 	// Checks if the current turn is the players, if it is, reset the time points and continue. 
-	if (EntityCombatConfiguration)
+	if (UnitCombatConfiguration)
 	{
-		EFactionID FactionID = EntityCombatConfiguration->FactionID;
+		EFactionID FactionID = UnitCombatConfiguration->FactionID;
 		if (FactionID == EFactionID::Player || FactionID == EFactionID::PlayerParty)
 		{
 			ResetTimePoints();
@@ -307,7 +307,7 @@ bool UCharacterCombatData::UpdatePlayerTurn()
 
 bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAttack, AActor* ChosenTarget)
 {
-	if (!EntityCombatConfiguration || !ChosenAttack || !ChosenTarget)
+	if (!UnitCombatConfiguration || !ChosenAttack || !ChosenTarget)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: CheckShouldMove - Reference failure"));
 		return false;
@@ -347,7 +347,7 @@ bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAtt
 
 FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetActor)
 {
-	if (!TargetActor || !EntityCombatConfiguration || EntityCombatConfiguration->AttackConfigurations.IsEmpty())
+	if (!TargetActor || !UnitCombatConfiguration || UnitCombatConfiguration->AttackConfigurations.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Attack - Reference fail"));
 		return nullptr;
@@ -357,7 +357,7 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 	const FIntPoint TargetCoordinates = GetCurrentTargetCoords(TargetActor);
 
 	// Gets these actors preferred combat style. 
-	const ECombatStyle PreferredCombatStyle = EntityCombatConfiguration->PreferredCombatStyle;
+	const ECombatStyle PreferredCombatStyle = UnitCombatConfiguration->PreferredCombatStyle;
 	const int32 DistToTarget = GetGridDistanceAllDir(CurrentGridCoordinates, TargetCoordinates);
 
 	// Creates an attack type to chose based on distance. If this actor is far, use ranged, if not move close. 
@@ -386,14 +386,14 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 
 FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType AttackType) const
 {
-	if (EntityCombatConfiguration->AttackConfigurations.IsEmpty())
+	if (UnitCombatConfiguration->AttackConfigurations.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data - Get Attack from type - No attack configurations available"))
 		return nullptr;
 	}
 	
 	// Caches the attacks this actor has to sort through. 
-	TArray<FAttackConfiguration>& CachedAttacks = EntityCombatConfiguration->AttackConfigurations;
+	TArray<FAttackConfiguration>& CachedAttacks = UnitCombatConfiguration->AttackConfigurations;
 	if (CachedAttacks.IsEmpty()) return nullptr;
 
 	TArray<FAttackConfiguration*> DesiredAttacks;
@@ -423,7 +423,7 @@ TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AA
 {
 	TArray<FCandidatePathway> FailsafeStruct = {{CurrentGridCoordinates, 0}};
 	
-	if (!TargetActor || !EntityCombatConfiguration || !ChosenAttack)
+	if (!TargetActor || !UnitCombatConfiguration || !ChosenAttack)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Movement Position - Reference fail"));
 		return FailsafeStruct;
@@ -486,7 +486,7 @@ TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AA
 TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCandidatePathway>& PossiblePositions, const int32 PathwayAttemptModifier)
 {
 	if (PossiblePositions.IsEmpty()) return {CurrentGridCoordinates};
-	if (!EntityCombatConfiguration) return {CurrentGridCoordinates};
+	if (!UnitCombatConfiguration) return {CurrentGridCoordinates};
 	
 	// This is the current attempt of tries
 	int32 AttemptIndex = PathwayAttemptModifier;
@@ -514,7 +514,7 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 	TArray<FIntPoint> PathToFollow;
 	if (FindPathUsingAStar(CurrentGridCoordinates, TargetCoordinatesForMove, PathToFollow))
 	{
-		int32 MovementSpeed = EntityCombatConfiguration->CombatConfiguration.MovementRange;
+		int32 MovementSpeed = UnitCombatConfiguration->CombatConfiguration.MovementRange;
 
 		// Checks that the movement speed isn't zero or there isn't a path. 
 		if (MovementSpeed <= 0 || PathToFollow.Num() <= 1)
@@ -625,9 +625,9 @@ FIntPoint UCharacterCombatData::CalculateTargetMovementPiece() const
 
 EFactionID UCharacterCombatData::GetFactionID() const
 {
-	if (EntityCombatConfiguration)
+	if (UnitCombatConfiguration)
 	{
-		return EntityCombatConfiguration->FactionID;
+		return UnitCombatConfiguration->FactionID;
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("Combat Data: Get Faction ID - No Combat Configuration Set"))
@@ -636,9 +636,9 @@ EFactionID UCharacterCombatData::GetFactionID() const
 
 EEnemyTier UCharacterCombatData::GetFactionRank() const
 {
-	if (EntityCombatConfiguration)
+	if (UnitCombatConfiguration)
 	{
-		return EntityCombatConfiguration->FactionRank;
+		return UnitCombatConfiguration->FactionRank;
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("Combat Data: Get Faction Rank - No Combat Configuration Set"))
@@ -1125,8 +1125,8 @@ void UCharacterCombatData::OnMovementComplete(FAIRequestID RequestID, EPathFollo
 	if (Result != EPathFollowingResult::Success)
 	{
 		// Checks to make sure that it isn't a controllable character.
-		if (EntityCombatConfiguration && EntityCombatConfiguration->FactionID == EFactionID::Player || 
-			EntityCombatConfiguration->FactionID == EFactionID::PlayerParty)
+		if (UnitCombatConfiguration && UnitCombatConfiguration->FactionID == EFactionID::Player || 
+			UnitCombatConfiguration->FactionID == EFactionID::PlayerParty)
 		{
 			CheckToResetMovementHighlights();
 			return;
@@ -1154,7 +1154,7 @@ void UCharacterCombatData::MoveToNextGridPos()
 {
 	if (TurnPathIndex >= TurnPath.Num())
 	{
-		if (EntityCombatConfiguration->FactionID == EFactionID::Player || EntityCombatConfiguration->FactionID == EFactionID::PlayerParty)
+		if (UnitCombatConfiguration->FactionID == EFactionID::Player || UnitCombatConfiguration->FactionID == EFactionID::PlayerParty)
 		{
 			CheckToResetMovementHighlights();
 			return;

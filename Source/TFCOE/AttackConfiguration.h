@@ -51,6 +51,9 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	float BaseHitChance = 80.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	int AP_Cost = 0;
 	
 	
 	//Attack Grid coords. Direction based? Tarray intpoints?

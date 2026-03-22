@@ -7,7 +7,7 @@
 #include "CombatConfiguration.h"
 #include "EnemyTier.h"
 #include "Engine/DataAsset.h"
-#include "EnemyBehaviour.generated.h"
+#include "UnitConfiguration.generated.h"
 
 struct FAttackConfiguration;
 struct FCombatConfiguration;
@@ -26,7 +26,7 @@ enum class ECombatStyle : uint8
  * 
  */
 UCLASS()
-class TFCOE_API UEnemyBehaviour : public UDataAsset
+class TFCOE_API UUnitConfiguration : public UDataAsset
 {
 	GENERATED_BODY()
 

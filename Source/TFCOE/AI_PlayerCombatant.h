@@ -39,6 +39,19 @@ protected:
 public:
 	
 	virtual void Tick(float DeltaTime) override;
+	
+	void CommenceBasicAttack(const FAttackConfiguration* Attack, const bool AttackSuccessful) const
+	{
+		if (!Attack) return;
+		
+		const EAttackType Type = Attack->AttackType;
+		CombatData->OnAttackCommence.Broadcast(Type, AttackSuccessful);
+	}
+	
+	UUnitConfiguration* GetUnitConfiguration() const
+	{
+		return CombatData->GetUnitConfiguration();
+	}
 
 	// Interface Implementation
 	virtual void NotifyMovementRequirementsMet(AActor* BoardPiece) override;

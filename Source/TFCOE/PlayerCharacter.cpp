@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "AttackController.h"
 #include "BoardControllerInterface.h"
 #include "BoardPiece.h"
 #include "Character_Inventory.h"
@@ -20,6 +21,8 @@
 APlayerCharacter::APlayerCharacter()
 {
 	CharacterInventory = CreateDefaultSubobject<UCharacter_Inventory>(TEXT("Character Inventory"));
+	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
+	AttackController = CreateDefaultSubobject<UAttackController>(TEXT("Attack Controller"));
 }
 
 void APlayerCharacter::BeginPlay()
@@ -171,8 +174,6 @@ void APlayerCharacter::CombatClickTrigger()
 {
 	if (PlayerController && CombatModeActivated)
 	{
-		FHitResult HitResult;
-		
 		switch (CurrentPlayerTurnState)
 		{
 		case EPlayerTurnState::Neutral:
@@ -192,7 +193,7 @@ void APlayerCharacter::CombatClickTrigger()
 			if (CurrentTargetHovered && IsTargetWithinRange(CurrentTargetHovered))
 			{
 				// Broadcast to Attack Enemy
-				
+				OnTargetCombatantClicked(CurrentTargetHovered);
 			}
 			
 			break;
@@ -227,28 +228,26 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	}
 }
 
-void APlayerCharacter::OnTargetCombatantClicked(const AActor* Target)
+void APlayerCharacter::OnTargetCombatantClicked(AActor* Target)
 {
-	// TODO - Make On Combat Clicked Function
 	// Checking if the player can initiate movement
 	if (CombatModeActivated && CurrentPlayerTurnState == EPlayerTurnState::CombatMode && CheckIsPlayersTurn() && Target)
 	{
-		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetPlayerCombatant_Vague()))
+		if (CurrentTargetHovered == Target)
 		{
-			// Interface function to check for target attack ^^
+			const FAttackConfiguration* AttackConfiguration = GetAttackConfig("Player_BasicMelee");
+			AttackController->PerformBasicAttack(Target, AttackConfiguration);
 			
-			// Notifies delegates of successful Attack.
-			// OnSuccessfulAttack()
-			
+			// Notify the blueprint of an attack performed
+			PlayerCombatant->CommenceBasicAttack(AttackConfiguration, true);
 		}
 		
 		// Resets any and all highlighted movement pieces on successful click.
 		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld())))
 		{
 			// Turns off all the systems relating to movement whilst the player is moving, turn back on, on complete. 
-			ExitHoverMode();
-			NotifyGridOnHoverEnd();
-			BC_Interface->ResetHighlightedPieces();
+			//ExitHoverMode();
+			//NotifyGridOnHoverEnd();
 		}
 	}
 }
@@ -267,6 +266,27 @@ bool APlayerCharacter::CheckGridPieceActive(AActor* TargetPiece)
 	}
 	
 	return false;
+}
+
+FAttackConfiguration* APlayerCharacter::GetAttackConfig(const FName AttackID) const
+{
+	if (!PlayerCombatant || AttackID.IsNone()) return nullptr;
+	
+	// Gets the attacks that the player has stored before use so we can find the one we want. 
+	TArray<FAttackConfiguration> CachedAttackConfigs = PlayerCombatant->GetUnitConfiguration()->AttackConfigurations;
+	
+	// Check to make sure the array is not empty before use
+	if (CachedAttackConfigs.IsEmpty()) return nullptr;
+
+	for (auto& CachedAttackConfig : CachedAttackConfigs)
+	{
+		if (AttackID == CachedAttackConfig.AttackID)
+		{
+			return &CachedAttackConfig;
+		}
+	}
+	
+	return nullptr;
 }
 
 void APlayerCharacter::EnterHoverMode()
@@ -375,15 +395,24 @@ void APlayerCharacter::CheckHover_Enemy()
 		if (HitActor->ActorHasTag("Enemy"))
 		{
 			IBoardControllerInterface* BC_InterfaceTarget = Cast<IBoardControllerInterface>(HitActor);
-			if (!BC_InterfaceTarget) return;
+			ICombatInterface* CombatInterfaceTarget = Cast<ICombatInterface>(HitActor);	
+			if (!BC_InterfaceTarget || !CombatInterfaceTarget) return;
 
 			if (!CurrentTargetHovered || HitActor != CurrentTargetHovered)
 			{
-				// Set the current hovered piece to the current hovered
-				CurrentTargetHovered = HitActor;
-
-				// Notify the piece of hovering
-				BC_InterfaceTarget->NotifyTargetOnHover();
+				
+				// If for some reason the player combatant doesn't exist, return
+				if (!PlayerCombatant) return;
+				
+				// Performs a check to make sure that the target is within attack range
+				if (IsTargetWithinRange(HitActor))
+				{
+					// Set the current hovered piece to the current hovered
+					CurrentTargetHovered = HitActor;
+					
+					// Notify the piece of hovering
+					BC_InterfaceTarget->NotifyTargetOnHover();
+				}
 			}
 		}
 		else
@@ -484,16 +513,14 @@ int32 APlayerCharacter::GetGridDistanceAllDir(const FIntPoint& PointA, const FIn
 
 bool APlayerCharacter::IsTargetWithinRange(AActor* Target)
 {
-	if (!Target) return false;
+	if (!Target || !PlayerCombatant) return false;
 	
-	// Gets the interfaces for the player and target
-	ICombatInterface* PlayerInterface = Cast<ICombatInterface>(GetPlayerCombatant_Vague());
-	if (!PlayerInterface) return false;
+	// Gets the interfaces for the target
 	ICombatInterface* TargetInterface = Cast<ICombatInterface>(Target);
 	if (!TargetInterface) return false;
 	
 	// Checks to see if the target is 1 block away, this means they are in melee range.
-	if (GetGridDistanceAllDir(PlayerInterface->GetGridCoordinates(), TargetInterface->GetGridCoordinates()) == 1)
+	if (GetGridDistanceAllDir(PlayerCombatant->GetGridCoordinates(), TargetInterface->GetGridCoordinates()) == 1)
 	{
 		return true;
 	}
@@ -552,6 +579,7 @@ void APlayerCharacter::AsyncLoadDummy()
 			if (AActor* SpawnedCombatant = SafeThis->GetWorld()->SpawnActor<AActor>(LoadedClass, SafeThis->GetActorLocation(), SafeThis->GetActorRotation(), SpawnParams))
 			{
 				SafeThis->PlayerCombatant = Cast<AAI_PlayerCombatant>(SpawnedCombatant);
+				SafeThis->AttackController->SetPlayerCombatantReference(SafeThis->PlayerCombatant);
 			}
 		}
 		else
@@ -593,6 +621,7 @@ void APlayerCharacter::DestroyDummy()
 
 		PlayerCombatant->Destroy();
 		PlayerCombatant = nullptr;
+		AttackController->ClearPlayerCombatantReference();
 	}
 }
 
