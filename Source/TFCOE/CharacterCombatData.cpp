@@ -490,7 +490,7 @@ TArray<FIntPoint> UCharacterCombatData::ChooseValidMovementPath(const TArray<FCa
 	int32 AttemptIndex = PathwayAttemptModifier;
 
 	// It gets the attempt of what should be the closest grid point to the target.
-	int32 ClosestDistance = PossiblePositions[AttemptIndex].Distance;
+	//int32 ClosestDistance = PossiblePositions[AttemptIndex].Distance;
 
 	// This for loop checks the distances and if the closest distance has similar ones, It will choose one at random to be a little more dynamic
 	/*TArray<FIntPoint> TempSimilarDistances;
@@ -985,7 +985,7 @@ void UCharacterCombatData::CheckToResetMovementHighlights() const
 {
 	if (TimePoints > 0)
 	{
-		// Calls the player to enter hover mode once more to if movement was used. 
+		// Calls the player to enter hover mode once more to if movement was used. s
 		if (CombatInterfacePlayer)
 		{
 			CombatInterfacePlayer->SetPlayerHoverMovementModeActive(true);
