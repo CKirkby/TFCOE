@@ -9,6 +9,7 @@
 #include "BoardControllerInterface.h"
 #include "BoardManager.h"
 #include "CombatManager.h"
+#include "HealthInterface.h"
 #include "GameFramework/GameModeBase.h"
 #include "MainGameMode.generated.h"
 
@@ -18,8 +19,9 @@ class UCombatManager;
  * 
  */
 UCLASS()
-class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface, public IBoardControllerInterface
+class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface, public IBoardControllerInterface, public IHealthInterface
 {
+	
 private:
 	GENERATED_BODY()
 
@@ -102,5 +104,13 @@ public:
 	virtual void NotifyTargetOnHover() override {}
 	virtual void NotifyTargetOnHoverEnd() override {}
 	virtual void NotifyBoardPieceOnHover() override {}
+	
+	// Health Interface
+	virtual void SetHealth(int NewHealth) override {}
+	virtual void TakeDamage(int IncomingDamage) override {}
+	virtual void AddHealth(int IncomingHealth) override {}
+	virtual void NotifyUnitDefeated(AActor* UnitRef) override;
+	virtual int GetHealth() override {return 0;}
+	virtual bool IsDead() override {return false;}
 	
 };

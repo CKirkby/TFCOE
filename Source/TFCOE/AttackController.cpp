@@ -18,9 +18,9 @@ void UAttackController::BeginPlay()
 	
 }
 
-void UAttackController::PerformBasicAttack(AActor* Target, const FAttackConfiguration* ChosenAttack) const
+bool UAttackController::PerformBasicAttack(AActor* Target, const FAttackConfiguration* ChosenAttack) const
 {
-	if (!Target || !PlayerCombatantObjRef) return;
+	if (!Target || !PlayerCombatantObjRef) return false;
 	
 	// Sets the Targets rotation to face the attacker
 	const FRotator Target_TargetRotation = UKismetMathLibrary::FindLookAtRotation(Target->GetActorLocation(), PlayerCombatantObjRef->GetActorLocation());
@@ -31,13 +31,18 @@ void UAttackController::PerformBasicAttack(AActor* Target, const FAttackConfigur
 	{
 		// Functionality to remove health. 
 		IHealthInterface* HealthInterface = Cast<IHealthInterface>(Target);
-		if (!HealthInterface) return;
+		if (!HealthInterface) return false;
 		HealthInterface->TakeDamage(ChosenAttack->AttackDamage);
-			
+
 		//TODO - Make this function into a faction ID Switch to set attacker, I dont like how linear this is
+		
 		// Sets the attacker reference of the target to this attacker
 		SetAttackerReference(PlayerCombatantObjRef);
+		
+		return true;
 	}
+	
+	return false;
 }
 
 void UAttackController::SetAttackerReference(AActor* Target) const

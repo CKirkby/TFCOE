@@ -176,8 +176,15 @@ void UCombatManager::ExecuteTurnFunctionality(ETurnOrder NewTurn)
 		
 	case Companion:
 		
-		// Tells blueprints that a new turn has begun, companions
-		OnNewTurnBegin.Broadcast(EFactionID::PlayerParty);
+		if (!PlayerPartyRoster.IsEmpty())
+		{
+			// Tells blueprints that a new turn has begun, companions
+			OnNewTurnBegin.Broadcast(EFactionID::PlayerParty);
+		}
+		else
+		{
+			EndCurrentTurn();
+		}
 		
 		break;
 		
@@ -190,6 +197,9 @@ void UCombatManager::EndCombat()
 {
 	CurrentTurnIndex = -1;
 	CurrentTurnOrder = None;
+	
+	ActiveCombatantRoster.Empty();
+	PlayerPartyRoster.Empty();
 }
 
 // Simply adds the player party to the active combatant roster.
@@ -370,6 +380,31 @@ void UCombatManager::ExecuteIndividualEnemyTurn()
 		if (CombatInterfacePlayer)
 		{
 			CombatInterfacePlayer->NotifyNewCameraFocus(NextEnemy);
+		}
+	}
+}
+
+void UCombatManager::RemoveUnitFromActiveRoster(AActor* UnitToRemove)
+{
+	if (!UnitToRemove || ActiveCombatantRoster.IsEmpty()) return;
+	
+	// Looks for the unit in the roster and then removes it if possible. 
+	if (ActiveCombatantRoster.Contains(UnitToRemove))
+	{
+		ActiveCombatantRoster.Remove(UnitToRemove);
+		
+		// Ends the combat if only the player is left //TESTING !!! THIS NEEDS  A PROPER CHECK
+		if (ActiveCombatantRoster.Num() == 1)
+		{
+			// Timer to give the systems time to finish and also to delay before combat is ended.
+			FTimerHandle EndCombatDelayHandle;
+			TWeakObjectPtr<UCombatManager> SafeThis = this;
+			GetWorld()->GetTimerManager().SetTimer(EndCombatDelayHandle, [SafeThis]
+			{
+				//Ends Combat and disengages
+				SafeThis->SetCombatState(0);
+				
+			}, 1.0f, false);
 		}
 	}
 }

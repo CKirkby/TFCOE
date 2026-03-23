@@ -61,7 +61,7 @@ public:
 
 	bool IsDead() const
 	{
-		return Health >= 0;
+		return Health <= 0;
 	}
 
 	void ResetHealth()

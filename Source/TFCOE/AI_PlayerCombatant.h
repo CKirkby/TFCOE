@@ -45,7 +45,13 @@ public:
 		if (!Attack) return;
 		
 		const EAttackType Type = Attack->AttackType;
-		CombatData->OnAttackCommence.Broadcast(Type, AttackSuccessful);
+		
+		// Does a check to make sure this actor is not null before doing the broadcast
+		if (this)
+		{
+			CombatData->OnAttackCommence.Broadcast(Type, AttackSuccessful);
+		}
+	
 	}
 	
 	UUnitConfiguration* GetUnitConfiguration() const
@@ -92,5 +98,8 @@ public:
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
+	
+	// Health Interface.
+	virtual void NotifyUnitDefeated(AActor* UnitRef) override {}
 
 };

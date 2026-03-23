@@ -203,4 +203,12 @@ TArray<FIntPoint> AMainGameMode::GetAllBoardPieces()
 	return TArray<FIntPoint>();
 }
 
+void AMainGameMode::NotifyUnitDefeated(AActor* UnitRef)
+{
+	if (!UnitRef || !CombatManager) return;
+	
+	// Notifies the combat roster to remove this unit on its defeat. 
+	CombatManager->RemoveUnitFromActiveRoster(UnitRef);
+}
+
 

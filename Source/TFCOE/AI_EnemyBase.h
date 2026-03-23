@@ -20,7 +20,6 @@ class UWidgetComponent;
 UCLASS()
 class TFCOE_API AAI_EnemyBase : public APaperZDCharacter, public ICombatInterface, public IHealthInterface, public IBoardControllerInterface
 {
-
 private:
 	GENERATED_BODY()
 
@@ -88,5 +87,6 @@ protected:
 	virtual int GetTimePoints() override {return 0;}
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 	virtual void NotifyNewCameraFocus(AActor* Target) override {}
+	virtual void NotifyUnitDefeated(AActor* UnitRef) override {}
 	
 };

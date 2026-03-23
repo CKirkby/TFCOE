@@ -135,7 +135,7 @@ protected:
 	bool CheckIsPlayersTurn() const;
 	bool CheckGridSlotAvailable(AActor* BoardPieceActor);
 	void OnBoardPieceClicked(AActor* BoardPiece);
-	void OnTargetCombatantClicked(AActor* Target);
+	void OnTargetCombatantClicked(const AActor* Target);
 	
 	bool CheckGridPieceActive(AActor* TargetPiece);
 	FAttackConfiguration* GetAttackConfig(FName AttackID) const;

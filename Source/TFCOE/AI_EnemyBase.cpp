@@ -41,6 +41,14 @@ void AAI_EnemyBase::MoveAI_Character(FVector Location)
 // Interface call to execute the current turn, will be called when its their turn. 
 void AAI_EnemyBase::BeginTurnPhase()
 {
+	// Checks to make sure the unit is not dead before executing its turn. This should be not called when the 
+	// unit is defeated and removed from roster but just incase. 
+	if (HealthComp->IsDead())
+	{
+		CombatData->EndActorTurn();
+		return;
+	}
+	
 	CombatData->ExecuteCurrentTurn();
 }
 
@@ -77,7 +85,6 @@ void AAI_EnemyBase::NotifyTargetOnHover()
 {
 	if (TargetIndicatorWidget)
 	{
-		UE_LOG(LogTemp, Error, TEXT("On Hover is being hit"))
 		TargetIndicatorWidget->SetHiddenInGame(false);
 	}
 }
@@ -86,7 +93,6 @@ void AAI_EnemyBase::NotifyTargetOnHoverEnd()
 {
 	if (TargetIndicatorWidget)
 	{
-		UE_LOG(LogTemp, Error, TEXT("On hover end is triggered"))
 		TargetIndicatorWidget->SetHiddenInGame(true);
 	}
 }

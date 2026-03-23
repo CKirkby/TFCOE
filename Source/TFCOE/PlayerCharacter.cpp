@@ -228,26 +228,24 @@ void APlayerCharacter::OnBoardPieceClicked(AActor* BoardPiece)
 	}
 }
 
-void APlayerCharacter::OnTargetCombatantClicked(AActor* Target)
+void APlayerCharacter::OnTargetCombatantClicked(const AActor* Target)
 {
+	if (!Target || !CurrentTargetHovered || !PlayerCombatant) return;
+	
 	// Checking if the player can initiate movement
 	if (CombatModeActivated && CurrentPlayerTurnState == EPlayerTurnState::CombatMode && CheckIsPlayersTurn() && Target)
 	{
 		if (CurrentTargetHovered == Target)
 		{
 			const FAttackConfiguration* AttackConfiguration = GetAttackConfig("Player_BasicMelee");
-			AttackController->PerformBasicAttack(Target, AttackConfiguration);
+			
+			AttackController->PerformBasicAttack(CurrentTargetHovered, AttackConfiguration);
 			
 			// Notify the blueprint of an attack performed
 			PlayerCombatant->CommenceBasicAttack(AttackConfiguration, true);
-		}
-		
-		// Resets any and all highlighted movement pieces on successful click.
-		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld())))
-		{
-			// Turns off all the systems relating to movement whilst the player is moving, turn back on, on complete. 
-			//ExitHoverMode();
-			//NotifyGridOnHoverEnd();
+			
+			// Resets
+			ExitHoverMode();
 		}
 	}
 }

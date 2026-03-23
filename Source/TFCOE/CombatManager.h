@@ -111,6 +111,8 @@ public:
 	TArray<EFactionID> OrderFactionsForTurn();
 	void ExecuteEnemyTurn();
 	void ExecuteIndividualEnemyTurn();
+	
+	void RemoveUnitFromActiveRoster(AActor* UnitToRemove);
 
 	/**
 	 * 0 -> Disengaged

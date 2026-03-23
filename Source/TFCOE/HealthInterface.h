@@ -21,6 +21,7 @@ class TFCOE_API IHealthInterface
 	virtual void SetHealth(int NewHealth) = 0;
 	virtual void TakeDamage(int IncomingDamage) = 0;
 	virtual void AddHealth(int IncomingHealth) = 0;
+	virtual void NotifyUnitDefeated(AActor* UnitRef) = 0;
 	virtual int GetHealth() = 0;
 	virtual bool IsDead() = 0;
 };

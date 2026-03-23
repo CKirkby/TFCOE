@@ -25,9 +25,8 @@ protected:
 	UPROPERTY()
 	AActor* PlayerCombatantObjRef = nullptr;
 
-public:	
-	
-	void PerformBasicAttack(AActor* Target, const FAttackConfiguration* ChosenAttack) const;
+public:
+	bool PerformBasicAttack(AActor* Target, const FAttackConfiguration* ChosenAttack) const;
 	void SetAttackerReference(AActor* Target) const;
 	
 	void SetPlayerCombatantReference(AActor* PlayerCombatant)
