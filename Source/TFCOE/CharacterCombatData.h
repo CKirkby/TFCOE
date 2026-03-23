@@ -127,6 +127,7 @@ public:
 	void OnMovementComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 	void StartMovementAlongGridPath(const TArray<FIntPoint>& Path);
 	void MoveToNextGridPos();
+	UFUNCTION(BlueprintCallable, Category = "CombatData")
 	FVector GetGridPosition(const FIntPoint& Coordinates) const;
     void GetGridAdjacentAllDir(const FIntPoint& OriginCoordinates, TArray<FIntPoint>& OutNeighbors) const;
 	
