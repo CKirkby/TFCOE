@@ -12,7 +12,6 @@
 
 class UAttackController;
 class AAI_PlayerCombatant;
-class UCharacterCombatData;
 class ACombatCameraOperator;
 class UCharacter_Inventory;
 
@@ -45,9 +44,6 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
 	void OnNewCameraTargetSelected(AActor* Target);
-	
-	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnPerformAttack();
 	
 protected:
 
@@ -114,8 +110,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UCharacter_Inventory* CharacterInventory = nullptr;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UCharacterCombatData* CombatData = nullptr;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UAttackController* AttackController = nullptr;
 	
 	// Functions
@@ -136,6 +130,7 @@ protected:
 	bool CheckGridSlotAvailable(AActor* BoardPieceActor);
 	void OnBoardPieceClicked(AActor* BoardPiece);
 	void OnTargetCombatantClicked(const AActor* Target);
+	bool CheckCanAffordAttack(const FAttackConfiguration* ChosenAttack) const;
 	
 	bool CheckGridPieceActive(AActor* TargetPiece);
 	FAttackConfiguration* GetAttackConfig(FName AttackID) const;
@@ -236,6 +231,7 @@ protected:
 	virtual int GetTimePoints() override;
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override;
 	virtual void NotifyNewCameraFocus(AActor* Target) override;
+	virtual void NotifyTimePointsExpended(const int32 Amount) override {PlayerCombatant->NotifyTimePointsExpended(Amount);}
 
 	// Unneeded Interface Implementations
 	// Player

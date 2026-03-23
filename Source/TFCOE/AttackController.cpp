@@ -15,7 +15,6 @@ UAttackController::UAttackController()
 void UAttackController::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 bool UAttackController::PerformBasicAttack(AActor* Target, const FAttackConfiguration* ChosenAttack) const
@@ -56,5 +55,3 @@ void UAttackController::SetAttackerReference(AActor* Target) const
 		CombatInterface->SetAttackerReference(Owner);
 	}
 }
-
-

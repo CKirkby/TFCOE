@@ -67,6 +67,7 @@ public:
 	virtual void BeginTurnPhase() override;
 	virtual void SetAttackerReference(AActor* AttackerReference) override;
 	virtual int GetTimePoints() override {return CombatData->GetTimePoints();}
+	virtual void NotifyTimePointsExpended(const int32 Amount) override;
 
 	// Health Interface
 	virtual void SetHealth(int NewHealth) override {HealthComp->SetHealth(NewHealth);}

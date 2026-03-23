@@ -97,3 +97,11 @@ void AAI_PlayerCombatant::SetAttackerReference(AActor* AttackerReference)
 	}
 }
 
+void AAI_PlayerCombatant::NotifyTimePointsExpended(const int32 Amount)
+{
+	if (CombatData)
+	{
+		CombatData->RemoveTimePoints(Amount);
+	}
+}
+

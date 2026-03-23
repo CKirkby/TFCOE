@@ -176,6 +176,8 @@ public:
 	{
 		return TimePoints;
 	}
+	
+	void RemoveTimePoints(const int32 Amount);
 
 	UFUNCTION(BlueprintCallable, Category = "CombatData")
 	void SetTimePoints(const int NewTimePoints)

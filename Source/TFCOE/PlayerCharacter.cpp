@@ -21,7 +21,6 @@
 APlayerCharacter::APlayerCharacter()
 {
 	CharacterInventory = CreateDefaultSubobject<UCharacter_Inventory>(TEXT("Character Inventory"));
-	CombatData = CreateDefaultSubobject<UCharacterCombatData>(TEXT("Combat Data"));
 	AttackController = CreateDefaultSubobject<UAttackController>(TEXT("Attack Controller"));
 }
 
@@ -239,15 +238,34 @@ void APlayerCharacter::OnTargetCombatantClicked(const AActor* Target)
 		{
 			const FAttackConfiguration* AttackConfiguration = GetAttackConfig("Player_BasicMelee");
 			
-			AttackController->PerformBasicAttack(CurrentTargetHovered, AttackConfiguration);
+			if (CheckCanAffordAttack(AttackConfiguration))
+			{
+				// Tells the attack controller to execute the functionality for this attack
+				AttackController->PerformBasicAttack(CurrentTargetHovered, AttackConfiguration);
+
+				// Notify that time points have been expended on the use of the attack
+				PlayerCombatant->NotifyTimePointsExpended(AttackConfiguration->AP_Cost);
 			
-			// Notify the blueprint of an attack performed
-			PlayerCombatant->CommenceBasicAttack(AttackConfiguration, true);
+				// Notify the blueprint of an attack performed so it can perform animations etc...
+				PlayerCombatant->CommenceBasicAttack(AttackConfiguration, true);
 			
-			// Resets
-			ExitHoverMode();
+				// Resets
+				ExitHoverMode();
+			}
 		}
 	}
+}
+
+bool APlayerCharacter::CheckCanAffordAttack(const FAttackConfiguration* ChosenAttack) const
+{
+	if (!ChosenAttack || !PlayerCombatant) return false;
+	
+	if (PlayerCombatant->GetTimePoints() >= ChosenAttack->AP_Cost)
+	{
+		return true;
+	}
+	
+	return false;
 }
 
 bool APlayerCharacter::CheckGridPieceActive(AActor* TargetPiece)

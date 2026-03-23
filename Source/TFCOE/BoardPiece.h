@@ -149,6 +149,7 @@ public:
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) override {}
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 	virtual void NotifyNewCameraFocus(AActor* Target) override {}
+	virtual void NotifyTimePointsExpended(const int32 Amount) override {}
 
 	// Gamemode
 	virtual void NotifyEndTurnTriggered() override {}

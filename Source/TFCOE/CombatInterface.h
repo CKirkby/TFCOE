@@ -34,6 +34,7 @@ class TFCOE_API ICombatInterface
 	virtual void SetCombatantCoordinates(FIntPoint Coordinates) = 0;
 	virtual int GetTimePoints() = 0;
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) = 0;
+	virtual void NotifyTimePointsExpended(int32 Amount) = 0;
 
 	// Gamemode
 	virtual FIntPoint GetGridCoordinates() = 0;

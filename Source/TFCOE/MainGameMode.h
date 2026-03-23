@@ -86,6 +86,7 @@ public:
 	virtual int GetTimePoints() override {return 0;}
 	virtual void SetPlayerHoverMovementModeActive(bool IsActivate) override {}
 	virtual void NotifyNewCameraFocus(AActor* Target) override {}
+	virtual void NotifyTimePointsExpended(const int32 Amount) override {}
 
 	// Gamemode
 	virtual FIntPoint GetGridCoordinates() override {return FIntPoint::ZeroValue;}

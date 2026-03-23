@@ -293,11 +293,9 @@ bool UCharacterCombatData::UpdatePlayerTurn()
 		if (FactionID == EFactionID::Player || FactionID == EFactionID::PlayerParty)
 		{
 			ResetTimePoints();
-			UE_LOG(LogTemp, Warning, TEXT("Update Player turn, returned true"))
 			return true;
 		}
-
-		UE_LOG(LogTemp, Warning, TEXT("Update player turn, returned false"))
+		
 		return false;
 	}
 	
@@ -993,6 +991,12 @@ void UCharacterCombatData::CheckToResetMovementHighlights() const
 			CombatInterfacePlayer->SetPlayerHoverMovementModeActive(true);
 		}
 	}
+}
+
+void UCharacterCombatData::RemoveTimePoints(const int32 Amount)
+{
+	// Removes the time points from the pool
+	SetTimePoints(FMath::Clamp(TimePoints - Amount, 0, MaxTimePoints));
 }
 
 bool UCharacterCombatData::FindPathUsingAStar(FIntPoint& StartCoords, const FIntPoint& TargetCoords,
