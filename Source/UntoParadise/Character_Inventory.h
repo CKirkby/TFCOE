@@ -8,7 +8,7 @@
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TFCOE_API UCharacter_Inventory : public UActorComponent
+class UNTOPARADISE_API UCharacter_Inventory : public UActorComponent
 {
 	GENERATED_BODY()
 

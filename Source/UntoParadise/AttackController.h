@@ -10,7 +10,7 @@
 struct FAttackConfiguration;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TFCOE_API UAttackController : public UActorComponent
+class UNTOPARADISE_API UAttackController : public UActorComponent
 {
 	GENERATED_BODY()
 

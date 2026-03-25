@@ -3,13 +3,13 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class TFCOETarget : TargetRules
+public class UntoParadiseEditorTarget : TargetRules
 {
-	public TFCOETarget(TargetInfo Target) : base(Target)
+	public UntoParadiseEditorTarget( TargetInfo Target) : base(Target)
 	{
-		Type = TargetType.Game;
+		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
-		ExtraModuleNames.Add("TFCOE");
+		ExtraModuleNames.Add("UntoParadise");
 	}
 }

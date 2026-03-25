@@ -9,12 +9,12 @@
 class ABoardPiece;
 
 UINTERFACE(Blueprintable)
-class TFCOE_API UEncounterInterface : public UInterface
+class UNTOPARADISE_API UEncounterInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class TFCOE_API IEncounterInterface
+class UNTOPARADISE_API IEncounterInterface
 {
 	GENERATED_BODY()
 

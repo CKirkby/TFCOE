@@ -28,7 +28,7 @@ enum class EPlayerTurnState : uint8
  * 
  */
 UCLASS()
-class TFCOE_API APlayerCharacter : public APaperZDCharacter, public ICombatInterface
+class UNTOPARADISE_API APlayerCharacter : public APaperZDCharacter, public ICombatInterface
 {
 private:
 	GENERATED_BODY()

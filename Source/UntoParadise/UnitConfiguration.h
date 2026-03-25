@@ -26,7 +26,7 @@ enum class ECombatStyle : uint8
  * 
  */
 UCLASS()
-class TFCOE_API UUnitConfiguration : public UDataAsset
+class UNTOPARADISE_API UUnitConfiguration : public UDataAsset
 {
 	GENERATED_BODY()
 

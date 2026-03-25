@@ -11,7 +11,7 @@ class ABoardPiece;
 class UBoxComponent;
 
 UCLASS()
-class TFCOE_API ACombatEncounterData : public AActor, public IEncounterInterface
+class UNTOPARADISE_API ACombatEncounterData : public AActor, public IEncounterInterface
 {
 	
 private:

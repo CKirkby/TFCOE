@@ -13,12 +13,12 @@ enum EPieceState : int;
 enum ETurnOrder : int;
 
 UINTERFACE(Blueprintable)
-class TFCOE_API UCombatInterface : public UInterface
+class UNTOPARADISE_API UCombatInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class TFCOE_API ICombatInterface
+class UNTOPARADISE_API ICombatInterface
 {
 	GENERATED_BODY()
 

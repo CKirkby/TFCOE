@@ -22,7 +22,7 @@ enum EPieceState
 };
 
 UCLASS()
-class TFCOE_API ABoardPiece : public AActor, public ICombatInterface, public IBoardControllerInterface
+class UNTOPARADISE_API ABoardPiece : public AActor, public ICombatInterface, public IBoardControllerInterface
 {
 	
 private:

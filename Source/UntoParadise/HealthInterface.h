@@ -7,12 +7,12 @@
 #include "HealthInterface.generated.h"
 
 UINTERFACE(Blueprintable)
-class TFCOE_API UHealthInterface : public UInterface
+class UNTOPARADISE_API UHealthInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class TFCOE_API IHealthInterface
+class UNTOPARADISE_API IHealthInterface
 {
 	GENERATED_BODY()
 

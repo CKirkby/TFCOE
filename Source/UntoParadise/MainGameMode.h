@@ -19,7 +19,7 @@ class UCombatManager;
  * 
  */
 UCLASS()
-class TFCOE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface, public IBoardControllerInterface, public IHealthInterface
+class UNTOPARADISE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface, public IBoardControllerInterface, public IHealthInterface
 {
 	
 private:

@@ -37,7 +37,7 @@ static bool AStarHeapCheck(const FAStarGrid& PointA, const FAStarGrid& PointB)
 }
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TFCOE_API UCharacterCombatData : public UActorComponent
+class UNTOPARADISE_API UCharacterCombatData : public UActorComponent
 {
 	GENERATED_BODY()
 

@@ -3,9 +3,9 @@
 
 using UnrealBuildTool;
 
-public class TFCOE : ModuleRules
+public class UntoParadise : ModuleRules
 {
-	public TFCOE(ReadOnlyTargetRules Target) : base(Target)
+	public UntoParadise(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	

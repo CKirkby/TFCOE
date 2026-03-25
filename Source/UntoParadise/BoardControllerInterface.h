@@ -16,12 +16,12 @@ enum class EHighlightType
  * 
  */
 UINTERFACE(Blueprintable)
-class TFCOE_API UBoardControllerInterface : public UInterface
+class UNTOPARADISE_API UBoardControllerInterface : public UInterface
 {
 	GENERATED_BODY()	
 };
 
-class TFCOE_API IBoardControllerInterface
+class UNTOPARADISE_API IBoardControllerInterface
 {
 	GENERATED_BODY()
 	

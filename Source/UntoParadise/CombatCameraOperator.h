@@ -7,7 +7,7 @@
 #include "CombatCameraOperator.generated.h"
 
 UCLASS()
-class TFCOE_API ACombatCameraOperator : public ACharacter
+class UNTOPARADISE_API ACombatCameraOperator : public ACharacter
 {
 	GENERATED_BODY()
 

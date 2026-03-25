@@ -32,7 +32,7 @@ enum ETurnOrder
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class TFCOE_API UCombatManager : public UActorComponent, public ICombatInterface
+class UNTOPARADISE_API UCombatManager : public UActorComponent, public ICombatInterface
 {
 
 private:

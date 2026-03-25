@@ -10,7 +10,7 @@
 class ABoardPiece;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class TFCOE_API UBoardManager : public UActorComponent
+class UNTOPARADISE_API UBoardManager : public UActorComponent
 {
 	GENERATED_BODY()
 

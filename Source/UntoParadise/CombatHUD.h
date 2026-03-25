@@ -19,7 +19,7 @@ enum EUI_PlayerMode
  * 
  */
 UCLASS()
-class TFCOE_API UCombatHUD : public UUserWidget
+class UNTOPARADISE_API UCombatHUD : public UUserWidget
 {
 	GENERATED_BODY()
 
