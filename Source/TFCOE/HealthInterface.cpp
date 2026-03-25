@@ -1,3 +1,3 @@
-// Created by Snow Paw Games
+// Created by Kairo Forge
 
 #include "HealthInterface.h"

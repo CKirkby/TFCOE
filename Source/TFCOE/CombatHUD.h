@@ -1,9 +1,8 @@
-// Created by Snow Paw Games
+// Created by Kairo Forge
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlayerCharacter.h"
 #include "Blueprint/UserWidget.h"
 #include "CombatHUD.generated.h"
 

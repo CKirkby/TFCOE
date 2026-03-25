@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿// Created by Kairo Forge
+#pragma once
 
 #include "CoreMinimal.h"
 
