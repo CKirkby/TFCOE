@@ -161,6 +161,10 @@ void UCombatManager::ExecuteTurnFunctionality(ETurnOrder NewTurn)
 		if (CombatInterfacePlayer)
 		{
 			CombatInterfacePlayer->BeginTurnPhase();
+			
+			// Sets camera focus to this new target on their turn
+			CombatInterfacePlayer->NotifyNewCameraFocus(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			
 		}
 		
 		// Tells blueprints that a new turn has begun

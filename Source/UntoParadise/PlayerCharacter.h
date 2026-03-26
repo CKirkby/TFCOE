@@ -43,7 +43,7 @@ public:
 	void OnSuccessfulMovementTriggered();
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Events")
-	void OnNewCameraTargetSelected(AActor* Target);
+	void  OnNewCameraTargetSelected(AActor* Target);
 	
 protected:
 
@@ -94,6 +94,9 @@ protected:
 	UPROPERTY() AActor* CurrentGridPieceHovered = nullptr;
 	UPROPERTY() AActor* CurrentTargetHovered = nullptr;
 	
+	// Camera References 
+	UPROPERTY() AActor* CurrentCameraAttachedActor = nullptr;
+	
 	// Combat functionality
 	bool InitialTurn = true;
 	bool HoverModeActive = false;
@@ -134,6 +137,10 @@ protected:
 	
 	bool CheckGridPieceActive(AActor* TargetPiece);
 	FAttackConfiguration* GetAttackConfig(FName AttackID) const;
+	
+	// Camera functions
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void AttachCameraToTarget(AActor* Target);
 	
 	// Hover Functionality
 	void EnterHoverMode();

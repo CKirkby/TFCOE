@@ -124,6 +124,12 @@ void APlayerCharacter::MoveTrigger(const FInputActionValue& Value)
 		{
 			CameraOperator->AddMovementInput(FVector(1, 0, 0), MovementVector.X);
 			CameraOperator->AddMovementInput(FVector(0, 1, 0), MovementVector.Y);
+			
+			if (CurrentCameraAttachedActor)
+			{
+				CameraOperator->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+				CurrentCameraAttachedActor = nullptr;
+			}
 		}
 	}
 	
@@ -303,6 +309,22 @@ FAttackConfiguration* APlayerCharacter::GetAttackConfig(const FName AttackID) co
 	}
 	
 	return nullptr;
+}
+
+void APlayerCharacter::AttachCameraToTarget(AActor* Target)
+{
+	if (!Target) return;
+
+	const FAttachmentTransformRules AttachRules
+	(
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::KeepRelative,
+		false
+	);
+	
+	CurrentCameraAttachedActor = Target;
+	CameraOperator->AttachToActor(Target, AttachRules);
 }
 
 void APlayerCharacter::EnterHoverMode()
@@ -829,5 +851,13 @@ void APlayerCharacter::NotifyNewCameraFocus(AActor* Target)
 {
 	if (!CameraOperator || !Target) return;
 	
+	if (Target == this && GetCombatModeActivated())
+	{
+		// Moves the camera to player.
+		OnNewCameraTargetSelected(PlayerCombatant);
+		return;
+	}
+	
+	// Moves camera and sets attachment to target to watch them move
 	OnNewCameraTargetSelected(Target);
 }
