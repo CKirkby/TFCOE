@@ -801,7 +801,7 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 		
 		bool AttackHitSuccess = false; // Reports whether the attack successfully hit
 		float AttackHitChance = ChosenAttack->BaseHitChance / 100; // Converts percent to decimal (80 - 0.8)
-		
+
 		if (UKismetMathLibrary::RandomBoolWithWeight(AttackHitChance))
 		{
 			// Attack was successful, process functionality. 
@@ -815,7 +815,8 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 			// Sets the attacker reference of the target to this attacker
 			SetAttackerReference();
 		}
-		
+
+		UE_LOG(LogTemp, Error, TEXT("Now calling the broadcast for nudging the sprite"))
 		OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
 		EndActorTurn();
 		
@@ -1128,16 +1129,7 @@ void UCharacterCombatData::OnMovementComplete(FAIRequestID RequestID, EPathFollo
 	// If movement for some reason fails, end the turn. 
 	if (Result != EPathFollowingResult::Success)
 	{
-		// Checks to make sure that it isn't a controllable character.
-		if (UnitCombatConfiguration && UnitCombatConfiguration->FactionID == EFactionID::Player || 
-			UnitCombatConfiguration->FactionID == EFactionID::PlayerParty)
-		{
-			CheckToResetMovementHighlights();
-			return;
-		}
-		
-		// Execute non controllable characters code 
-		//EndActorTurn();
+		EndActorTurn();
 		return;
 	}
 	
@@ -1156,6 +1148,7 @@ void UCharacterCombatData::StartMovementAlongGridPath(const TArray<FIntPoint>& P
 
 void UCharacterCombatData::MoveToNextGridPos()
 {
+	// This calls when it has reached its path and wishes to do further functionality
 	if (TurnPathIndex >= TurnPath.Num())
 	{
 		if (UnitCombatConfiguration->FactionID == EFactionID::Player || UnitCombatConfiguration->FactionID == EFactionID::PlayerParty)
@@ -1163,31 +1156,25 @@ void UCharacterCombatData::MoveToNextGridPos()
 			CheckToResetMovementHighlights();
 			return;
 		}
-		
-		if (!CurrentAttack)
-		{
-			return;
-		}
-		
-		// Attack;
-		if (CurrentAttack && CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
-		{
-			// Attack
-			UE_LOG(LogTemp, Error, TEXT("Can Attack this turn"))
-			PerformAttack(CurrentAttack);
-			EndActorTurn(); // Testing
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Cannot Attack this turn, ending turn"))
-			EndActorTurn();
-		}
 
 		// Makes sure that when the AI finishes its movement phase, it is looking at the target.
 		if (CurrentTarget)
 		{
 			GetOwner()->SetActorRotation(UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(),
 			CurrentTarget->GetActorLocation()));
+		}
+		
+		// Execute non controllable characters code 
+		// Attack;
+		if (CurrentAttack && CanAttackFromPosition(CurrentAttack, CurrentGridCoordinates, GetCurrentTargetCoords(CurrentTarget)))
+		{
+			// Attack
+			PerformAttack(CurrentAttack);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Cannot Attack this turn, ending turn"))
+			EndActorTurn();
 		}
 		
 		return;

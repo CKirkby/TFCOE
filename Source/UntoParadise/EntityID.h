@@ -22,6 +22,16 @@ enum class EEntityID : uint8
 	BlackLine_Bishop_Friendly UMETA(DisplayName = "BlackLine | Bishop F"),
 	BlackLine_Queen UMETA(DisplayName = "BlackLine | Queen"),
 	BlackLine_King UMETA(DisplayName = "BlackLine | King"),
+	
+	Forlorn_Grunt UMETA(DisplayName = "Forlorn | Grunt"),
+	Forlorn_Elite UMETA(DisplayName = "Forlorn | Elite"),
+	Forlorn_Lieutenant UMETA(DisplayName = "Forlorn | Lieutenant"),
+	Forlorn_Leader UMETA(DisplayName = "Forlorn | Leader"),
+	
+	Empire_Grunt UMETA(DisplayName = "Empire | Grunt"),
+	Empire_Elite UMETA(DisplayName = "Empire | Elite"),
+	Empire_Lieutenant UMETA(DisplayName = "Empire | Lieutenant"),
+	Empire_Leader UMETA(DisplayName = "Empire | Leader"),
 
 	Uninitialized_ID UMETA(DisplayName = "Uninitialized")
 };

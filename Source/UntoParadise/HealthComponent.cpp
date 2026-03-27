@@ -51,6 +51,7 @@ void UHealthComponent::DeathCheck() const
 		if (AActor* Owner = GetOwner())
 		{
 			HI_Gamemode->NotifyUnitDefeated(Owner);
+			GetOwner()->SetActorHiddenInGame(true);
 		}
 	}
 }
