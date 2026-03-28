@@ -1,4 +1,4 @@
-﻿// Created by Snow Paw Games
+﻿// Created by Kairo Forge
 
 #pragma once
 

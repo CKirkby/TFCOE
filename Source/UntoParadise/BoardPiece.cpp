@@ -1,4 +1,4 @@
-// Created by Snow Paw Games
+// Created by Kairo Forge
 
 #include "BoardPiece.h"
 #include "Components/PrimitiveComponent.h"
