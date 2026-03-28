@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FactionID.h"
 #include "AttackConfiguration.generated.h"
 
 UENUM(BlueprintType)
@@ -20,6 +21,35 @@ enum class EAttackRangeType : uint8
 	Both UMETA(DisplayName = "Both")
 };
 
+UENUM(BlueprintType)
+enum class EAttackFormat : uint8
+{
+	Regular UMETA(DisplayName = "Regular"),
+	Special UMETA(DisplayName = "Special")
+};
+
+UENUM(BlueprintType)
+enum class EDirectionalFacing : uint8
+{
+	Any UMETA(DisplayName = "Any Direction"),
+	Up UMETA(DisplayName = "Up"),
+	Down UMETA(DisplayName = "Down"),
+	Left UMETA(DisplayName = "Left"),
+	Right UMETA(DisplayName = "Right")
+};
+
+USTRUCT(BlueprintType)
+struct FAttackCoordination
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EDirectionalFacing Direction = EDirectionalFacing::Any;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FIntPoint> Positions = {};
+};
+
 USTRUCT(BlueprintType)
 struct FAttackConfiguration
 {
@@ -30,6 +60,9 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	EAttackType AttackType = EAttackType::Close;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	EAttackFormat AttackFormat = EAttackFormat::Regular;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	bool RequiresAlignment = true;
@@ -49,11 +82,18 @@ struct FAttackConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	int AttackCooldown = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (ClampMin = "1", ClampMax = "100"))
 	float BaseHitChance = 80.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	int AP_Cost = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	int ActivationTime = 0;
+	
+	// The attack coordinates to be determined. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	TArray<FAttackCoordination> ImpactCoordination = {};
 	
 	
 	//Attack Grid coords. Direction based? Tarray intpoints?
