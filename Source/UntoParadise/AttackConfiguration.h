@@ -90,12 +90,12 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	int ActivationTime = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	bool OrientToTarget = false;
 	
 	// The attack coordinates to be determined. 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	TArray<FAttackCoordination> ImpactCoordination = {};
-	
-	
-	//Attack Grid coords. Direction based? Tarray intpoints?
 	
 };

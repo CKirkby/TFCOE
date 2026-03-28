@@ -36,11 +36,17 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	void LerpActorLocation(AActor* TargetActor, FVector PointA, FVector PointB, float Alpha);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage")
+	TSoftClassPtr<UCameraShakeBase> OnHitCameraShake = nullptr;
+
+
 public:
 
 	void InitialiseHealth(const int NewHealth);
 	void TakeDamage(const int Damage);
 	void DeathCheck() const;
+	void PlayOnHitCameraShake() const;
+	void OnHitShakeAsyncLoad() const;
 
 	// Getter and Setter //
 
