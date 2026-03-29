@@ -902,8 +902,7 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 			// Sets the attacker reference of the target to this attacker
 			SetAttackerReference();
 		}
-
-		UE_LOG(LogTemp, Error, TEXT("Now calling the broadcast for nudging the sprite"))
+		
 		OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
 		EndActorTurn();
 		
