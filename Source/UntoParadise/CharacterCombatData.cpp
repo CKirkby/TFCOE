@@ -27,6 +27,9 @@ void UCharacterCombatData::BeginPlay()
 	// Stores a reference to the game mode interface and player
 	CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	
+	// Stores the units attacks for use.
+	InitialiseAttackCaching();
 }
 
 void UCharacterCombatData::ExecuteCurrentTurn()
@@ -39,6 +42,10 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	
   	UE_LOG(LogTemp, Error, TEXT("<-- New Turn Start -->"));
 	
+	// Reduces any cooldowns the unit may have active
+	UpdateCooldownValues();
+	
+	// Begins the turn phase
 	StepOne_SelectTarget();
 }
 
@@ -353,6 +360,8 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 
 	// Gets the targets coordinates. 
 	const FIntPoint TargetCoordinates = GetCurrentTargetCoords(TargetActor);
+	
+	// CHECK IF SPECIAL ATTACK AVAILABLE HERE?
 
 	// Gets these actors preferred combat style. 
 	const ECombatStyle PreferredCombatStyle = UnitCombatConfiguration->PreferredCombatStyle;
@@ -415,6 +424,84 @@ FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType 
 	// Choose any attack.
 	const int32 RandIndex = FMath::RandRange(0, CachedAttacks.Num() - 1);
 	return &CachedAttacks[RandIndex];
+}
+
+void UCharacterCombatData::InitialiseAttackCaching()
+{
+	if (!UnitCombatConfiguration) return;
+	if (UnitCombatConfiguration->AttackConfigurations.IsEmpty()) return;
+	
+	for (FAttackConfiguration& AttackConfig : UnitCombatConfiguration->AttackConfigurations)
+	{
+		switch (AttackConfig.AttackFormat)
+		{
+		case EAttackFormat::Regular:
+			RegularAttacks.Add(AttackConfig);
+			break;
+			
+		case EAttackFormat::Special:
+			SpecialAttacks.Add(AttackConfig);
+			break;
+		}
+	}
+}
+
+bool UCharacterCombatData::IsSpecialAttackAvailable()
+{
+	if (SpecialAttacks.IsEmpty()) return false;
+
+	int32 AvailableAttacks = SpecialAttacks.Num();
+	
+	// Checks if the special attacks are on cooldown and if they are we will reduce the amount of available attacks.
+	for (auto& Attack : SpecialAttacks)
+	{
+		if (IsAttackOnCooldown(Attack))
+		{
+			AvailableAttacks--;
+		}
+	}
+	
+	// Return whether available attacks are left or not.
+	return AvailableAttacks != 0;
+}
+
+bool UCharacterCombatData::IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration)
+{
+	if (AttackCooldowns.IsEmpty()) return false;
+
+	const FName AttackID = AttackConfiguration.AttackID;
+	
+	if (AttackCooldowns.Contains(AttackID))
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+void UCharacterCombatData::AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration)
+{
+	AttackCooldowns.FindOrAdd(AttackConfiguration.AttackID, AttackConfiguration.AttackCooldown);
+}
+
+void UCharacterCombatData::UpdateCooldownValues()
+{
+	if (AttackCooldowns.IsEmpty()) return;
+
+	// Iterates through the map to make sure the cooldown is reduced or remvoed
+	for (auto CooldownIndex = AttackCooldowns.CreateIterator(); CooldownIndex; ++CooldownIndex)
+	{
+		// Reduces the cooldown value
+		CooldownIndex.Value()--;
+
+		// If the cooldown value has reached zero or somehow below, remove it, it is no longer on cooldown.
+		if (CooldownIndex.Value() <= 0)
+		{
+			CooldownIndex.RemoveCurrent();
+		}
+	}
+	
+	AttackCooldowns.Compact();
 }
 
 TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)

@@ -87,6 +87,11 @@ protected:
 	// Interfaces
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
 	ICombatInterface* CombatInterfacePlayer = nullptr;
+	
+	// Attack configurations and cooldowns
+	TArray<FAttackConfiguration> RegularAttacks = {};
+	TArray<FAttackConfiguration> SpecialAttacks = {};
+	TMap<FName, int32> AttackCooldowns = {};
 
 	
 	virtual void BeginPlay() override;
@@ -117,6 +122,13 @@ public:
 	// Stores a chosen attack.
 	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor);
 	FAttackConfiguration* GetAttackFromType(EAttackType AttackType) const;
+	
+	// Attack and cooldown.
+	void InitialiseAttackCaching();
+	bool IsSpecialAttackAvailable();
+	bool IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration);
+	void AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration);
+	void UpdateCooldownValues();
 
 	// AI movement functions
 	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack);

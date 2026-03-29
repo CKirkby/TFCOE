@@ -38,6 +38,13 @@ enum class EDirectionalFacing : uint8
 	Right UMETA(DisplayName = "Right")
 };
 
+UENUM()
+enum class EAttackOriginPoint : uint8
+{
+	Self UMETA(DisplayName = "Self"),
+	Target UMETA(DisplayName = "Target")
+};
+
 USTRUCT(BlueprintType)
 struct FAttackCoordination
 {
@@ -90,9 +97,12 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	int ActivationTime = 0;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
-	bool OrientToTarget = false;
+	EAttackOriginPoint AttackOrigin = EAttackOriginPoint::Self;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special && AttackOrigin == EAttackOriginPoint::Self", EditConditionHides))
+	bool OrientToTarget = true;
 	
 	// The attack coordinates to be determined. 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
