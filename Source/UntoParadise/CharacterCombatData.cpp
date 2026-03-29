@@ -86,6 +86,8 @@ void UCharacterCombatData::StepTwo_SelectAttack()
 		
 		// Continue the sequence. 
 		StepThree_Movement();
+		
+		// IF IT IS A SPECIAL ATTACK , CHECK IF IT NEEDS MOVEMENT, OTHER WISE SKIP[ AND PEROFRM SPECIAL ATTACK FUNCTIUONALITY. 
 	});
 }
 
@@ -352,7 +354,7 @@ bool UCharacterCombatData::CheckShouldMove(const FAttackConfiguration* ChosenAtt
 
 FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetActor)
 {
-	if (!TargetActor || !UnitCombatConfiguration || UnitCombatConfiguration->AttackConfigurations.IsEmpty())
+	if (!TargetActor || !UnitCombatConfiguration || RegularAttacks.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data: Choose Attack - Reference fail"));
 		return nullptr;
@@ -360,12 +362,11 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 
 	// Gets the targets coordinates. 
 	const FIntPoint TargetCoordinates = GetCurrentTargetCoords(TargetActor);
-	
-	// CHECK IF SPECIAL ATTACK AVAILABLE HERE?
 
 	// Gets these actors preferred combat style. 
 	const ECombatStyle PreferredCombatStyle = UnitCombatConfiguration->PreferredCombatStyle;
 	const int32 DistToTarget = GetGridDistanceAllDir(CurrentGridCoordinates, TargetCoordinates);
+	bool SpecialAvailable = IsSpecialAttackAvailable();
 
 	// Creates an attack type to chose based on distance. If this actor is far, use ranged, if not move close. 
 	EAttackType TargetAttackToUse = (DistToTarget > 1) ? EAttackType::Ranged : EAttackType::Close;
@@ -387,26 +388,27 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 		break;
 	}
 
+	if (SpecialAvailable)
+	{
+		// Get special attack to use. It will be a chance to use it
+	}
+	
 	// After that, it will get attempt to get a random attack from the priority list, if there is no attacks it will just choose at random.
 	return GetAttackFromType(TargetAttackToUse);
 }
 
-FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType AttackType) const
+FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType AttackType)
 {
-	if (UnitCombatConfiguration->AttackConfigurations.IsEmpty())
+	if (RegularAttacks.IsEmpty())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Combat Data - Get Attack from type - No attack configurations available"))
 		return nullptr;
 	}
-	
-	// Caches the attacks this actor has to sort through. 
-	TArray<FAttackConfiguration>& CachedAttacks = UnitCombatConfiguration->AttackConfigurations;
-	if (CachedAttacks.IsEmpty()) return nullptr;
 
 	TArray<FAttackConfiguration*> DesiredAttacks;
 
 	// Sorts through the attacks to add the priority attacks to be returned. 
-	for (FAttackConfiguration& Attack : CachedAttacks)
+	for (FAttackConfiguration& Attack : RegularAttacks)
 	{
 		if (Attack.AttackType == AttackType)
 		{
@@ -422,8 +424,39 @@ FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType 
 	}
 
 	// Choose any attack.
-	const int32 RandIndex = FMath::RandRange(0, CachedAttacks.Num() - 1);
-	return &CachedAttacks[RandIndex];
+	const int32 RandIndex = FMath::RandRange(0, RegularAttacks.Num() - 1);
+	return &RegularAttacks[RandIndex];
+}
+
+FAttackConfiguration* UCharacterCombatData::GetSpecialAttackFromType(const EAttackType AttackType, int32 DistToTarget)
+{
+	// If special attack exists 
+	// I want to 
+	
+	if (SpecialAttacks.IsEmpty()) return nullptr;
+	
+	// To store the special attacks we will wish to use. 
+	TArray<FAttackConfiguration*> DesiredAttacks;
+
+	// Loops through the attacks to see if there are any with the preferred type that it wants to use.
+	for (FAttackConfiguration& Attack : SpecialAttacks)
+	{
+		if (DistToTarget <= Attack.MaxAttackRange)
+		{
+			
+		}
+	}
+	
+	// If it's not empty, that means preferred attacks do exist and uses them as a priority.
+	if (!DesiredAttacks.IsEmpty())
+	{
+		const int32 RandIndex = FMath::RandRange(0, DesiredAttacks.Num() - 1);
+		return DesiredAttacks[RandIndex];
+	}
+	
+	// Else just choose one from their list
+	const int32 RandIndex = FMath::RandRange(0, RegularAttacks.Num() - 1);
+	return &RegularAttacks[RandIndex];
 }
 
 void UCharacterCombatData::InitialiseAttackCaching()

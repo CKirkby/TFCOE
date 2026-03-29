@@ -121,7 +121,8 @@ public:
 
 	// Stores a chosen attack.
 	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor);
-	FAttackConfiguration* GetAttackFromType(EAttackType AttackType) const;
+	FAttackConfiguration* GetAttackFromType(EAttackType AttackType);
+	FAttackConfiguration* GetSpecialAttackFromType(EAttackType AttackType, int32 DistToTarget);
 	
 	// Attack and cooldown.
 	void InitialiseAttackCaching();

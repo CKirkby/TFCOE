@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FactionID.h"
 #include "AttackConfiguration.generated.h"
 
 UENUM(BlueprintType)
 enum class EAttackType : uint8
 {
 	Close UMETA(DisplayName = "Close Combat"),
-	Ranged UMETA(DisplayName = "Ranged Combat")
+	Ranged UMETA(DisplayName = "Ranged Combat"),
 };
 
 UENUM(BlueprintType)
