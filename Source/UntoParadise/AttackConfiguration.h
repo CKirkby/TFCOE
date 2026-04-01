@@ -69,6 +69,9 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	EAttackFormat AttackFormat = EAttackFormat::Regular;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	float ChanceToUseAvailableSpecial = 85.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	bool RequiresAlignment = true;
@@ -93,7 +96,9 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	int AP_Cost = 0;
-
+	
+	// Special Attack settings \\
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	int ActivationTime = 0;
 	

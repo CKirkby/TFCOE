@@ -122,7 +122,7 @@ public:
 	// Stores a chosen attack.
 	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor);
 	FAttackConfiguration* GetAttackFromType(EAttackType AttackType);
-	FAttackConfiguration* GetSpecialAttackFromType(EAttackType AttackType, int32 DistToTarget);
+	FAttackConfiguration* GetRandomSpecialAttack();
 	
 	// Attack and cooldown.
 	void InitialiseAttackCaching();
@@ -130,6 +130,7 @@ public:
 	bool IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration);
 	void AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration);
 	void UpdateCooldownValues();
+	void ProcessSpecialAttackFunctionality(const FAttackConfiguration* ChosenAttack);
 
 	// AI movement functions
 	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack);
@@ -170,6 +171,8 @@ public:
 	bool IsGridPieceActive(const FIntPoint GridCoordinates) const;
 	
 	void CheckToResetMovementHighlights() const;
+	
+	void RotateToTarget() const;
 	
 	// Getter and Setter //
 	

@@ -84,10 +84,19 @@ void UCharacterCombatData::StepTwo_SelectAttack()
 		
 		UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
 		
+		// Checks if the attack is a special attack, then we will process the relevant functionality if it needs to be.
+		if (CurrentAttack->AttackFormat == EAttackFormat::Special)
+		{
+			// Check if the attack is within range and if so process the special attack otherwise move
+			int DistToTarget = CurrentAttack->MaxAttackRange;
+			
+			//check
+			
+			// if dist is greater or equal to min dist or less or equal to max dist do the code or movement instead
+		}
+		
 		// Continue the sequence. 
 		StepThree_Movement();
-		
-		// IF IT IS A SPECIAL ATTACK , CHECK IF IT NEEDS MOVEMENT, OTHER WISE SKIP[ AND PEROFRM SPECIAL ATTACK FUNCTIUONALITY. 
 	});
 }
 
@@ -366,7 +375,20 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 	// Gets these actors preferred combat style. 
 	const ECombatStyle PreferredCombatStyle = UnitCombatConfiguration->PreferredCombatStyle;
 	const int32 DistToTarget = GetGridDistanceAllDir(CurrentGridCoordinates, TargetCoordinates);
-	bool SpecialAvailable = IsSpecialAttackAvailable();
+	
+	// Checks if the special attack can be used. Makes sure they have one h
+	if (IsSpecialAttackAvailable())
+	{
+		// Get special attack to use. It will be a chance to use it
+		if (FAttackConfiguration* ChosenSpecial = GetRandomSpecialAttack())
+		{
+			// Sees the chance to use this special. 
+			if (FMath::FRand() < ChosenSpecial->ChanceToUseAvailableSpecial / 100)
+			{
+				return ChosenSpecial;
+			}
+		}
+	}
 
 	// Creates an attack type to chose based on distance. If this actor is far, use ranged, if not move close. 
 	EAttackType TargetAttackToUse = (DistToTarget > 1) ? EAttackType::Ranged : EAttackType::Close;
@@ -386,11 +408,6 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 		// 90% Chance to be a ranged attack
 		if (FMath::FRand() < 0.90f) TargetAttackToUse = EAttackType::Ranged;
 		break;
-	}
-
-	if (SpecialAvailable)
-	{
-		// Get special attack to use. It will be a chance to use it
 	}
 	
 	// After that, it will get attempt to get a random attack from the priority list, if there is no attacks it will just choose at random.
@@ -428,33 +445,10 @@ FAttackConfiguration* UCharacterCombatData::GetAttackFromType(const EAttackType 
 	return &RegularAttacks[RandIndex];
 }
 
-FAttackConfiguration* UCharacterCombatData::GetSpecialAttackFromType(const EAttackType AttackType, int32 DistToTarget)
+FAttackConfiguration* UCharacterCombatData::GetRandomSpecialAttack()
 {
-	// If special attack exists 
-	// I want to 
-	
 	if (SpecialAttacks.IsEmpty()) return nullptr;
 	
-	// To store the special attacks we will wish to use. 
-	TArray<FAttackConfiguration*> DesiredAttacks;
-
-	// Loops through the attacks to see if there are any with the preferred type that it wants to use.
-	for (FAttackConfiguration& Attack : SpecialAttacks)
-	{
-		if (DistToTarget <= Attack.MaxAttackRange)
-		{
-			
-		}
-	}
-	
-	// If it's not empty, that means preferred attacks do exist and uses them as a priority.
-	if (!DesiredAttacks.IsEmpty())
-	{
-		const int32 RandIndex = FMath::RandRange(0, DesiredAttacks.Num() - 1);
-		return DesiredAttacks[RandIndex];
-	}
-	
-	// Else just choose one from their list
 	const int32 RandIndex = FMath::RandRange(0, RegularAttacks.Num() - 1);
 	return &RegularAttacks[RandIndex];
 }
@@ -535,6 +529,18 @@ void UCharacterCombatData::UpdateCooldownValues()
 	}
 	
 	AttackCooldowns.Compact();
+}
+
+void UCharacterCombatData::ProcessSpecialAttackFunctionality(const FAttackConfiguration* ChosenAttack)
+{
+	if (!ChosenAttack) return;
+	
+	//Notify game mode of attack to highlight and prime attack coordinates. 
+	// Orient to target
+	
+	// Set activation time
+	//
+	
 }
 
 TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)
@@ -907,10 +913,6 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 		return;
 	}
 	
-	// Sets the owners rotation to be that of the target. 
-	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(), CurrentTarget->GetActorLocation());
-	GetOwner()->SetActorRotation(TargetRotation);
-	
 	DelayLambda(AttackDelay, [this, ChosenAttack]()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Attack Commencing"));
@@ -1111,6 +1113,15 @@ void UCharacterCombatData::CheckToResetMovementHighlights() const
 			CombatInterfacePlayer->SetPlayerHoverMovementModeActive(true);
 		}
 	}
+}
+
+void UCharacterCombatData::RotateToTarget() const
+{
+	if (!CurrentTarget) return;
+	
+	// Sets the owners rotation to be that of the target. 
+	const FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(GetOwner()->GetActorLocation(), CurrentTarget->GetActorLocation());
+	GetOwner()->SetActorRotation(TargetRotation);
 }
 
 void UCharacterCombatData::RemoveTimePoints(const int32 Amount)
