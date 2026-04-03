@@ -92,6 +92,7 @@ protected:
 	TArray<FAttackConfiguration> RegularAttacks = {};
 	TArray<FAttackConfiguration> SpecialAttacks = {};
 	TMap<FName, int32> AttackCooldowns = {};
+	bool SpecialPrimed = false;
 
 	
 	virtual void BeginPlay() override;
@@ -163,6 +164,7 @@ public:
 	// Combat Functionality
 	bool CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB);
 	void PerformAttack(const FAttackConfiguration* ChosenAttack);
+	void PrimeSpecialAttack(const FAttackConfiguration* ChosenAttack);
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
 	void SetAttackerReference();
 

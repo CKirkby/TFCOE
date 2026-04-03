@@ -84,17 +84,6 @@ void UCharacterCombatData::StepTwo_SelectAttack()
 		
 		UE_LOG(LogTemp, Error, TEXT("Chosen Attack: %s"), *CurrentAttack->AttackID.ToString());
 		
-		// Checks if the attack is a special attack, then we will process the relevant functionality if it needs to be.
-		if (CurrentAttack->AttackFormat == EAttackFormat::Special)
-		{
-			// Check if the attack is within range and if so process the special attack otherwise move
-			int DistToTarget = CurrentAttack->MaxAttackRange;
-			
-			//check
-			
-			// if dist is greater or equal to min dist or less or equal to max dist do the code or movement instead
-		}
-		
 		// Continue the sequence. 
 		StepThree_Movement();
 	});
@@ -383,7 +372,7 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 		if (FAttackConfiguration* ChosenSpecial = GetRandomSpecialAttack())
 		{
 			// Sees the chance to use this special. 
-			if (FMath::FRand() < ChosenSpecial->ChanceToUseAvailableSpecial / 100)
+			if (FMath::FRand() < ChosenSpecial->ChanceToUseAvailableSpecial / 100.0f)
 			{
 				return ChosenSpecial;
 			}
@@ -449,8 +438,8 @@ FAttackConfiguration* UCharacterCombatData::GetRandomSpecialAttack()
 {
 	if (SpecialAttacks.IsEmpty()) return nullptr;
 	
-	const int32 RandIndex = FMath::RandRange(0, RegularAttacks.Num() - 1);
-	return &RegularAttacks[RandIndex];
+	const int32 RandIndex = FMath::RandRange(0, SpecialAttacks.Num() - 1);
+	return &SpecialAttacks[RandIndex];
 }
 
 void UCharacterCombatData::InitialiseAttackCaching()
@@ -917,6 +906,13 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 	{
 		UE_LOG(LogTemp, Error, TEXT("Attack Commencing"));
 		
+		// If attack is a special, prime it. 
+		if (CurrentAttack->AttackFormat == EAttackFormat::Special)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Priming Special Attack"))
+			PrimeSpecialAttack(CurrentAttack);
+		}
+		
 		// Sets the Targets rotation to face the attacker
 		FRotator Target_TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentTarget->GetActorLocation(), GetOwner()->GetActorLocation());
 		CurrentTarget->SetActorRotation(Target_TargetRotation);
@@ -943,6 +939,11 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 		
 		// TODO - Add cooldown functionality. 
 	});
+}
+
+void UCharacterCombatData::PrimeSpecialAttack(const FAttackConfiguration* ChosenAttack)
+{
+	
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
