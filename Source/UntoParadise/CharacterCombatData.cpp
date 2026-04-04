@@ -45,6 +45,17 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	// Reduces any cooldowns the unit may have active
 	UpdateCooldownValues();
 	
+	// Checks if there is a special attack waiting to go. If so and it is time execute the attack or reduce turn counter
+	if (SpecialPrimed)
+	{
+		// Check if the activation turn is now zero or reduce and move on. !!!!!
+		ExecuteSpecialAttack();
+		
+		
+		
+		return;
+	}
+	
 	// Begins the turn phase
 	StepOne_SelectTarget();
 }
@@ -520,18 +531,6 @@ void UCharacterCombatData::UpdateCooldownValues()
 	AttackCooldowns.Compact();
 }
 
-void UCharacterCombatData::ProcessSpecialAttackFunctionality(const FAttackConfiguration* ChosenAttack)
-{
-	if (!ChosenAttack) return;
-	
-	//Notify game mode of attack to highlight and prime attack coordinates. 
-	// Orient to target
-	
-	// Set activation time
-	//
-	
-}
-
 TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)
 {
 	TArray<FCandidatePathway> FailsafeStruct = {{CurrentGridCoordinates, 0}};
@@ -911,11 +910,11 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 		{
 			UE_LOG(LogTemp, Error, TEXT("Priming Special Attack"))
 			PrimeSpecialAttack(CurrentAttack);
+			return;
 		}
 		
 		// Sets the Targets rotation to face the attacker
-		FRotator Target_TargetRotation = UKismetMathLibrary::FindLookAtRotation(CurrentTarget->GetActorLocation(), GetOwner()->GetActorLocation());
-		CurrentTarget->SetActorRotation(Target_TargetRotation);
+		RotateToTarget();
 		
 		bool AttackHitSuccess = false; // Reports whether the attack successfully hit
 		float AttackHitChance = ChosenAttack->BaseHitChance / 100; // Converts percent to decimal (80 - 0.8)
@@ -943,7 +942,47 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 
 void UCharacterCombatData::PrimeSpecialAttack(const FAttackConfiguration* ChosenAttack)
 {
+	if (!ChosenAttack) return;
 	
+	FIntPoint OriginCoordinates;
+
+	switch (ChosenAttack->AttackOrigin)
+	{
+		
+	case EAttackOriginPoint::Self:
+		// Attack will originate from itself
+		OriginCoordinates = CurrentGridCoordinates;
+		break;
+		
+	case EAttackOriginPoint::Target:
+		// Attack will originate from target
+		if (CurrentTarget)
+		{
+			if (ICombatInterface* CBI = Cast<ICombatInterface>(CurrentTarget))
+			{
+				OriginCoordinates = CBI->GetGridCoordinates();
+				break;
+			}
+		}
+		
+		OriginCoordinates = CurrentGridCoordinates;
+		break;
+	}
+	
+	// If the unit should face the target when they are priming, do so. 
+	if (ChosenAttack->OrientToTarget)
+	{
+		RotateToTarget();
+	}
+	
+	
+	SpecialPrimed = true;
+}
+
+void UCharacterCombatData::ExecuteSpecialAttack()
+{
+	
+	SpecialPrimed = false;
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)

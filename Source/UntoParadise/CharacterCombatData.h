@@ -131,7 +131,6 @@ public:
 	bool IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration);
 	void AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration);
 	void UpdateCooldownValues();
-	void ProcessSpecialAttackFunctionality(const FAttackConfiguration* ChosenAttack);
 
 	// AI movement functions
 	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack);
@@ -165,6 +164,7 @@ public:
 	bool CanAttackFromPosition(FAttackConfiguration* ChosenAttack, const FIntPoint& PointA, const FIntPoint& PointB);
 	void PerformAttack(const FAttackConfiguration* ChosenAttack);
 	void PrimeSpecialAttack(const FAttackConfiguration* ChosenAttack);
+	void ExecuteSpecialAttack();
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
 	void SetAttackerReference();
 
