@@ -26,6 +26,7 @@ void UCharacterCombatData::BeginPlay()
 
 	// Stores a reference to the game mode interface and player
 	CombatInterfaceGamemode = Cast<ICombatInterface>(UGameplayStatics::GetGameMode(GetWorld()));
+	BoardInterfaceGamemode = Cast<IBoardControllerInterface>(UGameplayStatics::GetGameMode(GetWorld()));
 	CombatInterfacePlayer = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	
 	// Stores the units attacks for use.
@@ -379,7 +380,7 @@ FAttackConfiguration* UCharacterCombatData::ChooseAttackForTurn(AActor* TargetAc
 	// Checks if the special attack can be used. Makes sure they have one h
 	if (IsSpecialAttackAvailable())
 	{
-		// Get special attack to use. It will be a chance to use it
+		// Get special attack to use. It will be a chance to use the attack
 		if (FAttackConfiguration* ChosenSpecial = GetRandomSpecialAttack())
 		{
 			// Sees the chance to use this special. 
@@ -910,6 +911,7 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 		{
 			UE_LOG(LogTemp, Error, TEXT("Priming Special Attack"))
 			PrimeSpecialAttack(CurrentAttack);
+			EndActorTurn();
 			return;
 		}
 		
@@ -944,39 +946,65 @@ void UCharacterCombatData::PrimeSpecialAttack(const FAttackConfiguration* Chosen
 {
 	if (!ChosenAttack) return;
 	
+	// Determines where the origin point of the special attack will be. 
 	FIntPoint OriginCoordinates;
-
 	switch (ChosenAttack->AttackOrigin)
 	{
-		
-	case EAttackOriginPoint::Self:
-		// Attack will originate from itself
-		OriginCoordinates = CurrentGridCoordinates;
-		break;
-		
-	case EAttackOriginPoint::Target:
-		// Attack will originate from target
-		if (CurrentTarget)
-		{
-			if (ICombatInterface* CBI = Cast<ICombatInterface>(CurrentTarget))
+		case EAttackOriginPoint::Self:
+			// Attack will originate from itself
+			OriginCoordinates = CurrentGridCoordinates;
+			break;
+			
+		case EAttackOriginPoint::Target:
+			// Attack will originate from target
+			if (CurrentTarget)
 			{
-				OriginCoordinates = CBI->GetGridCoordinates();
-				break;
+				if (ICombatInterface* CBI = Cast<ICombatInterface>(CurrentTarget))
+				{
+					OriginCoordinates = CBI->GetGridCoordinates();
+					break;
+				}
 			}
-		}
-		
+			
 		OriginCoordinates = CurrentGridCoordinates;
 		break;
 	}
 	
-	// If the unit should face the target when they are priming, do so. 
-	if (ChosenAttack->OrientToTarget)
+	// Gets the current facing direction, if it should orient to target, it will do so. 
+	TArray<FIntPoint> CachedImpactCoordinates;
+	const EDirectionalFacing Direction = SetAndGetDirectionForSpecial(ChosenAttack->OrientToTarget);
+	
+	// Find the impact coordinates for the determined direction
+	for (const FAttackCoordination& Coordination : ChosenAttack->ImpactCoordination)
 	{
-		RotateToTarget();
+		if (Coordination.Direction == Direction)
+		{
+			CachedImpactCoordinates = Coordination.Positions;
+			break;
+		}
 	}
 	
+	// Calculates the coordinates to be used as danger zones.
+	TArray<FIntPoint> CalculatedDangerCoordinates;
+	for (const auto Coord : CachedImpactCoordinates)
+	{
+		// Calculates the coordinates from the origin pos. 
+		FIntPoint CalculatedCoordinates = FIntPoint(OriginCoordinates.X + Coord.X,  OriginCoordinates.Y + Coord.Y);
+		
+		if (DoesGridCoordinatesExist(CalculatedCoordinates))
+		{
+			//Adds it to the array to be sent to the gamemode
+			CalculatedDangerCoordinates.Add(CalculatedCoordinates);
+		}
+	}
 	
-	SpecialPrimed = true;
+	//Updates the gamemode to tell them to activate the damage indicator for the relevant grid pieces. 
+	if (BoardInterfaceGamemode && !CalculatedDangerCoordinates.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Sent the information to the game mode"))
+		BoardInterfaceGamemode->SetAttackPositionsVisible(CalculatedDangerCoordinates);
+		SpecialPrimed = true;
+	}
 }
 
 void UCharacterCombatData::ExecuteSpecialAttack()
@@ -1077,6 +1105,97 @@ bool UCharacterCombatData::IsAlignedAllDir(const FIntPoint& PointA, const FIntPo
 bool UCharacterCombatData::IsAlignedOrdinal(const FIntPoint& PointA, const FIntPoint& PointB) const
 {
 	return (FMath::Abs(PointA.X - PointB.X) == FMath::Abs(PointA.Y - PointB.Y));
+}
+
+EDirectionalFacing UCharacterCombatData::SetAndGetDirectionForSpecial(const bool OrientToTarget) const
+{
+	if (!GetOwner() || !CurrentTarget)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Set and Get Direction for Special, Owner or Target null"))
+		return EDirectionalFacing::Any;
+	}
+	
+	// TODO - If I need a enemy to have a Diagonal attack in the future, this wont work, need to remove the get owner part
+	// Creates a yaw so we can set it to either nudge to a cardinal direction or fully rotate to target
+	float Yaw = 0.0f;
+	if (OrientToTarget)
+	{
+		const FVector TargetPos = CurrentTarget->GetActorLocation();
+		const FVector CurrentPos = GetOwner()->GetActorLocation();
+		const FRotator TargetRot = UKismetMathLibrary::FindLookAtRotation(CurrentPos, TargetPos);
+		Yaw = TargetRot.Yaw;
+	}
+	else
+	{
+		// Use current facing: get the actor's current rotation
+		Yaw = GetOwner()->GetActorRotation().Yaw;
+	}
+	
+	// Normalise yaw to 0-360
+	Yaw = FMath::UnwindDegrees(Yaw);
+	if (Yaw < 0.0f) Yaw += 360.0f;
+
+	// Rotational world angles
+	constexpr float RightAngle = 0.0f;   // Right
+	constexpr float UpAngle = 90.0f;     // Up
+	constexpr float LeftAngle = 180.0f;  // Left
+	constexpr float DownAngle = 270.0f;  // Down
+
+	// Calculate the deltas to find the closest angle, compares them against the current angle
+	const float DeltaRight = FMath::Abs(FMath::FindDeltaAngleDegrees(Yaw, RightAngle));
+	const float DeltaUp = FMath::Abs(FMath::FindDeltaAngleDegrees(Yaw, UpAngle));
+	const float DeltaLeft = FMath::Abs(FMath::FindDeltaAngleDegrees(Yaw, LeftAngle));
+	const float DeltaDown = FMath::Abs(FMath::FindDeltaAngleDegrees(Yaw, DownAngle));
+
+	// Find the closest direction
+	EDirectionalFacing Facing = EDirectionalFacing::Any;
+	float MinDelta = FLT_MAX;
+
+	// This sets finds the lowest delta, setting the next delta as smallest until only the smallest remains
+	// What remains is the smallest angle. E.g. Right might be 80, Up might be 5. It will end on 5 and not do the rest.
+	if (DeltaRight <= MinDelta)
+	{
+		MinDelta = DeltaRight;
+		Facing = EDirectionalFacing::Right;
+	}
+	if (DeltaUp <= MinDelta)
+	{
+		MinDelta = DeltaUp;
+		Facing = EDirectionalFacing::Up;
+	}
+	if (DeltaLeft <= MinDelta)
+	{
+		MinDelta = DeltaLeft;
+		Facing = EDirectionalFacing::Left;
+	}
+	if (DeltaDown <= MinDelta)
+	{
+		Facing = EDirectionalFacing::Down;
+	}
+
+	// Set the rotation to the exact cardinal direction
+	float FacingAngle = 0.0f;
+	switch (Facing)
+	{
+	case EDirectionalFacing::Right:
+		FacingAngle = RightAngle;
+		break;
+	case EDirectionalFacing::Up:
+		FacingAngle = UpAngle;
+		break;
+	case EDirectionalFacing::Left:
+		FacingAngle = LeftAngle;
+		break;
+	case EDirectionalFacing::Down:
+		FacingAngle = DownAngle;
+		break;
+	default:
+		break;
+	}
+	
+	GetOwner()->SetActorRotation(FRotator(0.0f, FacingAngle, 0.0f));
+	
+	return Facing;
 }
 
 FVector UCharacterCombatData::GetGridPosition(const FIntPoint& Coordinates) const

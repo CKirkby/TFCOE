@@ -52,7 +52,7 @@ TArray<FIntPoint> UBoardManager::GetAllGridCoordinates() const
 	return OutCoordinates;
 }
 
-TArray<AActor*> UBoardManager::GetAllReachablePieces()
+TArray<AActor*> UBoardManager::GetAllReachablePieces() const
 {
 	// Gets the combat interface of the player. // TODO - Need to change this in future to get player or player party or current controllable character.
 	ICombatInterface* CombatInterface_Player = Cast<ICombatInterface>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
@@ -168,6 +168,30 @@ void UBoardManager::ResetHighlightedPositions()
 		if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(Piece))
 		{
 			BC_Interface->NotifyBoardPieceHighlight(EHighlightType::None);		
+		}
+	}
+}
+
+void UBoardManager::ActivateDamageHighlight(TArray<FIntPoint> CoordinatesToPrime) const
+{
+	if (CoordinatesToPrime.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Board manager recieved coords is empty"))
+		return;
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("The board manager recieved the highlight coords"))
+	for (const FIntPoint Coord : CoordinatesToPrime)
+	{
+		if (GridPairing.Contains(Coord))
+		{
+			AActor* FoundPiece = GetGridPiece(Coord);
+			if (!FoundPiece) continue;
+			
+			if (IBoardControllerInterface* BC_Interface = Cast<IBoardControllerInterface>(FoundPiece))
+			{
+				BC_Interface->NotifyBoardPieceHighlight(EHighlightType::Attack);
+			}
 		}
 	}
 }

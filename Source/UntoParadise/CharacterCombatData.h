@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BoardControllerInterface.h"
 #include "UnitConfiguration.h"
 #include "Components/ActorComponent.h"
 #include "Navigation/PathFollowingComponent.h"
@@ -86,6 +87,7 @@ protected:
 
 	// Interfaces
 	ICombatInterface* CombatInterfaceGamemode = nullptr;
+	IBoardControllerInterface* BoardInterfaceGamemode = nullptr;
 	ICombatInterface* CombatInterfacePlayer = nullptr;
 	
 	// Attack configurations and cooldowns
@@ -119,6 +121,7 @@ public:
 	bool IsAlignedCardinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
 	bool IsAlignedAllDir(const FIntPoint& PointA, const FIntPoint& PointB) const;
 	bool IsAlignedOrdinal(const FIntPoint& PointA, const FIntPoint& PointB) const;
+	EDirectionalFacing SetAndGetDirectionForSpecial(bool OrientToTarget) const;
 
 	// Stores a chosen attack.
 	FAttackConfiguration* ChooseAttackForTurn(AActor* TargetActor);

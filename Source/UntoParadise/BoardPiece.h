@@ -55,6 +55,8 @@ protected:
 	UMaterialInterface* MovementClickMaterial = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Materials")
 	UMaterialInterface* ReachableMovementMaterial = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings|Materials")
+	UMaterialInterface* AttackHighlightMaterial = nullptr;
 
 	UPROPERTY()
 	AActor* CurrentOccupier = nullptr;

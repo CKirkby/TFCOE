@@ -27,10 +27,9 @@ protected:
 
 	UPROPERTY()
 	AActor* CurrentStartingPiece = nullptr;
-	
-	virtual void BeginPlay() override;
 
 public:	
+	virtual void BeginPlay() override;
 	
 	UFUNCTION(BlueprintCallable)
 	void AddGridPairing(FIntPoint GridCoordinates, AActor* BoardPiece);
@@ -39,10 +38,12 @@ public:
 	AActor* GetGridPiece(FIntPoint GridCoordinates) const;
 	
 	TArray<FIntPoint> GetAllGridCoordinates() const;
-	TArray<AActor*> GetAllReachablePieces();
+	TArray<AActor*> GetAllReachablePieces() const;
 	
 	void HighlightAllReachablePositions(bool ActivateHighlight);
 	void ResetHighlightedPositions();
+	
+	void ActivateDamageHighlight(TArray<FIntPoint> CoordinatesToPrime) const;
 
 	void ClearActiveBoard();
 	

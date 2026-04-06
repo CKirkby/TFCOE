@@ -105,8 +105,12 @@ void ABoardPiece::NotifyBoardPieceHighlight(EHighlightType Type)
 		}
 		
 	case EHighlightType::Attack:
-		
-		break;
+		{
+			UE_LOG(LogTemp, Error, TEXT("The board piece recieved the notify"))
+			UMaterialInstanceDynamic* AttackHighlightMat = UMaterialInstanceDynamic::Create(AttackHighlightMaterial, this);
+			StaticMesh->SetMaterial(0, AttackHighlightMat);
+			break;
+		}
 	}
 }
 

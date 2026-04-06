@@ -35,9 +35,10 @@ protected:
 	UCombatManager* CombatManager = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UBoardManager* BoardManager = nullptr;
+	
+	virtual void BeginPlay() override;
 
 public:
-	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
 
 	// Functions

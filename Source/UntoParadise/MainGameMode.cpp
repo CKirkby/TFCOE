@@ -174,22 +174,21 @@ bool AMainGameMode::DoesGridContainCoordinate(FIntPoint CoordsToCheck)
 	return BoardManager->DoesGridCoordinatesExist(CoordsToCheck);
 }
 
-void AMainGameMode::SetReachableMovementPositionsVisible(bool Active)
+void AMainGameMode::SetReachableMovementPositionsVisible(const bool Active)
 {
 	if (!BoardManager) return;
-	if (Active)
-	{
-		BoardManager->HighlightAllReachablePositions(true);
-	}
-	else
-	{
-		BoardManager->HighlightAllReachablePositions(false);
-	}
+	BoardManager->HighlightAllReachablePositions(Active);
 }
 
-void AMainGameMode::SetAttackPositionsVisible(TArray<FIntPoint> Positions)
+void AMainGameMode::SetAttackPositionsVisible(const TArray<FIntPoint> Positions)
 {
-	if (!BoardManager) return;
+	if (!BoardManager || Positions.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Set grid attack positions visible: Positions Empty"))
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Sending data to the board maanger, game mode reached"))
+	BoardManager->ActivateDamageHighlight(Positions);
 }
 
 TArray<FIntPoint> AMainGameMode::GetAllBoardPieces()
@@ -210,5 +209,4 @@ void AMainGameMode::NotifyUnitDefeated(AActor* UnitRef)
 	// Notifies the combat roster to remove this unit on its defeat. 
 	CombatManager->RemoveUnitFromActiveRoster(UnitRef);
 }
-
 
