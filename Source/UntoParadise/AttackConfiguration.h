@@ -69,9 +69,6 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	EAttackFormat AttackFormat = EAttackFormat::Regular;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
-	float ChanceToUseAvailableSpecial = 85.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	bool RequiresAlignment = true;
@@ -87,10 +84,7 @@ struct FAttackConfiguration
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackType == EAttackType::Ranged", EditConditionHides, Clamp = "1"))
 	int MaxAttackRange = 1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
-	int AttackCooldown = 0;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (ClampMin = "1", ClampMax = "100"))
 	float BaseHitChance = 80.0f;
 
@@ -100,7 +94,13 @@ struct FAttackConfiguration
 	// Special Attack settings \\
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
-	int ActivationTime = 0;
+	float ChanceToUseAvailableSpecial = 85.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	int ActivationTime = 1;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	int AttackCooldown = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	EAttackOriginPoint AttackOrigin = EAttackOriginPoint::Self;

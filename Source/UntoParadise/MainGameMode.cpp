@@ -187,7 +187,6 @@ void AMainGameMode::SetAttackPositionsVisible(const TArray<FIntPoint> Positions)
 		UE_LOG(LogTemp, Error, TEXT("Set grid attack positions visible: Positions Empty"))
 	}
 
-	UE_LOG(LogTemp, Error, TEXT("Sending data to the board maanger, game mode reached"))
 	BoardManager->ActivateDamageHighlight(Positions);
 }
 

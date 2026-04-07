@@ -47,17 +47,12 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	UpdateCooldownValues();
 	
 	// Checks if there is a special attack waiting to go. If so and it is time execute the attack or reduce turn counter
-	if (SpecialPrimed)
+	if (CheckPrimedAttack())
 	{
-		// Check if the activation turn is now zero or reduce and move on. !!!!!
-		ExecuteSpecialAttack();
-		
-		
-		
 		return;
 	}
 	
-	// Begins the turn phase
+	// Begins the turn phase for the attack and movement sequence. 
 	StepOne_SelectTarget();
 }
 
@@ -516,6 +511,8 @@ void UCharacterCombatData::UpdateCooldownValues()
 {
 	if (AttackCooldowns.IsEmpty()) return;
 
+	UE_LOG(LogTemp, Error, TEXT("Something is on cooldown updating"))
+
 	// Iterates through the map to make sure the cooldown is reduced or remvoed
 	for (auto CooldownIndex = AttackCooldowns.CreateIterator(); CooldownIndex; ++CooldownIndex)
 	{
@@ -530,6 +527,27 @@ void UCharacterCombatData::UpdateCooldownValues()
 	}
 	
 	AttackCooldowns.Compact();
+}
+
+bool UCharacterCombatData::CheckPrimedAttack()
+{
+	// Checks if there is a special attack waiting to go. If so and it is time execute the attack or reduce turn counter
+	if (SpecialPrimed)
+	{
+		// If the activate timer reaches zero it is time to execute the special attack otherwise just deduct the time
+		if (PrimedActivationTimer <= 0)
+		{
+			// Check if the activation turn is now zero or reduce and move on. !!!!!
+			ExecuteSpecialAttack();
+			return true;
+		}
+		
+		PrimedActivationTimer--;
+		EndActorTurn();
+		return true;
+	}
+	
+	return false;
 }
 
 TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)
@@ -942,7 +960,7 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 	});
 }
 
-void UCharacterCombatData::PrimeSpecialAttack(const FAttackConfiguration* ChosenAttack)
+void UCharacterCombatData::PrimeSpecialAttack(FAttackConfiguration* ChosenAttack)
 {
 	if (!ChosenAttack) return;
 	
@@ -974,6 +992,7 @@ void UCharacterCombatData::PrimeSpecialAttack(const FAttackConfiguration* Chosen
 	TArray<FIntPoint> CachedImpactCoordinates;
 	const EDirectionalFacing Direction = SetAndGetDirectionForSpecial(ChosenAttack->OrientToTarget);
 	
+	UE_LOG(LogTemp, Error, TEXT("Direction: %s"), *UEnum::GetValueAsString(Direction));
 	// Find the impact coordinates for the determined direction
 	for (const FAttackCoordination& Coordination : ChosenAttack->ImpactCoordination)
 	{
@@ -1000,17 +1019,23 @@ void UCharacterCombatData::PrimeSpecialAttack(const FAttackConfiguration* Chosen
 	
 	//Updates the gamemode to tell them to activate the damage indicator for the relevant grid pieces. 
 	if (BoardInterfaceGamemode && !CalculatedDangerCoordinates.IsEmpty())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Sent the information to the game mode"))
+	{ 
+		// Notifies the gamemode to highlight the damage grid indicators and store the relevant data for the special.
 		BoardInterfaceGamemode->SetAttackPositionsVisible(CalculatedDangerCoordinates);
+		PrimedSpecialAttack = ChosenAttack;
+		PrimedActivationTimer = ChosenAttack->ActivationTime;
 		SpecialPrimed = true;
 	}
 }
 
 void UCharacterCombatData::ExecuteSpecialAttack()
 {
-	
 	SpecialPrimed = false;
+	PrimedActivationTimer = -1;
+	AddAttackToCooldown(*PrimedSpecialAttack);
+	
+	// Call damage to occur on the squares and remove highlights.
+	UE_LOG(LogTemp, Error, TEXT("Executed the special move, Shabang!"))
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
@@ -1137,9 +1162,9 @@ EDirectionalFacing UCharacterCombatData::SetAndGetDirectionForSpecial(const bool
 
 	// Rotational world angles
 	constexpr float RightAngle = 0.0f;   // Right
-	constexpr float UpAngle = 90.0f;     // Up
+	constexpr float UpAngle = 270.0f;     // Up
 	constexpr float LeftAngle = 180.0f;  // Left
-	constexpr float DownAngle = 270.0f;  // Down
+	constexpr float DownAngle = 90.0f;  // Down
 
 	// Calculate the deltas to find the closest angle, compares them against the current angle
 	const float DeltaRight = FMath::Abs(FMath::FindDeltaAngleDegrees(Yaw, RightAngle));
@@ -1170,6 +1195,7 @@ EDirectionalFacing UCharacterCombatData::SetAndGetDirectionForSpecial(const bool
 	}
 	if (DeltaDown <= MinDelta)
 	{
+		MinDelta = DeltaDown;
 		Facing = EDirectionalFacing::Down;
 	}
 
@@ -1501,4 +1527,5 @@ FIntPoint UCharacterCombatData::GetCurrentTargetCoords(AActor* Target)
 	
 	return CombatInterface->GetGridCoordinates();
 }
+
 

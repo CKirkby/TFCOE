@@ -176,11 +176,9 @@ void UBoardManager::ActivateDamageHighlight(TArray<FIntPoint> CoordinatesToPrime
 {
 	if (CoordinatesToPrime.IsEmpty())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Board manager recieved coords is empty"))
 		return;
 	}
-
-	UE_LOG(LogTemp, Error, TEXT("The board manager recieved the highlight coords"))
+	
 	for (const FIntPoint Coord : CoordinatesToPrime)
 	{
 		if (GridPairing.Contains(Coord))
