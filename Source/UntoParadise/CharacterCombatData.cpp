@@ -10,6 +10,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/GameMode.h"
 #include "Algo/Reverse.h"
+#include "DSP/AudioDebuggingUtilities.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UCharacterCombatData::UCharacterCombatData()
@@ -511,14 +512,12 @@ void UCharacterCombatData::UpdateCooldownValues()
 {
 	if (AttackCooldowns.IsEmpty()) return;
 
-	UE_LOG(LogTemp, Error, TEXT("Something is on cooldown updating"))
-
 	// Iterates through the map to make sure the cooldown is reduced or remvoed
 	for (auto CooldownIndex = AttackCooldowns.CreateIterator(); CooldownIndex; ++CooldownIndex)
 	{
 		// Reduces the cooldown value
 		CooldownIndex.Value()--;
-
+		
 		// If the cooldown value has reached zero or somehow below, remove it, it is no longer on cooldown.
 		if (CooldownIndex.Value() <= 0)
 		{
@@ -1203,6 +1202,9 @@ EDirectionalFacing UCharacterCombatData::SetAndGetDirectionForSpecial(const bool
 	float FacingAngle = 0.0f;
 	switch (Facing)
 	{
+	case EDirectionalFacing::Any:
+		FacingAngle = LeftAngle;
+		break;
 	case EDirectionalFacing::Right:
 		FacingAngle = RightAngle;
 		break;

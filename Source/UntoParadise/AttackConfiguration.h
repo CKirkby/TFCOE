@@ -93,7 +93,7 @@ struct FAttackConfiguration
 	
 	// Special Attack settings \\
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides, ClampMin = "1", ClampMax = "100"))
 	float ChanceToUseAvailableSpecial = 85.0f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
@@ -105,7 +105,7 @@ struct FAttackConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	EAttackOriginPoint AttackOrigin = EAttackOriginPoint::Self;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special && AttackOrigin == EAttackOriginPoint::Self", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	bool OrientToTarget = true;
 	
 	// The attack coordinates to be determined. 
