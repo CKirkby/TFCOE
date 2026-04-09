@@ -991,11 +991,19 @@ void UCharacterCombatData::PrimeSpecialAttack(FAttackConfiguration* ChosenAttack
 	TArray<FIntPoint> CachedImpactCoordinates;
 	const EDirectionalFacing Direction = SetAndGetDirectionForSpecial(ChosenAttack->OrientToTarget);
 	
-	UE_LOG(LogTemp, Error, TEXT("Direction: %s"), *UEnum::GetValueAsString(Direction));
+	UE_LOG(LogTemp, Error, TEXT("Direction: %s"), *UEnum::GetValueAsString(Direction)); // Testing Debug
+	
 	// Find the impact coordinates for the determined direction
 	for (const FAttackCoordination& Coordination : ChosenAttack->ImpactCoordination)
 	{
 		if (Coordination.Direction == Direction)
+		{
+			CachedImpactCoordinates = Coordination.Positions;
+			break;
+		}
+		
+		// Makes a final check to see if there is an any directional coordination.
+		if (Coordination.Direction == EDirectionalFacing::Any)
 		{
 			CachedImpactCoordinates = Coordination.Positions;
 			break;
@@ -1024,17 +1032,39 @@ void UCharacterCombatData::PrimeSpecialAttack(FAttackConfiguration* ChosenAttack
 		PrimedSpecialAttack = ChosenAttack;
 		PrimedActivationTimer = ChosenAttack->ActivationTime;
 		SpecialPrimed = true;
+		
+		// Stores the primed coordinates for future use of executing the attack.
+		if (!PrimedCoordinates.IsEmpty())
+		{
+			PrimedCoordinates.Empty();
+			PrimedCoordinates = CalculatedDangerCoordinates;
+		}
+		else
+		{
+			PrimedCoordinates = CalculatedDangerCoordinates;
+		}
 	}
 }
 
 void UCharacterCombatData::ExecuteSpecialAttack()
 {
+	if (PrimedCoordinates.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("Combat Data: Execute Special Attack - Primed Coordinates empty, ending unit turn"));
+		EndActorTurn();
+		return;
+	}
+	
 	SpecialPrimed = false;
 	PrimedActivationTimer = -1;
 	AddAttackToCooldown(*PrimedSpecialAttack);
 	
 	// Call damage to occur on the squares and remove highlights.
+	
 	UE_LOG(LogTemp, Error, TEXT("Executed the special move, Shabang!"))
+	
+	PrimedCoordinates.Empty();
+	EndActorTurn();
 }
 
 void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> Function)
@@ -1203,7 +1233,6 @@ EDirectionalFacing UCharacterCombatData::SetAndGetDirectionForSpecial(const bool
 	switch (Facing)
 	{
 	case EDirectionalFacing::Any:
-		FacingAngle = LeftAngle;
 		break;
 	case EDirectionalFacing::Right:
 		FacingAngle = RightAngle;

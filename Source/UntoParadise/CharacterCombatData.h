@@ -1,4 +1,4 @@
-// Created by Kairo Forge
+   // Created by Kairo Forge
 
 #pragma once
 
@@ -94,6 +94,7 @@ protected:
 	TArray<FAttackConfiguration> RegularAttacks = {};
 	TArray<FAttackConfiguration> SpecialAttacks = {};
 	TMap<FName, int32> AttackCooldowns = {};
+	TArray<FIntPoint> PrimedCoordinates = {};
 	FAttackConfiguration* PrimedSpecialAttack = nullptr;
 	int32 PrimedActivationTimer = -1;
 	bool SpecialPrimed = false;
