@@ -134,7 +134,7 @@ public:
 	// Attack and cooldown.
 	void InitialiseAttackCaching();
 	bool IsSpecialAttackAvailable();
-	bool IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration);
+	bool IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration) const;
 	void AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration);
 	void UpdateCooldownValues();
 	bool CheckPrimedAttack();

@@ -68,7 +68,7 @@ struct FAttackConfiguration
 	EAttackType AttackType = EAttackType::Close;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
-	EAttackFormat AttackFormat = EAttackFormat::Regular;
+	EAttackFormat AttackFormat = EAttackFormat::Regular;  
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings")
 	bool RequiresAlignment = true;

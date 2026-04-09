@@ -489,7 +489,7 @@ bool UCharacterCombatData::IsSpecialAttackAvailable()
 	return AvailableAttacks != 0;
 }
 
-bool UCharacterCombatData::IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration)
+bool UCharacterCombatData::IsAttackOnCooldown(const FAttackConfiguration& AttackConfiguration) const
 {
 	if (AttackCooldowns.IsEmpty()) return false;
 
