@@ -533,6 +533,8 @@ bool UCharacterCombatData::CheckPrimedAttack()
 	// Checks if there is a special attack waiting to go. If so and it is time execute the attack or reduce turn counter
 	if (SpecialPrimed)
 	{
+		PrimedActivationTimer--;
+		
 		// If the activate timer reaches zero it is time to execute the special attack otherwise just deduct the time
 		if (PrimedActivationTimer <= 0)
 		{
@@ -541,12 +543,55 @@ bool UCharacterCombatData::CheckPrimedAttack()
 			return true;
 		}
 		
-		PrimedActivationTimer--;
 		EndActorTurn();
 		return true;
 	}
 	
 	return false;
+}
+
+TArray<AActor*> UCharacterCombatData::GetTargetsWithinSpecialRange(TArray<FIntPoint> CoordinatesToCheck, const FAttackConfiguration* ChosenAttack) const
+{
+	if (CoordinatesToCheck.IsEmpty() || !ChosenAttack) return TArray<AActor*>();
+
+	// Defines an array to store any targets within the specials range. 
+	TArray<AActor*> CurrentTargetsInRange = {};
+	
+	// Loops through all the attack coordinates to check if there is an occupier.
+	for (const FIntPoint& Coordinate : CoordinatesToCheck)
+	{
+		// Gets the grid piece actor to use as an interface call to get its occupier.
+		if (ICombatInterface* CombatInterfacePiece = Cast<ICombatInterface>(CombatInterfaceGamemode->GetGridPieceFromCoordinates(Coordinate)))
+		{
+			// If there is a unit occupying the coordinates, add it to the array.
+			if (AActor* Target = CombatInterfacePiece->GetGridPieceOccupier())
+			{
+				CurrentTargetsInRange.AddUnique(Target);
+			}
+		}
+	}
+	
+	// Now that all the current targets have been found. They are needing to be filtered to make sure they are not striking their own team. 
+	if (!ChosenAttack->FriendlyFireEnabled && !CurrentTargetsInRange.IsEmpty())
+	{
+		for (const auto& Target : CurrentTargetsInRange)
+		{
+			if (!Target) continue;
+				
+			if (ICombatInterface* CBI_Target = Cast<ICombatInterface>(Target))
+			{
+				// Gets the faction ID and compares it to this units ID. If they are the same faction, remove it.
+				EFactionID FactionID = CBI_Target->GetActorFactionID();
+				if (UnitCombatConfiguration && UnitCombatConfiguration->FactionID == FactionID)
+				{
+					CurrentTargetsInRange.Remove(Target);
+				}
+			}
+		}
+	}
+	
+	// Now that all the targets has been got and filtered, return them
+	return CurrentTargetsInRange;
 }
 
 TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)
@@ -951,11 +996,13 @@ void UCharacterCombatData::PerformAttack(const FAttackConfiguration* ChosenAttac
 			// Sets the attacker reference of the target to this attacker
 			SetAttackerReference();
 		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack Missed"));
+		}
 		
 		OnAttackCommence.Broadcast(ChosenAttack->AttackType, AttackHitSuccess);
 		EndActorTurn();
-		
-		// TODO - Add cooldown functionality. 
 	});
 }
 
@@ -1055,15 +1102,37 @@ void UCharacterCombatData::ExecuteSpecialAttack()
 		return;
 	}
 	
-	SpecialPrimed = false;
-	PrimedActivationTimer = -1;
-	AddAttackToCooldown(*PrimedSpecialAttack);
-	
-	// Call damage to occur on the squares and remove highlights.
+	// Checks and filters the units within the current damage point
+	TArray<AActor*> TargetsToDamage = GetTargetsWithinSpecialRange(PrimedCoordinates, PrimedSpecialAttack);
+
+	if (!TargetsToDamage.IsEmpty())
+	{
+		for (const auto& Target : TargetsToDamage)
+		{
+			if (!Target) continue;
+			
+			if (IHealthInterface* HealthInterface = Cast<IHealthInterface>(Target))
+			{
+				HealthInterface->TakeDamage(PrimedSpecialAttack->AttackDamage);
+				SetAttackerReference();
+			}
+		}
+	}
+
+	// Broadcasts to blueprint that a special attack has commenced.
+	OnSpecialAttackCommence.Broadcast(PrimedSpecialAttack->AttackID, TargetsToDamage);
 	
 	UE_LOG(LogTemp, Error, TEXT("Executed the special move, Shabang!"))
 	
+	// Adds the attack to the cooldown list.
+	AddAttackToCooldown(*PrimedSpecialAttack);
+	
+	// Resets all the data for the special attack.
 	PrimedCoordinates.Empty();
+	PrimedSpecialAttack = nullptr;
+	SpecialPrimed = false;
+	PrimedActivationTimer = -1;
+	
 	EndActorTurn();
 }
 
@@ -1084,7 +1153,7 @@ void UCharacterCombatData::DelayLambda(const float DelayTime, TFunction<void()> 
 	},DelayTime, false);
 }
 
-void UCharacterCombatData::SetAttackerReference()
+void UCharacterCombatData::SetAttackerReference() const
 {
 	AActor* Owner = GetOwner();
 	if (CurrentTarget && Owner)

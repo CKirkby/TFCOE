@@ -48,6 +48,10 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAttackCommence, EAttackType, AttackType, bool, HitSuccessful);
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAttackCommence OnAttackCommence;
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpecialAttackCommence, FName, AttackID, TArray<AActor*>, TargetsHit);
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnSpecialAttackCommence OnSpecialAttackCommence;
 
 protected:
 
@@ -138,6 +142,7 @@ public:
 	void AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration);
 	void UpdateCooldownValues();
 	bool CheckPrimedAttack();
+	TArray<AActor*> GetTargetsWithinSpecialRange(TArray<FIntPoint> CoordinatesToCheck, const FAttackConfiguration* ChosenAttack) const;
 
 	// AI movement functions
 	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack);
@@ -173,7 +178,7 @@ public:
 	void PrimeSpecialAttack(FAttackConfiguration* ChosenAttack);
 	void ExecuteSpecialAttack();
 	void DelayLambda(float DelayTime, TFunction<void()> Function);
-	void SetAttackerReference();
+	void SetAttackerReference() const;
 
 	// Grid Piece checker
 	bool DoesGridCoordinatesExist(const FIntPoint GridCoordinates) const;

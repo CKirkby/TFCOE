@@ -40,6 +40,8 @@ bool UAttackController::PerformBasicAttack(AActor* Target, const FAttackConfigur
 		
 		return true;
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack Missed"));
 	
 	return false;
 }

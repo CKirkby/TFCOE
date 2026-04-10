@@ -1,6 +1,8 @@
 // Created by Kairo Forge
 
 #include "BoardPiece.h"
+
+#include "NiagaraComponent.h"
 #include "Components/PrimitiveComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Engine/World.h"
@@ -20,6 +22,9 @@ ABoardPiece::ABoardPiece()
 	TargetIndicatorWidget->SetupAttachment(GetRootComponent());
 	TargetIndicatorWidget->SetWidgetSpace(EWidgetSpace::World);
 	TargetIndicatorWidget->SetHiddenInGame(true);
+	
+	DamageIndicator = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Damage Indicator"));
+	DamageIndicator->SetupAttachment(RootComponent);
 }
 
 void ABoardPiece::BeginPlay()

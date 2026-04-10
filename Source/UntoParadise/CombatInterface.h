@@ -51,6 +51,7 @@ class UNTOPARADISE_API ICombatInterface
 	virtual FVector GetBoardPieceLocation() = 0;
 	virtual EPieceState GetCurrentPieceState() = 0;
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) = 0;
+	virtual AActor* GetGridPieceOccupier() = 0;
 
 	// General
 	virtual void MoveAI_Character(FVector Location) = 0;

@@ -106,6 +106,7 @@ public:
 	virtual void NotifyTargetOnHover() override {}
 	virtual void NotifyTargetOnHoverEnd() override {}
 	virtual void NotifyBoardPieceOnHover() override {}
+	virtual AActor* GetGridPieceOccupier() override {return nullptr;}
 	
 	// Health Interface
 	virtual void SetHealth(int NewHealth) override {}

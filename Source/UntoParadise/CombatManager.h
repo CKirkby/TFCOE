@@ -34,7 +34,6 @@ enum ETurnOrder
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class UNTOPARADISE_API UCombatManager : public UActorComponent, public ICombatInterface
 {
-
 private:
 	GENERATED_BODY()
 
@@ -185,4 +184,5 @@ public:
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
+	virtual AActor* GetGridPieceOccupier() override {return nullptr;}
 };

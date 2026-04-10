@@ -99,6 +99,7 @@ public:
 	virtual FVector GetBoardPieceLocation() override {return FVector::ZeroVector;}
 	virtual EPieceState GetCurrentPieceState() override {return EPieceState();}
 	virtual bool DoesGridContainCoordinate(FIntPoint CoordsToCheck) override {return false;}
+	virtual AActor* GetGridPieceOccupier() override {return nullptr;}
 	
 	// Health Interface.
 	virtual void NotifyUnitDefeated(AActor* UnitRef) override {}

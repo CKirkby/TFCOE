@@ -108,6 +108,9 @@ struct FAttackConfiguration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	bool OrientToTarget = true;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
+	bool FriendlyFireEnabled = false;
+	
 	// The attack coordinates to be determined. 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Settings", meta = (EditCondition = "AttackFormat == EAttackFormat::Special", EditConditionHides))
 	TArray<FAttackCoordination> ImpactCoordination = {};

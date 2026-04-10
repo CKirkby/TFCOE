@@ -10,6 +10,7 @@
 #include "GameFramework/Actor.h"
 #include "BoardPiece.generated.h"
 
+class UNiagaraComponent;
 class UWidgetComponent;
 class UBoxComponent;
 
@@ -24,7 +25,6 @@ enum EPieceState
 UCLASS()
 class UNTOPARADISE_API ABoardPiece : public AActor, public ICombatInterface, public IBoardControllerInterface
 {
-	
 private:
 	GENERATED_BODY()
 
@@ -42,6 +42,8 @@ protected:
 	USceneComponent* CharacterPosition = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UWidgetComponent* TargetIndicatorWidget = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UNiagaraComponent* DamageIndicator = nullptr;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	FIntPoint GridPosition;
@@ -139,6 +141,7 @@ public:
 	virtual void NotifyBoardPieceHighlight(EHighlightType Type) override;
 	virtual void NotifyBoardPieceOnHover() override;
 	virtual void NotifyBoardPieceOnHoverEnd() override;
+	virtual AActor* GetGridPieceOccupier() override {return GetCurrentOccupier();}
 
 	// Unneeded Interface Implementations
 	// Player

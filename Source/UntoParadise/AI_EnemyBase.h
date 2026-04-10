@@ -89,5 +89,6 @@ protected:
 	virtual void NotifyNewCameraFocus(AActor* Target) override {}
 	virtual void NotifyUnitDefeated(AActor* UnitRef) override {}
 	virtual void NotifyTimePointsExpended(const int32 Amount) override {}
+	virtual AActor* GetGridPieceOccupier() override {return nullptr;}
 	
 };
