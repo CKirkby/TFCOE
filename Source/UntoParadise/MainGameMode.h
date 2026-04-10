@@ -21,7 +21,7 @@ class UCombatManager;
 UCLASS()
 class UNTOPARADISE_API AMainGameMode : public AGameModeBase, public ICombatInterface, public IEncounterInterface, public IBoardControllerInterface, public IHealthInterface
 {
-	
+
 private:
 	GENERATED_BODY()
 
@@ -107,6 +107,7 @@ public:
 	virtual void NotifyTargetOnHoverEnd() override {}
 	virtual void NotifyBoardPieceOnHover() override {}
 	virtual AActor* GetGridPieceOccupier() override {return nullptr;}
+	virtual void ResetIndicator(EHighlightType Type) override {}
 	
 	// Health Interface
 	virtual void SetHealth(int NewHealth) override {}

@@ -25,6 +25,7 @@ ABoardPiece::ABoardPiece()
 	
 	DamageIndicator = CreateDefaultSubobject<UNiagaraComponent>(TEXT("Damage Indicator"));
 	DamageIndicator->SetupAttachment(RootComponent);
+	DamageIndicator->SetVisibility(false);
 }
 
 void ABoardPiece::BeginPlay()
@@ -111,8 +112,7 @@ void ABoardPiece::NotifyBoardPieceHighlight(EHighlightType Type)
 		
 	case EHighlightType::Attack:
 		{
-			UMaterialInstanceDynamic* AttackHighlightMat = UMaterialInstanceDynamic::Create(AttackHighlightMaterial, this);
-			StaticMesh->SetMaterial(0, AttackHighlightMat);
+			DamageIndicator->SetVisibility(true);
 			break;
 		}
 	}
@@ -134,10 +134,32 @@ void ABoardPiece::NotifyBoardPieceOnHoverEnd()
 	}
 }
 
+void ABoardPiece::ResetIndicator(const EHighlightType Type)
+{
+	switch (Type)
+	{
+	case EHighlightType::None:
+		break;
+		
+	case EHighlightType::Movement:
+		ResetMaterial();
+		break;
+		
+	case EHighlightType::Attack:
+		ResetDamageIndicator();
+		break;
+	}
+}
+
 void ABoardPiece::ResetMaterial()
 {
 	UMaterialInstanceDynamic* OriginalMat = UMaterialInstanceDynamic::Create(OriginalMaterial, this);
 	StaticMesh->SetMaterial(0, OriginalMat);
+}
+
+void ABoardPiece::ResetDamageIndicator() const
+{
+	DamageIndicator->SetVisibility(false);
 }
 
 void ABoardPiece::SetGridCoordinates(const FIntPoint NewCoordinates)

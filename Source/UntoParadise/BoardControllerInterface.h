@@ -33,6 +33,7 @@ public:
 	// Tells to highlight the board piece in a specific fashion, red for combat, green for movement etc...
 	virtual void NotifyBoardPieceHighlight(EHighlightType Type) = 0;
 	virtual void ResetHighlightedPieces() = 0;
+	virtual void ResetIndicator(EHighlightType Type) = 0;
 	
 	virtual void NotifyBoardPieceOnHover() = 0;
 	virtual void NotifyBoardPieceOnHoverEnd() = 0;

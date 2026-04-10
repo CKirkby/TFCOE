@@ -352,7 +352,7 @@ void APlayerCharacter::EnterHoverMode()
 		if (TimerManager.TimerExists(HoverModeHandle)) TimerManager.ClearTimer(HoverModeHandle);
 		
 		// Sets a timer to check for grid pieces
-		GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover_Movement, 0.03f, true);
+		GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover_Movement, 0.1f, true);
 		break;
 		
 	case EPlayerTurnState::CombatMode:
@@ -362,7 +362,7 @@ void APlayerCharacter::EnterHoverMode()
 		// Checks that there isn't a timer active
 		if (TimerManager.TimerExists(HoverModeHandle)) TimerManager.ClearTimer(HoverModeHandle);
 		
-		GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover_Enemy, 0.03f, true);
+		GetWorld()->GetTimerManager().SetTimer(HoverModeHandle, this, &APlayerCharacter::CheckHover_Enemy, 0.1f, true);
 		break;
 	}
 }

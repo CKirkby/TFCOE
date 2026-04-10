@@ -143,6 +143,7 @@ public:
 	void UpdateCooldownValues();
 	bool CheckPrimedAttack();
 	TArray<AActor*> GetTargetsWithinSpecialRange(TArray<FIntPoint> CoordinatesToCheck, const FAttackConfiguration* ChosenAttack) const;
+	void ResetDamageIndicators(TArray<FIntPoint> CoordinatesToReset) const;
 
 	// AI movement functions
 	TArray<FCandidatePathway> GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack);

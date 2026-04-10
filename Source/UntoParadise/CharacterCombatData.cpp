@@ -48,7 +48,7 @@ void UCharacterCombatData::ExecuteCurrentTurn()
 	UpdateCooldownValues();
 	
 	// Checks if there is a special attack waiting to go. If so and it is time execute the attack or reduce turn counter
-	if (CheckPrimedAttack())
+ 	if (CheckPrimedAttack())
 	{
 		return;
 	}
@@ -446,8 +446,22 @@ FAttackConfiguration* UCharacterCombatData::GetRandomSpecialAttack()
 {
 	if (SpecialAttacks.IsEmpty()) return nullptr;
 	
-	const int32 RandIndex = FMath::RandRange(0, SpecialAttacks.Num() - 1);
-	return &SpecialAttacks[RandIndex];
+	// Filter to only include attacks that are NOT on cooldown
+	TArray<FAttackConfiguration*> AvailableSpecialAttacks;
+	for (FAttackConfiguration& Attack : SpecialAttacks)
+	{
+		if (!IsAttackOnCooldown(Attack))
+		{
+			AvailableSpecialAttacks.Add(&Attack);
+		}
+	}
+	
+	// If no attacks are available, return nullptr
+	if (AvailableSpecialAttacks.IsEmpty()) return nullptr;
+	
+	// Return a random available special attack
+	const int32 RandIndex = FMath::RandRange(0, AvailableSpecialAttacks.Num() - 1);
+	return AvailableSpecialAttacks[RandIndex];
 }
 
 void UCharacterCombatData::InitialiseAttackCaching()
@@ -506,13 +520,14 @@ bool UCharacterCombatData::IsAttackOnCooldown(const FAttackConfiguration& Attack
 void UCharacterCombatData::AddAttackToCooldown(const FAttackConfiguration& AttackConfiguration)
 {
 	AttackCooldowns.FindOrAdd(AttackConfiguration.AttackID, AttackConfiguration.AttackCooldown);
+	UE_LOG(LogTemp, Error, TEXT("Added Attack ID: %s to the cooldown list"), *AttackConfiguration.AttackID.ToString());
 }
 
 void UCharacterCombatData::UpdateCooldownValues()
 {
-	if (AttackCooldowns.IsEmpty()) return;
+   	if (AttackCooldowns.IsEmpty()) return;
 
-	// Iterates through the map to make sure the cooldown is reduced or remvoed
+	// Iterates through the map to make sure the cooldown is reduced or removed
 	for (auto CooldownIndex = AttackCooldowns.CreateIterator(); CooldownIndex; ++CooldownIndex)
 	{
 		// Reduces the cooldown value
@@ -522,11 +537,12 @@ void UCharacterCombatData::UpdateCooldownValues()
 		if (CooldownIndex.Value() <= 0)
 		{
 			CooldownIndex.RemoveCurrent();
+			UE_LOG(LogTemp, Error, TEXT("Removed the attack from the cooldown - Attack ID: %s"), *CooldownIndex.Key().ToString());
 		}
 	}
 	
 	AttackCooldowns.Compact();
-}
+    }
 
 bool UCharacterCombatData::CheckPrimedAttack()
 {
@@ -574,24 +590,54 @@ TArray<AActor*> UCharacterCombatData::GetTargetsWithinSpecialRange(TArray<FIntPo
 	// Now that all the current targets have been found. They are needing to be filtered to make sure they are not striking their own team. 
 	if (!ChosenAttack->FriendlyFireEnabled && !CurrentTargetsInRange.IsEmpty())
 	{
+		TArray<AActor*> TargetsToRemove;
 		for (const auto& Target : CurrentTargetsInRange)
 		{
 			if (!Target) continue;
 				
 			if (ICombatInterface* CBI_Target = Cast<ICombatInterface>(Target))
 			{
-				// Gets the faction ID and compares it to this units ID. If they are the same faction, remove it.
+				// Gets the faction ID and compares it to this units ID. If they are the same faction, mark for removal.
 				EFactionID FactionID = CBI_Target->GetActorFactionID();
 				if (UnitCombatConfiguration && UnitCombatConfiguration->FactionID == FactionID)
 				{
-					CurrentTargetsInRange.Remove(Target);
+					TargetsToRemove.Add(Target);
 				}
 			}
+		}
+		// Remove the targets after collecting them
+		for (AActor* TargetToRemove : TargetsToRemove)
+		{
+			CurrentTargetsInRange.Remove(TargetToRemove);
 		}
 	}
 	
 	// Now that all the targets has been got and filtered, return them
 	return CurrentTargetsInRange;
+}
+
+void UCharacterCombatData::ResetDamageIndicators(TArray<FIntPoint> CoordinatesToReset) const
+{
+	if (CoordinatesToReset.IsEmpty()) return;
+
+	// Gets the actor pieces from the coordinates to use as reference to the board interface
+	TArray<AActor*> GridPiecesToReset;
+	for (const auto& Grid : CoordinatesToReset)
+	{
+		GridPiecesToReset.Add(CombatInterfaceGamemode->GetGridPieceFromCoordinates(Grid));
+	}
+	
+	// Tells the board piece through interface to reset its damage indicator.
+	if (!GridPiecesToReset.IsEmpty())
+	{
+		for (const auto& Piece : GridPiecesToReset)
+		{
+			if (IBoardControllerInterface* BCI_Piece = Cast<IBoardControllerInterface>(Piece))
+			{
+				BCI_Piece->ResetIndicator(EHighlightType::Attack);
+			}
+		}
+	}
 }
 
 TArray<FCandidatePathway> UCharacterCombatData::GetReachableMovementPositions(AActor* TargetActor, FAttackConfiguration* ChosenAttack)
@@ -1066,15 +1112,15 @@ void UCharacterCombatData::PrimeSpecialAttack(FAttackConfiguration* ChosenAttack
 		
 		if (DoesGridCoordinatesExist(CalculatedCoordinates))
 		{
-			//Adds it to the array to be sent to the gamemode
+			//Adds it to the array to be sent to the game mode
 			CalculatedDangerCoordinates.Add(CalculatedCoordinates);
 		}
 	}
 	
-	//Updates the gamemode to tell them to activate the damage indicator for the relevant grid pieces. 
+	//Updates the game mode to tell them to activate the damage indicator for the relevant grid pieces. 
 	if (BoardInterfaceGamemode && !CalculatedDangerCoordinates.IsEmpty())
 	{ 
-		// Notifies the gamemode to highlight the damage grid indicators and store the relevant data for the special.
+		// Notifies the game mode to highlight the damage grid indicators and store the relevant data for the special.
 		BoardInterfaceGamemode->SetAttackPositionsVisible(CalculatedDangerCoordinates);
 		PrimedSpecialAttack = ChosenAttack;
 		PrimedActivationTimer = ChosenAttack->ActivationTime;
@@ -1126,6 +1172,9 @@ void UCharacterCombatData::ExecuteSpecialAttack()
 	
 	// Adds the attack to the cooldown list.
 	AddAttackToCooldown(*PrimedSpecialAttack);
+	
+	// Tur
+	ResetDamageIndicators(PrimedCoordinates);
 	
 	// Resets all the data for the special attack.
 	PrimedCoordinates.Empty();
@@ -1627,5 +1676,6 @@ FIntPoint UCharacterCombatData::GetCurrentTargetCoords(AActor* Target)
 	
 	return CombatInterface->GetGridCoordinates();
 }
+
 
 

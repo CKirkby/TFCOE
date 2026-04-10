@@ -25,6 +25,7 @@ enum EPieceState
 UCLASS()
 class UNTOPARADISE_API ABoardPiece : public AActor, public ICombatInterface, public IBoardControllerInterface
 {
+
 private:
 	GENERATED_BODY()
 
@@ -73,6 +74,7 @@ public:
 	void TriggerOverlapEndFunctionality(AActor* OtherActor);
 
 	void ResetMaterial();
+	void ResetDamageIndicator() const;
 	
 	// Getter and Setter
 
@@ -130,8 +132,6 @@ public:
 	
 	
 	
-	
-	
 	// Interface Implementations
 	virtual void NotifyPieceClicked() override;
 	virtual FVector GetBoardPieceLocation() override;
@@ -142,6 +142,7 @@ public:
 	virtual void NotifyBoardPieceOnHover() override;
 	virtual void NotifyBoardPieceOnHoverEnd() override;
 	virtual AActor* GetGridPieceOccupier() override {return GetCurrentOccupier();}
+	virtual void ResetIndicator(EHighlightType Type) override;
 
 	// Unneeded Interface Implementations
 	// Player

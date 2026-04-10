@@ -68,6 +68,7 @@ protected:
 	virtual void NotifyBoardPieceOnHover() override {}
 	virtual void NotifyBoardPieceOnHoverEnd() override {}
 	virtual TArray<FIntPoint> GetAllBoardPieces() override {return TArray<FIntPoint>();}
+	virtual void ResetIndicator(EHighlightType Type) override {}
 
 	// Unneeded Interface Implementations
 	virtual void NotifyEndIndividualTurn() override {}
