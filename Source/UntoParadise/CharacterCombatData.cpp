@@ -521,6 +521,10 @@ void UCharacterCombatData::AddAttackToCooldown(const FAttackConfiguration& Attac
 {
 	AttackCooldowns.FindOrAdd(AttackConfiguration.AttackID, AttackConfiguration.AttackCooldown);
 	UE_LOG(LogTemp, Error, TEXT("Added Attack ID: %s to the cooldown list"), *AttackConfiguration.AttackID.ToString());
+	FString AttackID = AttackConfiguration.AttackID.ToString();
+	FString CooldownMsg = FString("Added attack to cooldown: ");
+	FString Final = CooldownMsg + AttackID;
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, Final);
 }
 
 void UCharacterCombatData::UpdateCooldownValues()
@@ -530,8 +534,20 @@ void UCharacterCombatData::UpdateCooldownValues()
 	// Iterates through the map to make sure the cooldown is reduced or removed
 	for (auto CooldownIndex = AttackCooldowns.CreateIterator(); CooldownIndex; ++CooldownIndex)
 	{
+		FString Text = FString("Current Cooldown of: ");
+		FString ID = CooldownIndex.Key().ToString();
+		FString Num = FString::FromInt(CooldownIndex.Value());
+		FString Final = Text + ID + Num;
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, Final);
+		
 		// Reduces the cooldown value
 		CooldownIndex.Value()--;
+		
+		FString Text1 = FString("New Cooldown of: ");
+		FString ID1 = CooldownIndex.Key().ToString();
+		FString Num1 = FString::FromInt(CooldownIndex.Value());
+		FString Final1 = Text1 + ID1 + Num1;
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Emerald, Final1);
 		
 		// If the cooldown value has reached zero or somehow below, remove it, it is no longer on cooldown.
 		if (CooldownIndex.Value() <= 0)
